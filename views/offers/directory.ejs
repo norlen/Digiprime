@@ -1,0 +1,180 @@
+<% layout('layouts/boilerplate') %>
+
+<!-- <div class="mb-4">
+    <h1 class="text-center text-white bg-primary bg-gradient rounded-pill ">All Offers </h1>
+</div> -->
+    <!-- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+    </svg> -->
+
+<!-- <form id="search-directory" action="/offers/directory" method="get">
+    <div class="filters mb-2 row" role="group">
+        <div class="col d-grid gap-2">
+            <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample1" aria-expanded="false" aria-controls="collapseExample">
+                Offer Interest
+            </button>
+        </div>
+        <div class="col d-grid gap-2">
+            <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample2" aria-expanded="false" aria-controls="collapseExample">
+                Reference Sector
+            </button>
+        </div>
+        <div class="col d-grid gap-2">
+            <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample3" aria-expanded="false" aria-controls="collapseExample">
+                Reference Type
+            </button>
+        </div>
+        <div class="col">
+            <button class="search-btn btn btn-info" type="submit">Search</button>
+        </div>
+    </div>
+<div class="row mb-2">
+    <div class="col-3">
+        <div class="collapse" id="collapseExample1">
+             <div class="card card-body"> 
+                <ul class="list-group">
+                    <li class="list-group-item">
+                      <input class="form-check-input me-1" type="checkbox" value="" aria-label="...">
+                      First checkbox
+                    </li>
+                    <li class="list-group-item">
+                      <input class="form-check-input me-1" type="checkbox" value="" aria-label="...">
+                      Second checkbox
+                    </li>
+                </ul>
+             </div> 
+          </div>
+    </div>
+    <div class="col-3">
+        <div class="collapse" id="collapseExample2">
+             <div class="card card-body"> 
+                <ul class="list-group">
+                    <li class="list-group-item">
+                      <input class="form-check-input me-1" type="checkbox" value="" aria-label="...">
+                      First checkbox
+                    </li>
+                    <li class="list-group-item">
+                      <input class="form-check-input me-1" type="checkbox" value="" aria-label="...">
+                      Second checkbox
+                    </li>
+                </ul>
+             </div> 
+          </div>
+    </div>
+    <div class="col-3">
+        <div class="collapse" id="collapseExample3">
+             <div class="card card-body"> 
+                <ul class="list-group">
+                    <li class="list-group-item">
+                      <input class="form-check-input me-1" type="checkbox" value="" aria-label="...">
+                      First checkbox
+                    </li>
+                    <li class="list-group-item">
+                      <input class="form-check-input me-1" type="checkbox" value="" aria-label="...">
+                      Second checkbox
+                    </li>
+                </ul>
+             </div> 
+          </div>
+    </div>
+</div>
+</form> -->
+
+<form id="search-directory" action="/offers/directory" method="get">
+    <div class="filters input-group mb-5">
+
+        <label class="bg-light rounded-start input-group-text border border-secondary" for="costume">Offer Interest</label>
+        <select class="form-select rounded-end border border-secondary" id="costumer" name="offer[costumer]" aria-label=".form-select-sm example">
+            <option value="">Choose..</option>
+            <% for (let costumer of costumers) { %>
+                <option value="<%= costumer %>">
+                    <%= costumer %>
+                </option> 
+                <% } %>
+        </select>
+
+
+        <label class="bg-light rounded-start input-group-text border border-secondary" for="referenceSector">Reference Sector</label>
+        <select class="form-select rounded-end border border-secondary" id="referenceSector" name="offer[referenceSector]" aria-label=".form-select-sm example">
+            <option value="">Choose..</option>
+            <% for (let referenceSector of referenceSectors) { %>
+                <option value="<%= referenceSector %>">
+                    <%= referenceSector %>
+                </option> 
+                <% } %>
+        </select>
+
+        <label class="bg-light rounded-start input-group-text border border-secondary" for="referenceType">Reference Type</label>
+          <select class="form-select rounded-end border border-secondary" id="referenceType" name="offer[referenceType]" aria-label=".form-select-sm example">
+            <option value="">Choose..</option>
+            <% for (let referenceType of referenceTypes) { %>
+                <option value="<%= referenceType %>">
+                    <%= referenceType %>
+                </option> 
+                <% } %>
+          </select>
+        <button class="rounded search-btn btn btn-primary" type="submit">Search</button>
+     </div>
+  </form>
+
+<div class="container">
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+
+        <% for (let offer of offers) { %>
+            
+
+            <div class="col" id="eachBlock" style="display: block;">
+                <div class="card mb-3" id="offerCards">
+ 
+                    <% if (offer.images.length) {%> 
+                    <img class="img-fluid" alt="" src="<%=offer.images[0].url%> ">
+                    <% }else { %>
+                        <img class="img-fluid" alt="" src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg">
+                        <% } %>  
+
+                    <div class="accordion accordion-flush" id="accordionTest">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button collapsed fs-4 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                   <span id="searchTitle"><%= offer.title %> </span>  <span class="text-white">.</span> <span class="badge rounded-pill bg-success" id="itemCostumer"><%= offer.costumer %></span>
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionTest">
+                                <div class="accordion-body">
+                                    <div class="list-group list-group-flush">
+                                        <li class="list-group-item" id="itemReferenceSector"><%= offer.referenceSector %></li>
+                                        <li class="list-group-item" id="itemReferenceType"><%= offer.referenceType %></li>
+                                        <li class="list-group-item">$<%= offer.price %> / Piece</li>
+                                        <li class="list-group-item"><%= offer.description %></li>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <small class="text-muted"><%= offer.location %></small>
+                        </li>
+                    </ul>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a class="btn btn-primary" href="/offers/<%= offer._id %>">View <%=
+                                    offer.location %></a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        
+        <% } %>
+    </div>
+</div>
+
+<script>
+    const offers = {features: <%- JSON.stringify(offers) %>};
+</script>
+
+<script src="/javascripts/filterSearch.js"></script>
+

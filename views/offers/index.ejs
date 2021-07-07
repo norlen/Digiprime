@@ -1,0 +1,83 @@
+
+<% layout('layouts/boilerplate') %>
+
+<!-- <div class="mb-4">
+    <h1 class="text-center text-white bg-primary bg-gradient rounded-pill ">All Offers </h1>
+</div> -->
+    <!-- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+    </svg> -->
+
+
+<form id="search-box">
+    <div class="input-group mb-4">
+        <input type="text" class="search-by-name form-control" id="searchBar" name="name" placeholder="Search Offers by Name">
+        <button class="search-btn btn btn-primary" type="submit">Search</button>
+     </div>
+  </form>
+
+<div class="mb-5" id="cluster-map"></div>
+
+<div class="container">
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+
+        <% for (let offer of offers) { %>
+            
+
+            <div class="col" id="eachBlock">
+                <div class="card mb-3" id="offerCards">
+ 
+                    <% if (offer.images.length) {%> 
+                    <img class="img-fluid" alt="" src="<%=offer.images[0].url%> ">
+                    <% }else { %>
+                        <img class="img-fluid" alt="" src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg">
+                        <% } %>  
+
+                    <div class="accordion accordion-flush" id="accordionTest">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button collapsed fs-4 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                   <span id="searchTitle"><%= offer.title %> </span>  <span class="text-white">.</span> <span class="badge rounded-pill bg-success"><%= offer.costumer %></span>
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionTest">
+                                <div class="accordion-body">
+                                    <div class="list-group list-group-flush">
+                                        <li class="list-group-item"><%= offer.referenceSector %></li>
+                                        <li class="list-group-item"><%= offer.referenceType %></li>
+                                        <li class="list-group-item">$<%= offer.price %> / Piece</li>
+                                        <li class="list-group-item"><%= offer.description %></li>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <small class="text-muted"><%= offer.location %></small>
+                        </li>
+                    </ul>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a class="btn btn-primary" href="/offers/<%= offer._id %>">View <%=
+                                    offer.location %></a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        
+        <% } %>
+    </div>
+</div>
+
+<script>
+    const mapToken = '<%-process.env.MAPBOX_TOKEN%>';
+    const offers = {features: <%- JSON.stringify(offers) %>};
+</script>
+<script src="/javascripts/clusterMap.js"></script>
+
+<script src="/javascripts/searchBar.js"></script>
+

@@ -1,0 +1,106 @@
+<% layout('layouts/boilerplate') %>
+
+    <div class="row">
+        <div class="mb-3">
+            <h1 class="text-center">New Offer</h1>
+        </div>
+        <div class="col-md-6 offset-md-3 col-lg-4 offset-lg-4">
+            <form action="/offers" method="POST" novalidate class="validated-form" enctype="multipart/form-data">
+
+                <div class="form-floating mb-3">
+                    <input class="form-control" type="text" id="title" name="offer[title]" placeholder="title" required>
+                    <label class="form-label" for="title">Title</label>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input class="form-control" type="text" id="location" name="offer[location]" placeholder="location" required>
+                    <label class="form-label" for="location">Location</label>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                </div>
+
+                <!-- <div class="mb-3">
+                    <label class="form-label" for="image">Image Url</label>
+                    <input class="form-control" type="text" id="image" name="offer[image]" required>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                </div> -->
+
+                <div class="mb-3">
+                    <label class="form-label" for="costumer">Offer interest</label>
+                    <select class="form-select" aria-label=".form-select-sm example" name="offer[costumer]" id="costumer">
+                        <% for (let costumer of costumers) { %>
+                            <option value="<%= costumer %>">
+                                <%= costumer %>
+                            </option> 
+                            <% } %>
+                      </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="costumer">Reference sector</label>
+                    <select class="form-select" aria-label=".form-select-sm example" name="offer[referenceSector]" id="referenceSector">
+                        <% for (let referenceSector of referenceSectors) { %>
+                            <option value="<%= referenceSector %>">
+                                <%= referenceSector %>
+                            </option> 
+                            <% } %>
+                      </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="costumer">Reference type</label>
+                    <select class="form-select" aria-label=".form-select-sm example" name="offer[referenceType]" id="referenceType">
+                        <% for (let referenceType of referenceTypes) { %>
+                            <option value="<%= referenceType %>">
+                                <%= referenceType %>
+                            </option> 
+                            <% } %>
+                      </select>
+                </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="price">Offer Price</label>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="price-label">$</span>
+                            <input type="text" class="form-control" id="price" placeholder="0.00" aria-label="price"
+                                aria-describedby="price-label" name="offer[price]" required>
+                            <div class="valid-feedback">
+                                Looks good!
+                            </div>
+                        </div>
+                    </div>
+               
+
+                <div class="form-floating mb-3">
+                    <textarea class="form-control" type="text" id="description" name="offer[description]" placeholder="description"
+                        required></textarea>
+                    <label class="form-label" for="description">Description</label>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="image" class="form-label">Multiple image input</label>
+                    <input class="form-control" type="file" id="image" name="image" multiple>
+                </div>
+
+                <!-- <div class="mb-3">
+                    <button class="btn btn-success">Add Offer</button>
+                </div> -->
+                <div class="card-body text-center">
+                    <button class="btn btn-success col-5">Add Offer</button>
+                    <a class="card-link btn btn-info col-5" href="/offers">Return</a>
+                </div>
+            </form>
+
+            <footer>
+            </footer>
+        </div>
+    </div>
