@@ -24,6 +24,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const offerRoutes = require('./routes/offers');
 const reviewRoutes = require('./routes/reviews');
 const userRoutes = require('./routes/users');
+const auctionRoutes = require('./routes/auctions');
 const MongoStore = require('connect-mongo');
 
 // const dbUrl = process.env.DB_URL;
@@ -146,6 +147,7 @@ app.use((req, res, next) => {
 app.use('/', userRoutes);
 app.use('/offers', offerRoutes);
 app.use('/offers/:id/reviews', reviewRoutes);
+app.use('/auctions', auctionRoutes);
 
 app.get('/', (req, res) => {
 	res.render('home');
