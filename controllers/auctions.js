@@ -71,5 +71,9 @@ module.exports.createAuction = async (req, res) => {
  * @param {*} res 
  */
 module.exports.show = async (req, res) => {
-  res.render('auctions/show', { id: req.params.id });
+  const username = req.user.username;
+  const auctionId = req.params.id;
+
+  const auction = await axios.get(`${NE_BASE_URL}/rooms/${auctionId}/info`, { auth: { username } });
+  res.render('auctions/show', { auction });
 }
