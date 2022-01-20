@@ -5,8 +5,8 @@ const NE_BASE_URL = process.env.NEGOTIATION_ENGINE_BASE_URL || "http://localhost
 
 // Converts from a Javascript date to a time format NegotationEngine accepts.
 //
-// The required date is similar to an ISO string, but not quite.
-// An ISO string can be: '2022-01-19T15:42:25.373Z', and the required format is
+// The required date is similar to an ISO string, but not quite. An ISO string
+// can be: '2022-01-19T15:42:25.373Z', and the required format is
 // YYYY-MM-DDTHH:MM:SS, so we have to cut off after the seconds.
 const createNeTimeString = (originalTime) => {
   return originalTime.toISOString().split(".")[0];
@@ -46,17 +46,13 @@ module.exports.createAuction = async (req, res) => {
   let data = await createAuctionSchema.validateAsync(req.body);
   data.closing_time = createNeTimeString(data.closing_time);
 
-  // Note: we might want to change in NegotationEngine to accept JSON here instead of the other encoding scheme.
-  let urlencodedData = new URLSearchParams();
-  for (const [key, value] of Object.entries(data)) {
-    urlencodedData.append(key, value);
-  }
-
   const username = req.user.username;
-  const response = await axios.post(`${NE_BASE_URL}/create-room`, urlencodedData, { auth: { username }});
+  let params = new URLSearchParams(data);
+  const response = await axios.post(`${NE_BASE_URL}/create-room`, params, { auth: { username }});
 
   if (response.status === 200) {
-    // Response data contains a message, which contains the auction name and id. We are interested in the ID here.
+    // Response data contains a message, which contains the auction name and id.
+    // We are interested in the ID here.
     // Example response: "The room auction #1 has been created id: 61e7f7e20daf6671113c4941"
     const auctionId = response.data.message.split('id: ')[1];
 
