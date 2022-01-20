@@ -1,5 +1,6 @@
 const Joi = require('joi');
 const axios = require('axios');
+const Offer = require('../models/offer');
 
 const NE_BASE_URL = process.env.NEGOTIATION_ENGINE_BASE_URL || "http://localhost:5000";
 
@@ -75,5 +76,9 @@ module.exports.show = async (req, res) => {
   const auctionId = req.params.id;
 
   const auction = await axios.get(`${NE_BASE_URL}/rooms/${auctionId}/info`, { auth: { username } });
-  res.render('auctions/show', { auction });
+
+  const offerId = auction.data.payload.articleno.val[0];
+  const offer = await Offer.findById(offerId);
+
+  res.render('auctions/show', { auction, offer });
 }
