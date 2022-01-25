@@ -1,3 +1,108 @@
 <% layout('layouts/boilerplate') %>
 
 <h1>TODO: Implement</h1>
+
+<form method="POST" action="/auctions/create">
+    <div class="mb-3">
+      <label for="room_name" class="form-label">Name</label>
+      <input
+        id="room_name"
+        name="room_name"
+        type="text"
+        required
+        class="form-control"
+        value="name"
+      />
+    </div>
+    <div class="mb-3">
+      <label for="auction_type" class="form-label">Auction type</label>
+      <input
+        id="auction_type"
+        name="auction_type"
+        type="text"
+        required
+        class="form-control"
+        value="ascending"
+      />
+    </div>
+    <div class="mb-3">
+      <label for="closing_time" class="form-label">Closing time</label>
+      <input
+        id="closing_time"
+        name="closing_time"
+        type="date"
+        required
+        class="form-control"
+        value="2022-02-01T00:00:00.000Z"
+      />
+    </div>
+    <div class="mb-3">
+      <label for="reference_sector" class="form-label">Reference sector</label>
+      <input
+        id="reference_sector"
+        name="reference_sector"
+        type="text"
+        required
+        class="form-control"
+        value="Composites"
+      />
+    </div>
+    <div class="mb-3">
+      <label for="reference_type" class="form-label">Reference type</label>
+      <input
+        id="reference_type"
+        name="reference_type"
+        type="text"
+        required
+        class="form-control"
+        value="Material"
+      />
+    </div>
+    <div class="mb-3">
+      <label for="quantity" class="form-label">Quantity</label>
+      <input
+        id="quantity"
+        name="quantity"
+        type="text"
+        required
+        class="form-control"
+        value="123"
+      />
+    </div>
+    <div class="mb-3">
+      <label for="members" class="form-label">Members. Comma separated list of members (should be registered in NE)</label>
+      <input
+        id="members"
+        name="members"
+        type="text"
+        required
+        class="form-control"
+        value="username1,username2"
+      />
+    </div>
+    <div class="mb-3">
+      <label for="articleno" class="form-label">Article no, a valid Offer ID (Check mongo for those)</label>
+      <input
+        id="articleno"
+        name="articleno"
+        type="text"
+        required
+        class="form-control"
+        value="61e8304087d80f40a111e640"
+      />
+    </div>
+    <div class="mb-3">
+      <label for="template_type" class="form-label">Template type</label>
+      <input
+        id="template_type"
+        name="template_type"
+        type="text"
+        required
+        class="form-control"
+        value="article"
+      />
+    </div>
+  
+    <button type="submit" class="btn btn-primary">Create Auction</button>
+  </form>
+  

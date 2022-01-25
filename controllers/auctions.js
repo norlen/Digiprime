@@ -79,6 +79,7 @@ module.exports.createAuction = async (req, res) => {
   }
 };
 
+
 /**
  * Display a single auction.
  *
@@ -184,3 +185,23 @@ module.exports.placeBid = async (req, res) => {
     res.redirect(`/auctions/${auctionId}`);
   }
 };
+
+
+/**
+ * Display current auctions for user
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ */
+module.exports.currentAuctions = async (req, res) => {
+	res.render('auctions/currentAuctions', {  });
+};
+
+// Display av singel auktion utan ne, måste kunna skapa en auktion först
+module.exports.auction = (req, res) => {
+	res.render('auctions/auction', {  });
+};
+
+
+
+
