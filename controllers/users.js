@@ -1,4 +1,6 @@
 const User = require('../models/user');
+const axios = require('axios');
+const NE_BASE_URL = process.env.NEGOTIATION_ENGINE_BASE_URL || "http://localhost:5000";
 
 module.exports.register = (req, res) => {
 	res.render('users/register');
@@ -7,6 +9,10 @@ module.exports.register = (req, res) => {
 module.exports.createRegister = async (req, res, next) => {
 	try {
 		const { email, username, password } = req.body;
+
+		// Temporary: Create a user on Negotation Engine as well.
+		await axios.post(`${NE_BASE_URL}/signup`, { email, username, password });
+
 		const user = new User({ email, username });
 		const registeredUser = await User.register(user, password);
 		req.login(registeredUser, (err) => {
