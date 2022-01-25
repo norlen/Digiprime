@@ -9,6 +9,10 @@ router
   .get(isLoggedIn, catchAsync(auction.index))
 
 router
+  .route('/history')
+  .get(isLoggedIn, catchAsync(auction.history))
+
+router
   .route('/create')
   .get(isLoggedIn, catchAsync(auction.create))
   .post(isLoggedIn, catchAsync(auction.createAuction))

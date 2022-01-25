@@ -121,3 +121,26 @@ module.exports.index = async (req, res) => {
 
   res.render("auctions/index", { auctions });
 };
+
+/**
+ * Fetch list of all completed auctions and render template.
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+module.exports.history = async (req, res) => {
+  const username = req.user.username;
+  const response = await axios.get(`${NE_BASE_URL}/rooms/history`, {
+    auth: { username },
+  });
+
+  const auctions = await Promise.all(
+    response.data.map(async (auction) => {
+      const offerId = auction.payload.articleno.val[0];
+      const offer = await Offer.findById(offerId);
+      return { auction, offer };
+    })
+  );
+
+  res.render("auctions/history", { auctions });
+};
