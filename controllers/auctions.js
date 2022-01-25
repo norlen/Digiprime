@@ -1,8 +1,9 @@
-const Joi = require('joi');
-const axios = require('axios');
-const Offer = require('../models/offer');
+const Joi = require("joi");
+const axios = require("axios");
+const Offer = require("../models/offer");
 
-const NE_BASE_URL = process.env.NEGOTIATION_ENGINE_BASE_URL || "http://localhost:5000";
+const NE_BASE_URL =
+  process.env.NEGOTIATION_ENGINE_BASE_URL || "http://localhost:5000";
 
 // Converts from a Javascript date to a time format NegotationEngine accepts.
 //
@@ -11,17 +12,17 @@ const NE_BASE_URL = process.env.NEGOTIATION_ENGINE_BASE_URL || "http://localhost
 // YYYY-MM-DDTHH:MM:SS, so we have to cut off after the seconds.
 const createNeTimeString = (originalTime) => {
   return originalTime.toISOString().split(".")[0];
-}
+};
 
 /**
  * Renders the page to create auctions.
- * 
- * @param {*} req 
- * @param {*} res 
+ *
+ * @param {*} req
+ * @param {*} res
  */
 module.exports.create = async (_req, res) => {
-  res.render('auctions/create', {});
-}
+  res.render("auctions/create", {});
+};
 
 // Schema to validate inputs to `createAuction`.
 const createAuctionSchema = Joi.object({
@@ -38,9 +39,9 @@ const createAuctionSchema = Joi.object({
 
 /**
  * Calls NegotationEngine to actually create the auction.
- * 
- * @param {*} req 
- * @param {*} res 
+ *
+ * @param {*} req
+ * @param {*} res
  */
 module.exports.createAuction = async (req, res) => {
   // Validate inputs and convert closing time to the correct format.
@@ -50,45 +51,73 @@ module.exports.createAuction = async (req, res) => {
   // Check that the offer id is valid and that the offer exists.
   const offerId = data.articleno;
   const validId = offerId.match(/^[0-9a-fA-F]{24}$/);
-  if (!validId || (await Offer.count({ '_id': offerId })) == 0) {
-    req.flash('error', 'Failed to create auction: Invalid offer ID');
-    res.render('auctions/create');
+  if (!validId || (await Offer.count({ _id: offerId })) == 0) {
+    req.flash("error", "Failed to create auction: Invalid offer ID");
+    res.render("auctions/create");
     return;
   }
 
   const username = req.user.username;
   const params = new URLSearchParams(data);
-  const response = await axios.post(`${NE_BASE_URL}/create-room`, params, { auth: { username }});
+  const response = await axios.post(`${NE_BASE_URL}/create-room`, params, {
+    auth: { username },
+  });
 
   if (response.status === 200) {
     // Response data contains a message, which contains the auction name and id.
     // We are interested in the ID here.
     // Example response: "The room auction #1 has been created id: 61e7f7e20daf6671113c4941"
-    const auctionId = response.data.message.split('id: ')[1];
+    const auctionId = response.data.message.split("id: ")[1];
 
-    req.flash('success', 'Successfully created auction');
+    req.flash("success", "Successfully created auction");
     res.redirect(`/auctions/${auctionId}`);
   } else {
-    req.flash('error', 'Failed to create auction');
-    res.render('auctions/create');
+    req.flash("error", "Failed to create auction");
+    res.render("auctions/create");
   }
-}
+};
 
 /**
  * Display a single auction.
- * 
- * @param {*} req 
- * @param {*} res 
+ *
+ * @param {*} req
+ * @param {*} res
  */
 module.exports.show = async (req, res) => {
   const username = req.user.username;
   const auctionId = req.params.id;
 
-  const response = await axios.get(`${NE_BASE_URL}/rooms/${auctionId}/info`, { auth: { username } });
+  const response = await axios.get(`${NE_BASE_URL}/rooms/${auctionId}/info`, {
+    auth: { username },
+  });
   const auction = response.data;
 
   const offerId = auction.payload.articleno.val[0];
   const offer = await Offer.findById(offerId);
 
-  res.render('auctions/show', { auction, offer });
-}
+  res.render("auctions/show", { auction, offer });
+};
+
+/**
+ * Fetch auctions that are active, that you created or participate in
+ * indexpage.
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+module.exports.index = async (req, res) => {
+  const username = req.user.username;
+  const response = await axios.get(`${NE_BASE_URL}/rooms/active`, {
+    auth: { username },
+  });
+
+  const auctions = await Promise.all(
+    response.data.map(async (auction) => {
+      const offerId = auction.payload.articleno.val[0];
+      const offer = await Offer.findById(offerId);
+      return { auction, offer };
+    })
+  );
+
+  res.render("auctions/index", { auctions });
+};
