@@ -32,7 +32,7 @@ const createAuctionSchema = Joi.object({
   reference_type: Joi.string().required(),
   quantity: Joi.number().required(),
   members: Joi.string().required(),
-  articleno: Joi.number().required(),
+  articleno: Joi.string().required(),
   template_type: Joi.string().required(),
 });
 
@@ -47,8 +47,17 @@ module.exports.createAuction = async (req, res) => {
   let data = await createAuctionSchema.validateAsync(req.body);
   data.closing_time = createNeTimeString(data.closing_time);
 
+  // Check that the offer id is valid and that the offer exists.
+  const offerId = data.articleno;
+  const validId = offerId.match(/^[0-9a-fA-F]{24}$/);
+  if (!validId || (await Offer.count({ '_id': offerId })) == 0) {
+    req.flash('error', 'Failed to create auction: Invalid offer ID');
+    res.render('auctions/create');
+    return;
+  }
+
   const username = req.user.username;
-  let params = new URLSearchParams(data);
+  const params = new URLSearchParams(data);
   const response = await axios.post(`${NE_BASE_URL}/create-room`, params, { auth: { username }});
 
   if (response.status === 200) {
@@ -75,9 +84,10 @@ module.exports.show = async (req, res) => {
   const username = req.user.username;
   const auctionId = req.params.id;
 
-  const auction = await axios.get(`${NE_BASE_URL}/rooms/${auctionId}/info`, { auth: { username } });
+  const response = await axios.get(`${NE_BASE_URL}/rooms/${auctionId}/info`, { auth: { username } });
+  const auction = response.data;
 
-  const offerId = auction.data.payload.articleno.val[0];
+  const offerId = auction.payload.articleno.val[0];
   const offer = await Offer.findById(offerId);
 
   res.render('auctions/show', { auction, offer });
