@@ -1,0 +1,97 @@
+<% layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/stylesheets/stars.css">
+
+<div class="container mt-3">
+    
+    <h1>Auction Title</h1>
+
+    <div class="row">
+    
+        <!-- Vänster kolumn - Offers -->
+        <div class="col-sm-6">
+
+            <table class="table table-hover">
+
+                <tbody>
+                    <!-- for(each aution i) -->
+                    <% for (var i = 0; i < 5; i++) { %>
+
+                        <tr>
+                        <!-- Ens egna bud -->
+                        <% if(i == 1) { %>  
+                            </tr>
+                            <tr class="table-primary">  
+                        <% } %>
+                            
+                            <td> <img width="75" height="75" 
+                                    alt="" src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg"> </td>
+                            <td>
+                                Product name <%= i+1 %>
+                                <br>
+                                <a href='/auctions/auction'>Company <%= i+1 %> </a> 
+                                <br>
+                                Bid date: 2021-01-01 18:<%= i%><%= (i*3)%2 %>
+                            </td>
+                            <td>
+                                <br>
+                                <%= (((i*520)%(i+2)) + i + 6) * (3) %>kr
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>  
+
+            </table>  
+
+            <a class="card-link btn btn-info col-5" href="/auctions">Back</a>
+        </div>
+    
+        <!-- Höger kolumn -->
+        <div class="col-sm-6">
+            <div class="card-body text-end">
+            </div>
+
+            <div class="card">
+                <div class="card bg-light text-dark">
+                    <div class="card-body text">
+
+                        <table class="table table-borderless">
+
+                            <tbody>
+                                <td>Auction end date:                   </td>                   
+                                <td class="text-end">2022-01-01 19:00   </td>
+                            </tbody>
+                            <tbody>
+                                <td> Bids:                              </td>
+                                <td class="text-end"> 51                </td>
+                            </tbody>
+                            <tbody>
+                                <td> Quantity:                          </td>
+                                <td class="text-end"> 2000              </td>
+                            </tbody>
+                            <tbody>
+                                <td> More info:                         </td>
+                                <td class="text-end">                   </td>
+                            </tbody>
+                                   
+                        </table>
+                        
+
+                        <% var auctioneer = 0; %>   <!-- 0 = budare, 1 = skapare av auktion -->
+                        <% if (auctioneer) { %>
+                            <a class="card-link btn btn-info col-5" href="#">Pick Winner</a>
+                        <% } if (!auctioneer) { %>
+                        <div class="form-floating mb-3">
+                            <input class="form-control" type="text" id="bid" name="bid" placeholder="bid" required>
+                            <label class="form-label" for="location">Bid</label>
+                        </div>
+        
+                        <a class="card-link btn btn-info col-5" href="/auctions/auction">Send bid</a>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+   
+<script src="/javascripts/showPageMap.js"></script>

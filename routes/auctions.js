@@ -14,6 +14,14 @@ router
   .post(isLoggedIn, catchAsync(auction.createAuction))
 
 router
+	.route('/')
+	.get(catchAsync(auction.currentAuctions))
+
+router.get('/history', auction.history);
+
+router.get('/auction', auction.auction);
+
+router
   .route('/:id')
   .get(isLoggedIn, catchAsync(auction.show))
 
