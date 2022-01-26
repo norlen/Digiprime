@@ -33,7 +33,9 @@ const createAuctionSchema = Joi.object({
   reference_type: Joi.string().required(),
   quantity: Joi.number().required(),
   members: Joi.string().required(),
-  articleno: Joi.string().required(),
+  articleno: Joi.string()
+    .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
+    .required(),
   template_type: Joi.string().required(),
 });
 
@@ -50,20 +52,20 @@ module.exports.createAuction = async (req, res) => {
 
   // Check that the offer id is valid and that the offer exists.
   const offerId = data.articleno;
-  const validId = offerId.match(/^[0-9a-fA-F]{24}$/);
-  if (!validId || (await Offer.count({ _id: offerId })) == 0) {
+  const numMatchingOffers = await Offer.count({ _id: offerId });
+  if (numMatchingOffers == 0) {
     req.flash("error", "Failed to create auction: Invalid offer ID");
     res.render("auctions/create");
     return;
   }
 
-  const username = req.user.username;
-  const params = new URLSearchParams(data);
-  const response = await axios.post(`${NE_BASE_URL}/create-room`, params, {
-    auth: { username },
-  });
+  try {
+    const username = req.user.username;
+    const params = new URLSearchParams(data);
+    const response = await axios.post(`${NE_BASE_URL}/create-room`, params, {
+      auth: { username },
+    });
 
-  if (response.status === 200) {
     // Response data contains a message, which contains the auction name and id.
     // We are interested in the ID here.
     // Example response: "The room auction #1 has been created id: 61e7f7e20daf6671113c4941"
@@ -71,7 +73,7 @@ module.exports.createAuction = async (req, res) => {
 
     req.flash("success", "Successfully created auction");
     res.redirect(`/auctions/${auctionId}`);
-  } else {
+  } catch (error) {
     req.flash("error", "Failed to create auction");
     res.render("auctions/create");
   }
@@ -143,4 +145,42 @@ module.exports.history = async (req, res) => {
   );
 
   res.render("auctions/history", { auctions });
+};
+
+// Schema to validate inputs when placing a bid at an auction.
+const placeBidSchema = Joi.object({
+  id: Joi.string()
+    .pattern(/^[0-9a-fA-F]{24}$/, "auctionId")
+    .required(),
+  bid: Joi.number().min(1).required(),
+});
+
+/**
+ * Place a single bid to Negotiation Engine and refresh the page to display.
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+module.exports.placeBid = async (req, res) => {
+  const username = req.user.username;
+  const { id: auctionId, bid } = await placeBidSchema.validateAsync({
+    ...req.params,
+    ...req.body,
+  });
+
+  try {
+    const params = new URLSearchParams({ message_input: bid });
+    await axios.post(`${NE_BASE_URL}/rooms/${auctionId}`, params, {
+      auth: { username },
+    });
+    req.flash("success", `Successfully placed bid: ${bid}`);
+    res.redirect(`/auctions/${auctionId}`);
+  } catch (error) {
+    if (error.isAxiosError) {
+      req.flash("error", error.response.data.message);
+    } else {
+      req.flash("error", "Failed to place bid.");
+    }
+    res.redirect(`/auctions/${auctionId}`);
+  }
 };
