@@ -18,19 +18,24 @@
                         <tr>
                             <td> 
                                 <img width="75" height="75" 
-                                    alt="" src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg"> </td>
-                            <td> 
+                                    alt="" src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg"> 
+                                
+                                <a href='/auctions/auction' class="h4 text-underline-hover"> Auction Title <%= i+1 %> </a> 
                                 <br>
-                                <a href='/auctions/auction'>Auction <%= i+1 %> </a> 
+                                Latest bid: 2022-01-02 18:32     
                             </td>
                             <td>
                                 <br>
-                                Offer <%= i+1 %>
-                            </td>
-                            <td>
                                 <br>
-                                End date: 2022-01-0<%= i+1 %>
+                                <br>
+                                Auction end date: 
+                                <br>
+                                2022-01-0<%= i+1 %>
                             </td>
+                            <td class="text end">
+                                <a href='#' > <span class="badge bg-dark">!</span> </a> 
+                            </td>
+                            
                         </tr>
                     <% } %>
          
