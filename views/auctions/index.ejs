@@ -1,12 +1,10 @@
 
 <% layout('layouts/boilerplate') %>
 
-
 <div class="container mt-3">
-    
-    <h1>Current Auctions</h1>
 
-    <a href='/auctions/' class="h4 text-underline-hover">Testa </a> 
+    
+    <h2> Current Auctions </h2>  
 
     <div class="row">
 
@@ -15,24 +13,26 @@
             
             <table class="table table-hover">
                 <tbody>
-                    <!-- for(each aution i for user) -->
-                    <% for (var i = 0; i < 3; i++) { %>
+                    
+                    <% for(var auction = 0; auction < auctions.length; auction++) { %>
                         <tr>
                             <td> 
                                 <img width="75" height="75" 
                                     alt="" src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg"> 
                                 
-                                <a href='/auctions/auction' class="h4 text-underline-hover"> Auction Title <%= i+1 %> </a> 
+                                <a href='/auctions/<%= auctions[auction].auction._id %>' class="h4 text-underline-hover"> <%= auctions[auction].auction.payload.name.val[0] %>  </a> 
                                 <br>
-                                Latest bid: 2022-01-02 18:32     
+
+                                Highest bid: <%= auctions[auction].auction.payload.highest_bid.val[0] %> 
+                                <br>
+                                Auction end date: <%= auctions[auction].auction.payload.closing_time.val[0] %>     
                             </td>
                             <td>
                                 <br>
                                 <br>
+                               
                                 <br>
-                                Auction end date: 
-                                <br>
-                                2022-01-0<%= i+1 %>
+                                
                             </td>
                             <td class="text end">
                                 <a href='#' > <span class="badge bg-dark">!</span> </a> 
@@ -71,6 +71,10 @@
 
     </div>
 </div>
+
+<script>
+    const auctions = {features: <%- JSON.stringify(auctions) %>};
+</script>
 
 
 <script src="/javascripts/clusterMap.js"></script>
