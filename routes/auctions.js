@@ -20,5 +20,6 @@ router
 router
   .route('/:id')
   .get(isLoggedIn, catchAsync(auction.show))
+  .post(isLoggedIn, catchAsync(auction.placeBid))
 
 module.exports = router;
