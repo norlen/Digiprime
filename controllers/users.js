@@ -1,4 +1,8 @@
 const User = require('../models/user');
+
+const mapboxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
+const mapboxToken = process.env.MAPBOX_TOKEN;
+const geocoder = mapboxGeocoding({ accessToken: mapboxToken });
 const axios = require('axios');
 const NE_BASE_URL = process.env.NEGOTIATION_ENGINE_BASE_URL || "http://localhost:5000";
 
@@ -8,10 +12,27 @@ module.exports.register = (req, res) => {
 
 module.exports.createRegister = async (req, res, next) => {
 	try {
-		const { email, username, password } = req.body;
+		const { email, username, password, location } = req.body;
 
-		// Temporary: Create a user on Negotation Engine as well.
-		await axios.post(`${NE_BASE_URL}/signup`, { email, username, password });
+		// TEMPORARY START: Create a user on Negotation Engine as well.
+		const geoData = await geocoder
+			.forwardGeocode({
+				query: location,
+				limit: 1
+			})
+			.send();
+		if (geoData.body.features.length == 0) {
+			throw new Error("Invalid location");
+		}
+		const coordinates = geoData.body.features[0].geometry.coordinates.map(v => v.toString()).join(",");
+		const body = {
+			email,
+			username,
+			password,
+			sign: coordinates,
+		};
+		await axios.post(`${NE_BASE_URL}/signup`, body);
+		// TEMPORARY END.
 
 		const user = new User({ email, username });
 		const registeredUser = await User.register(user, password);
