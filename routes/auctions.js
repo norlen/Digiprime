@@ -18,13 +18,6 @@ router
   .post(isLoggedIn, catchAsync(auction.createAuction))
 
 router
-	.route('/currentAuctions')
-	.get(catchAsync(auction.currentAuctions))
-
-
-router.get('/auction', auction.auction);
-
-router
   .route('/:id')
   .get(isLoggedIn, catchAsync(auction.show))
   .post(isLoggedIn, catchAsync(auction.placeBid))
