@@ -62,7 +62,6 @@ const createAuctionSchema = Joi.object({
  * @param {*} res
  */
 module.exports.createAuction = async (req, res) => {
-  console.log(req.body);
   // Validate inputs and convert closing time to the correct format.
   let data = await createAuctionSchema.validateAsync(req.body);
   data.closing_time = createNeTimeString(data.closing_time);
@@ -113,8 +112,6 @@ module.exports.show = async (req, res) => {
   auction.canEnd =
     parseAsUTCDate(auction.payload.closing_time.val[0]) <= Date.now();
   auction.ended = auction.payload.buyersign.val[0] !== "";
-
-  console.log(auction);
 
   const offerId = auction.payload.articleno.val[0];
   const offer = await Offer.findById(offerId);
@@ -240,8 +237,6 @@ module.exports.selectWinner = async (req, res) => {
       params,
       { auth: { username } }
     );
-
-    console.log(response.data);
 
     // Success cases:
     // 1. Set winner.
