@@ -1,6 +1,8 @@
 const Joi = require("joi");
 const axios = require("axios");
 const Offer = require("../models/offer");
+const formatDistanceToNow = require("date-fns/formatDistanceToNow");
+const formatDate = require("date-fns/format");
 
 const NE_BASE_URL =
   process.env.NEGOTIATION_ENGINE_BASE_URL || "http://localhost:5000";
@@ -12,6 +14,20 @@ const NE_BASE_URL =
 // YYYY-MM-DDTHH:MM:SS, so we have to cut off after the seconds.
 const createNeTimeString = (originalTime) => {
   return originalTime.toISOString().split(".")[0];
+};
+
+// Take a date string without a timezone and parses it as UTC and returns
+// it as a date.
+const parseAsUTCDate = (dateString) => {
+  return new Date(dateString.split(".")[0] + " UTC");
+};
+
+const showDistanceToNow = (dateString) => {
+  return formatDistanceToNow(parseAsUTCDate(dateString));
+};
+
+const displayDate = (dateString) => {
+  return formatDate(parseAsUTCDate(dateString), "yyyy-MM-dd HH:mm");
 };
 
 /**
@@ -79,7 +95,6 @@ module.exports.createAuction = async (req, res) => {
   }
 };
 
-
 /**
  * Display a single auction.
  *
@@ -93,12 +108,20 @@ module.exports.show = async (req, res) => {
   const response = await axios.get(`${NE_BASE_URL}/rooms/${auctionId}/info`, {
     auth: { username },
   });
-  const auction = response.data;
+  let auction = response.data;
+  auction.canEnd =
+    parseAsUTCDate(auction.payload.closing_time.val[0]) <= Date.now();
+  auction.ended = auction.payload.buyersign.val[0] !== "";
 
   const offerId = auction.payload.articleno.val[0];
   const offer = await Offer.findById(offerId);
 
-  res.render("auctions/show", { auction, offer });
+  res.render("auctions/show", {
+    auction,
+    offer,
+    showDistanceToNow,
+    displayDate,
+  });
 };
 
 /**
@@ -183,5 +206,62 @@ module.exports.placeBid = async (req, res) => {
       req.flash("error", "Failed to place bid.");
     }
     res.redirect(`/auctions/${auctionId}`);
+  }
+};
+
+// Validate inputs to `selectWinner`.
+const selectWinnerSchema = Joi.object({
+  id: Joi.string()
+    .pattern(/^[0-9a-fA-F]{24}$/)
+    .required(),
+  winner: Joi.string().required(),
+});
+
+/**
+ * Takes a winner and marks that user as the winner of the auction.
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+module.exports.selectWinner = async (req, res) => {
+  const username = req.user.username;
+  const { id: auctionId, winner } = await selectWinnerSchema.validateAsync({
+    ...req.params,
+    ...req.body,
+  });
+
+  try {
+    const params = new URLSearchParams({ winner });
+    const response = await axios.post(
+      `${NE_BASE_URL}/rooms/${auctionId}/end`,
+      params,
+      { auth: { username } }
+    );
+
+    // Success cases:
+    // 1. Set winner.
+    // 2. Winner has already been selected.
+    // So, if the case is not (1) we should display an error.
+    if (response.data.message === "winner has been selected") {
+      req.flash("success", `${winner} has been selected as the winner`);
+      res.redirect(`/auctions/${auctionId}`);
+    } else {
+      req.flash("error", request.data.message);
+      res.redirect(`/auctions/${auctionId}`);
+    }
+  } catch (error) {
+    // Failure cases:
+    // 1. Selected winner does not participate in auction.
+    // 2. Not room admin.
+    if (
+      error.isAxiosError &&
+      (error.response.status === 400 || error.response.status === 403)
+    ) {
+      req.flash("error", error.response.data.message);
+      res.redirect(`/auctions/${auctionId}`);
+    }
+
+    // For other errors, we display the regular error.
+    throw error;
   }
 };
