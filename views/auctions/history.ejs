@@ -31,19 +31,12 @@
         </tHead>
 
         <tbody>
-            <!-- for each aution -->
-            <% var maxAuctionPerPage = 10; %> 
-            <% var totalAuctions = 15; %>   <!--Totalt antal auktioner användaren varit med i-->
-            <% var currentAuction = 0; %>
-
-            <% for (currentAuction = 0; currentAuction < totalAuctions; currentAuction++) { %>
-                <% if(currentAuction == maxAuctionPerPage) { break; } %>
-
-                <tr>
-                    <td> <a href='/auctions/<%= currentAuction %>'>Auction <%= currentAuction %> </a> </td>
-                    <td> Offer <%= currentAuction %> </td>
-                    <td> 2022-01-0<%= currentAuction %> </td>
-                    <td> Winner <%= currentAuction %> </td>
+            <!-- for each aution --> 
+            <% for(var auction = 0; auction < auctions.length; auction++) { %>
+                    <td> <a href='/auctions/<%= auctions[auction].auction._id %>'> <%= auctions[auction].auction.payload.name.val[0] %> </a> </td>
+                    <td> <%= auctions[auction].auction.payload.article_no.val[0] %> </td>
+                    <td> <%= auctions[auction].auction.payload.closing_time.val[0] %> </td>
+                    <td> <%= auctions[auction].auction.payload.highest_bidder.val[0] %> </td>
                 </tr>
             <% } %>
         </tbody>
@@ -67,5 +60,8 @@
 
 </div>
 
+<script>
+    const auctions = {features: <%- JSON.stringify(auctions) %>};
+</script>
    
 <script src="/javascripts/showPageMap.js"></script>
