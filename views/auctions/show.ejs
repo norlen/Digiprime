@@ -1,3 +1,120 @@
 <% layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/stylesheets/stars.css">
 
-<h1>TODO: Implement</h1>
+
+<div class="container mt-3">
+
+<!--
+    <h5> auc: <%= JSON.stringify(auction) %></h5>
+    <h5> off: <%= offer %></h5>
+    <h5> <%= currentUser.username %></h5>
+-->
+
+    <div class="row">
+    
+        <!-- Vänster kolumn - Offers -->
+        <div class="col-sm-6">
+
+            <div class="col" id="eachBlock">
+                <div class="card mb-3" id="offerCards">
+
+                    <img class="img-fluid" alt="" src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg">
+
+                    <div class="accordion accordion-flush" id="accordionTest">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button collapsed fs-4 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                <span id="searchTitle"> <%= offer.title %> </span>  <span class="text-white">.</span> <span class="badge rounded-pill bg-success"><%= offer.costumer %></span>
+                            </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionTest">
+                                <div class="accordion-body">
+                                    <div class="list-group list-group-flush">
+                                        <li class="list-group-item"><%= offer.location %> </li>
+                                        <li class="list-group-item">Submitted by: <%= auction.payload.created_by.val[0] %> </li>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted">
+                        2 day ago
+                    </div>
+                </div>
+            </div>
+
+            <a class="card-link btn btn-info col-5" href="/auctions">Back</a>
+        </div>
+    
+        <!-- Höger kolumn -->
+        <div class="col-sm-6">
+           
+            
+            <!-- Info om rum och lägga bud -->
+            <div class="card">
+
+                <div class="card-body bg-light text-center">
+                    <h3> Room name: <%= auction.payload.room_name.val[0] %>                         </h3>
+                </div>
+                
+                <div class="card-body text">
+
+                    <table class="table table-borderless">
+
+                        <tbody>
+                            <td>Starting bid:                                                       </td>                   
+                            <td class="text-end"> <%= offer.price %>$                               </td>
+                        </tbody>
+                        <tbody>
+                            <td> Closing time:                                                      </td>
+                            <td class="text-end"><%= auction.payload.closing_time.val[0] %>         </td>
+                        </tbody>
+
+                    </table>
+
+                    <% var auctioneer = auction.members[0].added_by == currentUser.username ? 1 : 0; %>   <!-- 0 = budare, 1 = skapare av auktion -->
+                    <% if (auctioneer) { %>
+                        <a class="card-link btn btn-info col-12" href="#">Pick Winner</a>
+                    <% } if (!auctioneer) { %>
+                        <label class="form-label" for="bid">Offer Price</label>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="bid-label">$</span>
+                            <input type="text" class="form-control" id="bid" placeholder="0.00" aria-label="bid"
+                                aria-describedby="bid-label" name="bid" required>
+                        </div>
+                        <a class="card-link btn btn-info col-12" href="/auctions/auction">Place Bid</a>
+                            
+                    <% } %>
+                </div>
+            </div>
+            
+            <br>
+            <h3>Bid History</h3>
+
+            <!-- Bud historik-->
+            <div class="card">
+                
+                <table class="table ">
+                    <% for(var bid = 0; bid < auction.bids.length; bid++) { %>
+                        <tbody>
+                            <td> <%= auction.bids[bid].sender   %>                  </td>                   
+                            <td> Date: <%= auction.bids[bid].created_at %>  CEST    </td>
+                            <td> $<%= auction.bids[bid].text            %>          </td>
+                        </tbody>
+
+                    <% } %>
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const auction = {features: <%- JSON.stringify(auction) %>};
+    const offer = {features: <%- JSON.stringify(offer) %>};
+</script>
+
+   
+<script src="/javascripts/showPageMap.js"></script>

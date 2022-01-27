@@ -79,6 +79,7 @@ module.exports.createAuction = async (req, res) => {
   }
 };
 
+
 /**
  * Display a single auction.
  *

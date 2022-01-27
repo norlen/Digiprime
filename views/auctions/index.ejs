@@ -1,0 +1,83 @@
+
+<% layout('layouts/boilerplate') %>
+
+<div class="container mt-3">
+
+    
+    <h2> Current Auctions </h2>  
+
+    <div class="row">
+
+        <!-- Vänster kolumn -->
+        <div class="col-sm-6">
+            
+            <table class="table table-hover">
+                <tbody>
+                    
+                    <% for(var auction = 0; auction < auctions.length; auction++) { %>
+                        <tr>
+                            <td> 
+                                <img width="75" height="75" 
+                                    alt="" src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg"> 
+                                
+                                <a href='/auctions/<%= auctions[auction].auction._id %>' class="h4 text-underline-hover"> <%= auctions[auction].auction.payload.name.val[0] %>  </a> 
+                                <br>
+
+                                Highest bid: <%= auctions[auction].auction.payload.highest_bid.val[0] %> 
+                                <br>
+                                Auction end date: <%= auctions[auction].auction.payload.closing_time.val[0] %>     
+                            </td>
+                            <td>
+                                <br>
+                                <br>
+                               
+                                <br>
+                                
+                            </td>
+                            <td class="text end">
+                                <a href='#' > <span class="badge bg-dark">!</span> </a> 
+                            </td>
+                            
+                        </tr>
+                    <% } %>
+         
+                </tbody>
+            </table>
+
+        </div>
+
+        <!-- Höger kolumn -->
+        <div class="col-sm-6">
+
+            <div class="card-body text-end">
+                <a class="card-link btn btn-info col-4" href="/auctions/history">History</a>
+            </div>
+            
+           <!-- Låda med create och edit auction -->
+            <div class="card">
+                <div class="card bg-light text-dark">
+                    <div class="card-body text-center">
+                        <h2> Create/Edit </h2>
+                        <br>
+                        <a class="card-link btn btn-info col-4" href="/auctions/create">Create Auction</a>
+                            <br>
+                            <br>
+                        <a class="card-link btn btn-info col-4" href="#">Edit Auction</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const auctions = {features: <%- JSON.stringify(auctions) %>};
+</script>
+
+
+<script src="/javascripts/clusterMap.js"></script>
+
+<script src="/javascripts/searchBar.js"></script>
+
