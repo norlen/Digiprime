@@ -276,7 +276,8 @@ module.exports.getBids = async (req, res) => {
     });
 
     const allBids = response.data.Bids;
-    res.render("/auctions/showBids", { allBids });
+  
+    res.render("auctions/showBids", { allBids, displayDate });
   } catch (error) {
     if (error.isAxiosError && error.response.status === 404) {
       req.flash("error", error.response.data);

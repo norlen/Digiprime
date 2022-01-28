@@ -1,0 +1,26 @@
+<% layout('layouts/boilerplate') %>
+
+<h1>Bids</h1>
+
+<table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col"><p class="h4">Bid no</p></th>
+        <th scope="col"><p class="h4">Sender</p></th>
+        <th scope="col"><p class="h4">Distance</p></th>
+        <th scope="col"><p class="h4">Time for bid</p></th>
+        <th scope="col"><p class="h4">Bid amount</p></th>
+      </tr>
+    </thead>
+    <tbody>
+        <% for (let bid = 0; bid < allBids.length; bid++) { %>
+      <tr>
+        <td scope="row"><%= bid %></th>
+        <td><strong><%= allBids[bid].sender.val[0] %></strong></td>
+        <td><%= Math.round(allBids[bid].distance.val[0]) %></td>
+        <td><%= displayDate(allBids[bid].created_at.val[0]) %></td>
+        <td><p><strong><%= allBids[bid].text.val[0] %> $</strong></p></td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
