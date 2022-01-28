@@ -36,8 +36,43 @@ const displayDate = (dateString) => {
  * @param {*} req
  * @param {*} res
  */
-module.exports.create = async (_req, res) => {
-  res.render("auctions/create", {});
+module.exports.create = async (req, res) => {
+  const { from, offerId } = req.query;
+  if (from === "search") {
+    if (!offerId || !Array.isArray(offerId) || offerId.length < 2) {
+      throw new Error("Invalid offer id");
+    }
+
+    const offers = await Offer.find({ _id: { $in: offerId } }).exec();
+    if (offers.length !== offerId.length) {
+      throw new Error("Invalid offer ids");
+    }
+
+    let sector = offers[0].referenceSector;
+    let type = offers[0].referenceType;
+    let costumer = offers[0].costumer;
+    for (let i = 1; i < offers.length; ++i) {
+      if (
+        offers[i].referenceSector !== sector ||
+        offers[i].referenceType !== type ||
+        offers[i].costumer !== costumer
+      ) {
+        throw new Error("Offers do not match");
+      }
+    }
+    console.log(offers);
+    let auctionCustomer =
+      costumer.toLowerCase() === "supply" ? "Demand" : "Supply";
+
+    const combinedOfferIds = offerId.join(",");
+    res.render("auctions/create-multiple-offers", {
+      offers,
+      info: { sector, type, costumer, auctionCustomer },
+      offerIds: combinedOfferIds,
+    });
+  } else {
+    res.render("auctions/create", {});
+  }
 };
 
 // Schema to validate inputs to `createAuction`.
@@ -48,11 +83,13 @@ const createAuctionSchema = Joi.object({
   reference_sector: Joi.string().required(),
   reference_type: Joi.string().required(),
   quantity: Joi.number().required(),
-  members: Joi.string().required(),
-  articleno: Joi.string()
-    .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
-    .required(),
+  // members: Joi.string().required(),
+  // articleno: Joi.string()
+  //   .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
+  //   .required(),
   template_type: Joi.string().required(),
+  articleno: Joi.array(),
+  members: Joi.string(),
 });
 
 /**
@@ -62,21 +99,61 @@ const createAuctionSchema = Joi.object({
  * @param {*} res
  */
 module.exports.createAuction = async (req, res) => {
+  const username = req.user.username;
+  req.body.template_type = "article";
+
   // Validate inputs and convert closing time to the correct format.
   let data = await createAuctionSchema.validateAsync(req.body);
   data.closing_time = createNeTimeString(data.closing_time);
 
-  // Check that the offer id is valid and that the offer exists.
-  const offerId = data.articleno;
-  const numMatchingOffers = await Offer.count({ _id: offerId });
-  if (numMatchingOffers == 0) {
-    req.flash("error", "Failed to create auction: Invalid offer ID");
-    res.render("auctions/create");
-    return;
+  if (Array.isArray(req.body.articleno)) {
+    // New style auction.
+    const matchingOffers = await Offer.find({
+      _id: { $in: data.articleno },
+    })
+      .populate("author")
+      .exec();
+
+    if (matchingOffers.length !== req.body.articleno.length) {
+      req.flash("error", "Failed to create auction: Invalid offer ID");
+      res.render("auctions/create");
+      return;
+    }
+
+    currentMembers = {};
+    data.articleno = data.articleno.join(",");
+    data.members = matchingOffers
+      .map((offer) => {
+        const member = offer.author.username;
+        if (currentMembers[member]) {
+          throw new Error("Cannot add multiple offers from the same company");
+        }
+        currentMembers[member] = true;
+        if (member === username) {
+          throw new Error(
+            "Cannot create an auction where you are a participant"
+          );
+        }
+        return offer.author.username;
+      })
+      .join(",");
+  } else {
+    // Old style auction.
+    if (req.body.members === "") {
+      throw new Error("Members must be specified");
+    }
+
+    // Check that the offer id is valid and that the offer exists.
+    const offerId = data.articleno;
+    const numMatchingOffers = await Offer.count({ _id: offerId });
+    if (numMatchingOffers == 0) {
+      req.flash("error", "Failed to create auction: Invalid offer ID");
+      res.render("auctions/create");
+      return;
+    }
   }
 
   try {
-    const username = req.user.username;
     const params = new URLSearchParams(data);
     const response = await axios.post(`${NE_BASE_URL}/create-room`, params, {
       auth: { username },
@@ -108,20 +185,54 @@ module.exports.show = async (req, res) => {
   const response = await axios.get(`${NE_BASE_URL}/rooms/${auctionId}/info`, {
     auth: { username },
   });
+
+  console.log(response.data);
+  console.log(response.data.payload.articleno);
   let auction = response.data;
   auction.canEnd =
     parseAsUTCDate(auction.payload.closing_time.val[0]) <= Date.now();
   auction.ended = auction.payload.buyersign.val[0] !== "";
 
-  const offerId = auction.payload.articleno.val[0];
-  const offer = await Offer.findById(offerId);
+  const articleNumbers = auction.payload.articleno.val[0].split(",");
+  if (articleNumbers.length > 1) {
+    // New auction.
+    let offers = await Offer.find({ _id: { $in: articleNumbers } })
+      .populate("author")
+      .exec();
 
-  res.render("auctions/show", {
-    auction,
-    offer,
-    showDistanceToNow,
-    displayDate,
-  });
+    // Map bids to offers.
+    let member_to_bid = {};
+    for (let bid of auction.bids) {
+      member_to_bid[bid.sender] = bid;
+    }
+
+    for (let i = 0; i < offers.length; i++) {
+      offers[i].bid = member_to_bid[offers[i].author.username];
+    }
+
+    // const offers = offerData.map((offer) => ({
+    //   ...offer,
+    //   bid: member_to_bid[offer.author.username],
+    // }));
+
+    console.log(offers);
+
+    res.render("auctions/show-multiple-offers", {
+      auction,
+      offers,
+      showDistanceToNow,
+      displayDate,
+    });
+  } else {
+    const offer = await Offer.findById(articleNumbers[0]);
+
+    res.render("auctions/show", {
+      auction,
+      offer,
+      showDistanceToNow,
+      displayDate,
+    });
+  }
 };
 
 /**

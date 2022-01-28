@@ -1,0 +1,58 @@
+<div class="col" id="eachBlock" style="display: block">
+  <div class="card mb-3" id="offerCards">
+    <% if (offer.images.length) {%>
+    <img class="img-fluid" alt="" src="<%=offer.images[0].url%> " />
+    <% }else { %>
+    <img
+      class="img-fluid"
+      alt=""
+      src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg"
+    />
+    <% } %>
+
+    <div class="accordion accordion-flush" id="accordion-<%= offer._id %>">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingOne">
+          <button
+            class="accordion-button collapsed fs-4 fw-bold"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#acc-<%= offer._id %>"
+            aria-expanded="false"
+            aria-controls="acc-<%= offer._id %>"
+          >
+            <span id="searchTitle"><%= offer.title %> </span>
+            <span class="text-white">.</span>
+            <span class="badge rounded-pill bg-success fs-6" id="itemCostumer"
+              ><%= offer.costumer %></span
+            >
+          </button>
+        </h2>
+        <div
+          id="acc-<%= offer._id %>"
+          class="accordion-collapse collapse"
+          aria-labelledby="headingOne"
+          data-bs-parent="#accordion-<%= offer._id %>"
+        >
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <small class="text-muted"><%= offer.location %></small>
+            </li>
+            <!-- <li class="list-group-item">
+              <small class="text-muted"><%= offer.referenceSector %></small>
+            </li>
+            <li class="list-group-item">
+              <small class="text-muted"><%= offer.referenceType %></small>
+            </li> -->
+            <li class="list-group-item">
+              <small class="text-muted">$<%= offer.price %> / Piece</small>
+            </li>
+            <li class="list-group-item">
+              <small class="text-muted"><%= offer.description %></small>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

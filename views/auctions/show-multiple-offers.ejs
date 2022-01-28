@@ -1,0 +1,123 @@
+<% layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/stylesheets/stars.css" />
+
+<div class="container mt-3">
+  <h1><%= auction.payload.name.val[0] %></h1>
+
+  <div class="row">
+    <!-- Vänster kolumn - Offers -->
+    <div class="col-sm-6">
+      <table class="table table-hover">
+        <tbody>
+          <!-- for(each aution i) -->
+          <% for (let offer of offers) { %>
+
+          <tr>
+            <!-- Ens egna bud -->
+            <% if(offer.author.username === currentUser.username) { %>
+          </tr>
+          <tr class="table-primary">
+            <% } %>
+
+            <td>
+              <img
+                width="75"
+                height="75"
+                alt=""
+                src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg"
+              />
+            </td>
+            <td>
+              <%= offer.title %>
+              <br />
+              <a href="#"><%= offer.author.username %></a>
+              <br />
+              <% if (offer.bid) { %>
+              <!-- perevent format -->
+              Bid date: <%= displayDate(offer.bid.created_at) %>
+              <!-- perevent format -->
+              <% } %>
+            </td>
+            <td>
+              <br />
+            </td>
+          </tr>
+          <% } %>
+        </tbody>
+      </table>
+
+      <a class="card-link btn btn-info col-5" href="/auctions">Back</a>
+    </div>
+
+    <!-- Höger kolumn -->
+    <div class="col-sm-6">
+      <!-- Info om rum och lägga bud -->
+      <div class="card">
+        <div class="card-body bg-light text-center">
+          <h3>
+            Auction: <%= auction.payload.room_name.val[0] %> <% if
+            (auction.ended) { %>
+            <span class="badge bg-danger">Ended</span>
+            <% } else { %>
+            <span class="badge bg-primary"
+              ><%= auction.payload.auction_type.val[0] %></span
+            >
+            <% } %>
+          </h3>
+        </div>
+
+        <div class="card-body text">
+          <table class="table table-borderless">
+            <tbody></tbody>
+            <tbody>
+              <td>Closing time:</td>
+              <td class="text-end">
+                <%= displayDate(auction.payload.closing_time.val[0]) %>
+              </td>
+            </tbody>
+          </table>
+
+          <% var auctioneer = auction.members[0].added_by ==
+          currentUser.username ? 1 : 0; %>
+          <!-- 0 = budare, 1 = skapare av auktion -->
+          <% if (auctioneer && auction.canEnd) { %>
+
+          <button
+            type="button"
+            class="card-link btn btn-info col-12"
+            data-bs-toggle="modal"
+            data-bs-target="#pickWinnerModal"
+          >
+            Pick Winner
+          </button>
+
+          <% } else if (!auctioneer) { %>
+
+          <label class="form-label" for="bid">Offer Price</label>
+          <form class="" method="POST" action="/auctions/<%= auction._id %>">
+            <div class="input-group mb-3">
+              <span class="input-group-text" id="bid-label">$</span>
+              <input
+                type="text"
+                class="form-control"
+                id="bid"
+                placeholder="0.00"
+                aria-label="bid"
+                aria-describedby="bid-label"
+                name="bid"
+                required
+              />
+            </div>
+            <button type="submit" class="card-link btn btn-info col-12">
+              Place Bid
+            </button>
+          </form>
+
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/javascripts/showPageMap.js"></script>
