@@ -27,4 +27,9 @@ router
   .get(isLoggedIn, catchAsync(auction.showHighestBids))
   .post(isLoggedIn, catchAsync(auction.selectWinner))
 
+router
+  .route('/:id/bids')
+  .get(isLoggedIn, catchAsync(auction.getBids))
+
+
 module.exports = router;

@@ -265,3 +265,24 @@ module.exports.selectWinner = async (req, res) => {
     throw error;
   }
 };
+
+module.exports.getBids = async (req, res) => {
+  const username = req.user.username;
+  const auctionId = req.params.id;
+
+  try {
+    const response = await axios.get(`${NE_BASE_URL}/rooms/${auctionId}`, {
+      auth: { username },
+    });
+
+    const allBids = response.data.Bids;
+    res.render("/auctions/showBids", { allBids });
+  } catch (error) {
+    if (error.isAxiosError && error.response.status === 404) {
+      req.flash("error", error.response.data);
+      res.redirect("/auctions");
+    } else {
+      throw error;
+    }
+  }
+};
