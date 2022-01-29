@@ -1,34 +1,15 @@
 const Joi = require("joi");
 const axios = require("axios");
 const Offer = require("../models/offer");
-const formatDistanceToNow = require("date-fns/formatDistanceToNow");
-const formatDate = require("date-fns/format");
+const {
+  createNeTimeString,
+  parseAsUTCDate,
+  showDistanceToNow,
+  displayDate,
+} = require("../utils/time");
 
 const NE_BASE_URL =
   process.env.NEGOTIATION_ENGINE_BASE_URL || "http://localhost:5000";
-
-// Converts from a Javascript date to a time format NegotationEngine accepts.
-//
-// The required date is similar to an ISO string, but not quite. An ISO string
-// can be: '2022-01-19T15:42:25.373Z', and the required format is
-// YYYY-MM-DDTHH:MM:SS, so we have to cut off after the seconds.
-const createNeTimeString = (originalTime) => {
-  return originalTime.toISOString().split(".")[0];
-};
-
-// Take a date string without a timezone and parses it as UTC and returns
-// it as a date.
-const parseAsUTCDate = (dateString) => {
-  return new Date(dateString.split(".")[0] + " UTC");
-};
-
-const showDistanceToNow = (dateString) => {
-  return formatDistanceToNow(parseAsUTCDate(dateString));
-};
-
-const displayDate = (dateString) => {
-  return formatDate(parseAsUTCDate(dateString), "yyyy-MM-dd HH:mm");
-};
 
 /**
  * Renders the page to create auctions.
@@ -186,8 +167,6 @@ module.exports.show = async (req, res) => {
     auth: { username },
   });
 
-  console.log(response.data);
-  console.log(response.data.payload.articleno);
   let auction = response.data;
   auction.canEnd =
     parseAsUTCDate(auction.payload.closing_time.val[0]) <= Date.now();
@@ -206,20 +185,14 @@ module.exports.show = async (req, res) => {
       member_to_bid[bid.sender] = bid;
     }
 
-    for (let i = 0; i < offers.length; i++) {
-      offers[i].bid = member_to_bid[offers[i].author.username];
-    }
-
-    // const offers = offerData.map((offer) => ({
-    //   ...offer,
-    //   bid: member_to_bid[offer.author.username],
-    // }));
-
-    console.log(offers);
+    const offersWithBids = offers.map((offer) => ({
+      ...offer._doc,
+      bid: member_to_bid[offer.author.username],
+    }));
 
     res.render("auctions/show-multiple-offers", {
       auction,
-      offers,
+      offers: offersWithBids,
       showDistanceToNow,
       displayDate,
     });
@@ -247,16 +220,19 @@ module.exports.index = async (req, res) => {
   const response = await axios.get(`${NE_BASE_URL}/rooms/active`, {
     auth: { username },
   });
+  const auctions = response.data;
 
-  const auctions = await Promise.all(
-    response.data.map(async (auction) => {
-      const offerId = auction.payload.articleno.val[0];
-      const offer = await Offer.findById(offerId);
-      return { auction, offer };
-    })
-  );
+  // console.log(response.data);
 
-  res.render("auctions/index", { auctions });
+  // const auctions = await Promise.all(
+  //   response.data.map(async (auction) => {
+  //     const offerId = auction.payload.articleno.val[0];
+  //     const offer = await Offer.findById(offerId);
+  //     return { auction, offer };
+  //   })
+  // );
+
+  res.render("auctions/index", { auctions, showDistanceToNow });
 };
 
 /**

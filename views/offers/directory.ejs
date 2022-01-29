@@ -62,92 +62,70 @@
   <form method="GET" action="/auctions/create">
     <input type="hidden" name="from" value="search" />
 
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-      <% for (let offer of offers) { %>
+    <div class="row row-cols-1 row-cols-md-3 g-1">
+      <% for (let offer of offers) { const pillStyle = offer.customer ===
+      "Supply" ? "bg-primary" : "bg-secondary"; %>
 
       <div class="col" id="eachBlock" style="display: block">
         <div class="card mb-1" id="offerCards">
-          <% if (offer.images.length) {%>
-          <img class="img-fluid" alt="" src="<%=offer.images[0].url%> " />
-          <% }else { %>
-          <img
-            class="img-fluid"
-            alt=""
-            src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg"
-          />
-          <% } %>
+          <div class="position-relative">
+            <span
+              class="badge rounded-pill <%= pillStyle %> position-absolute m-1"
+              id="itemCostumer"
+              ><%= offer.costumer %></span
+            >
+            <a href="#">
+              <% if (offer.images.length) {%>
+              <img class="img-fluid" alt="" src="<%=offer.images[0].url%> " />
+              <% }else { %>
+              <img
+                class="img-fluid w-100"
+                alt=""
+                src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg"
+              />
+              <% } %>
+            </a>
+          </div>
 
-          <div class="accordion accordion-flush" id="accordionTest">
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="headingOne">
-                <button
-                  class="accordion-button collapsed fs-4 fw-bold"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#collapseOne"
-                  aria-expanded="false"
-                  aria-controls="collapseOne"
-                >
-                  <span id="searchTitle"><%= offer.title %> </span>
-                  <span class="text-white">.</span>
-                  <span class="badge rounded-pill bg-success" id="itemCostumer"
-                    ><%= offer.costumer %></span
-                  >
-                </button>
-              </h2>
-              <div
-                id="collapseOne"
-                class="accordion-collapse collapse"
-                aria-labelledby="headingOne"
-                data-bs-parent="#accordionTest"
-              >
-                <div class="accordion-body">
-                  <div class="list-group list-group-flush">
-                    <li class="list-group-item" id="itemReferenceSector">
-                      <%= offer.referenceSector %>
-                    </li>
-                    <li class="list-group-item" id="itemReferenceType">
-                      <%= offer.referenceType %>
-                    </li>
-                    <li class="list-group-item">$<%= offer.price %> / Piece</li>
-                    <li class="list-group-item"><%= offer.description %></li>
-                  </div>
-                </div>
+          <div class="py-2 px-3">
+            <div class="d-flex justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <a href="#"><h4 id="searchTitle"><%= offer.title %></h4></a>
               </div>
             </div>
           </div>
 
-          <ul class="list-group list-group-flush">
+          <ul class="list-group list-group-flush text-muted">
+            <li class="list-group-item">
+              <small class=""
+                ><a href="#"><%= offer.author.username %></a></small
+              >
+            </li>
+            <li class="list-group-item">
+              <small class="text-muted"
+                ><%= offer.referenceSector %> / <%= offer.referenceType
+                %></small
+              >
+            </li>
             <li class="list-group-item">
               <small class="text-muted"><%= offer.location %></small>
             </li>
+            <li
+              class="list-group-item d-flex align-items-center justify-content-between"
+            >
+              <small class="text-muted">Select for auction</small>
+              <input
+                id="offer-input-<%= offer.id %>"
+                class="form-check-input"
+                name="offerId"
+                type="checkbox"
+                value="<%= offer.id %>"
+                aria-label="Checkbox for following text input"
+              />
+            </li>
           </ul>
-          <div class="card-body">
-            <div class="d-grid gap-2">
-              <a class="btn btn-primary" href="/offers/<%= offer._id %>"
-                >View <%= offer.location %></a
-              >
-            </div>
-          </div>
-        </div>
-
-        <div class="input-group flex flex-row mb-3">
-          <div class="form-control align-middle flex-grow-1">
-            Select offer for auction
-          </div>
-          <div class="input-group-text">
-            <input
-              id="offer-input-<%= offer.id %>"
-              class="form-check-input mt-0"
-              name="offerId"
-              type="checkbox"
-              value="<%= offer.id %>"
-              aria-label="Checkbox for following text input"
-            />
-          </div>
         </div>
       </div>
-
       <% } %>
     </div>
 

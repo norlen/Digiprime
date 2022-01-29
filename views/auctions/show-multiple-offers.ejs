@@ -2,122 +2,158 @@
 <link rel="stylesheet" href="/stylesheets/stars.css" />
 
 <div class="container mt-3">
-  <h1><%= auction.payload.name.val[0] %></h1>
-
-  <div class="row">
-    <!-- Vänster kolumn - Offers -->
-    <div class="col-sm-6">
-      <table class="table table-hover">
-        <tbody>
-          <!-- for(each aution i) -->
-          <% for (let offer of offers) { %>
-
-          <tr>
-            <!-- Ens egna bud -->
-            <% if(offer.author.username === currentUser.username) { %>
-          </tr>
-          <tr class="table-primary">
-            <% } %>
-
-            <td>
-              <img
-                width="75"
-                height="75"
-                alt=""
-                src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg"
-              />
-            </td>
-            <td>
-              <%= offer.title %>
-              <br />
-              <a href="#"><%= offer.author.username %></a>
-              <br />
-              <% if (offer.bid) { %>
-              <!-- perevent format -->
-              Bid date: <%= displayDate(offer.bid.created_at) %>
-              <!-- perevent format -->
-              <% } %>
-            </td>
-            <td>
-              <br />
-            </td>
-          </tr>
-          <% } %>
-        </tbody>
-      </table>
-
-      <a class="card-link btn btn-info col-5" href="/auctions">Back</a>
+  <div class="row justify-content-between mb-3">
+    <div class="col-3 d-flex gap-2">
+      <h1><%= auction.payload.name.val[0] %></h1>
+      <span class="badge bg-primary fs-6 my-3"
+        ><%= auction.payload.auction_type.val[0] %></span
+      >
     </div>
 
-    <!-- Höger kolumn -->
-    <div class="col-sm-6">
-      <!-- Info om rum och lägga bud -->
-      <div class="card">
-        <div class="card-body bg-light text-center">
-          <h3>
-            Auction: <%= auction.payload.room_name.val[0] %> <% if
-            (auction.ended) { %>
-            <span class="badge bg-danger">Ended</span>
-            <% } else { %>
-            <span class="badge bg-primary"
-              ><%= auction.payload.auction_type.val[0] %></span
-            >
-            <% } %>
-          </h3>
-        </div>
+    <div class="col-4"></div>
+  </div>
 
-        <div class="card-body text">
-          <table class="table table-borderless">
-            <tbody></tbody>
-            <tbody>
-              <td>Closing time:</td>
-              <td class="text-end">
-                <%= displayDate(auction.payload.closing_time.val[0]) %>
-              </td>
-            </tbody>
-          </table>
-
-          <% var auctioneer = auction.members[0].added_by ==
-          currentUser.username ? 1 : 0; %>
-          <!-- 0 = budare, 1 = skapare av auktion -->
-          <% if (auctioneer && auction.canEnd) { %>
-
-          <button
-            type="button"
-            class="card-link btn btn-info col-12"
-            data-bs-toggle="modal"
-            data-bs-target="#pickWinnerModal"
-          >
-            Pick Winner
-          </button>
-
-          <% } else if (!auctioneer) { %>
-
-          <label class="form-label" for="bid">Offer Price</label>
-          <form class="" method="POST" action="/auctions/<%= auction._id %>">
-            <div class="input-group mb-3">
-              <span class="input-group-text" id="bid-label">$</span>
-              <input
-                type="text"
-                class="form-control"
-                id="bid"
-                placeholder="0.00"
-                aria-label="bid"
-                aria-describedby="bid-label"
-                name="bid"
-                required
-              />
+  <div class="row justify-content-between mb-3">
+    <div class="col-6">
+      <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between">
+          <h6><a href="#">norlen</a></h6>
+          <span class="text-muted">Created by</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <h6>Composite</h6>
+          <span class="text-muted">Reference sector</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <h6>Material</h6>
+          <span class="text-muted">Reference type</span>
+        </li>
+      </ul>
+      <% if (auction.members[0].added_by !== currentUser.username) { %>
+      <form
+        class="w-100 input-group mt-2"
+        method="POST"
+        action="/auctions/<%= auction._id %>"
+      >
+        <span class="input-group-text">$</span>
+        <input
+          id="bid"
+          name="bid"
+          required
+          type="text"
+          class="form-control"
+          aria-label="bid"
+          placeholder="0.00"
+        />
+        <button type="submit" class="input-group-text btn-primary">
+          Place bid
+        </button>
+        <% } %>
+      </form>
+    </div>
+    <div class="col-4">
+      <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between">
+          <h6><%= displayDate(auction.payload.closing_time.val[0]) %></h6>
+          <span class="text-muted">Closing time</span>
+        </li>
+        <li class="list-group-item">
+          <div class="row justify-content-between">
+            <div class="col-3 text-center">
+              <h6 id="remaining-days" class="mb-2">14</h6>
+              <span class="text-muted">Days</span>
             </div>
-            <button type="submit" class="card-link btn btn-info col-12">
-              Place Bid
-            </button>
-          </form>
+            <div class="col-3 text-center">
+              <h6 id="remaining-hours" class="mb-2">24</h6>
+              <span class="text-muted">Hours</span>
+            </div>
+            <div class="col-3 text-center">
+              <h6 id="remaining-minutes" class="mb-2">2</h6>
+              <span class="text-muted">Minutes</span>
+            </div>
+            <div class="col-3 text-center">
+              <h6 id="remaining-seconds" class="mb-2">42</h6>
+              <span class="text-muted">Seconds</span>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
 
-          <% } %>
+  <div class="row row-cols-md-5 g-1 mb-3">
+    <% for (let offer of offers) { const pillStyle = offer.customer === "Supply"
+    ? "bg-primary" : "bg-secondary"; %>
+
+    <div class="col" id="" style="display: block">
+      <div class="card mb-1" id="offerCards">
+        <div class="position-relative">
+          <a href="#">
+            <% if (offer.images.length) {%>
+            <img class="img-fluid" alt="" src="<%=offer.images[0].url%> " />
+            <% }else { %>
+            <img
+              class="img-fluid w-100"
+              alt=""
+              src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg"
+            />
+            <% } %>
+          </a>
         </div>
+
+        <div class="py-2 px-3">
+          <div class="d-flex justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+              <a href="#"><h4 id="searchTitle"><%= offer.title %></h4></a>
+            </div>
+          </div>
+        </div>
+
+        <ul class="list-group list-group-flush text-muted">
+          <li class="list-group-item d-flex justify-content-between">
+            <small class=""><a href="#"><%= offer.author.username %></a></small>
+            <small class="text-muted"><%= offer.location %></small>
+          </li>
+          <% if (offer.bid !== undefined) { %>
+          <li class="list-group-item">
+            <small>Highest bid: <%= offer.bid.text %></small>
+          </li>
+          <li class="list-group-item">
+            <small><%= showDistanceToNow(offer.bid.created_at) %> ago</small>
+          </li>
+          <% } else { %>
+          <li class="list-group-item"><small>No bids placed yet</small></li>
+          <% } %>
+        </ul>
       </div>
     </div>
+    <% } %>
+  </div>
+
+  <div class="">
+    <a class="card-link btn btn-primary" href="/auctions"
+      ><svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        class="bi bi-arrow-bar-left"
+        viewBox="0 0 16 16"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5zM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5z"
+        />
+      </svg>
+      <span>All auctions</span></a
+    >
   </div>
 </div>
 
 <script src="/javascripts/showPageMap.js"></script>
+
+<script>
+  const mapToken = '<%-process.env.MAPBOX_TOKEN%>';
+  const offers = {features: <%- JSON.stringify(offers) %>};
+</script>
+<script src="/javascripts/clusterMap.js"></script>
