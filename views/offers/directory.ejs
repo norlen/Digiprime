@@ -1,7 +1,12 @@
 <% layout('layouts/boilerplate') %>
 
-<form id="search-directory" action="/offers/directory" method="get">
-  <div class="filters input-group mb-5">
+<form
+  id="search-directory"
+  action="/offers/directory"
+  method="get"
+  class="mb-5"
+>
+  <div class="filters input-group">
     <label
       class="bg-light rounded-start input-group-text border border-secondary"
       for="costume"
@@ -60,26 +65,33 @@
 
 <div class="container">
   <form method="GET" action="/auctions/create">
+    <button
+      id="createAuctionBtn"
+      type="submit"
+      class="btn btn-primary mb-3"
+      disabled
+    >
+      Create auction from selection
+    </button>
     <input type="hidden" name="from" value="search" />
 
-    <div class="row row-cols-1 row-cols-md-3 g-1">
-      <% for (let offer of offers) { const pillStyle = offer.customer ===
-      "Supply" ? "bg-primary" : "bg-secondary"; %>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      <% for (let offer of offers) { %>
 
       <div class="col" id="eachBlock" style="display: block">
         <div class="card mb-1" id="offerCards">
           <div class="position-relative">
             <span
-              class="badge rounded-pill <%= pillStyle %> position-absolute m-1"
+              class="position-absolute badge bg-primary m-2"
               id="itemCostumer"
               ><%= offer.costumer %></span
             >
-            <a href="#">
+            <a href="/offers/<%= offer._id %>">
               <% if (offer.images.length) {%>
               <img class="img-fluid" alt="" src="<%=offer.images[0].url%> " />
               <% }else { %>
               <img
-                class="img-fluid w-100"
+                class="img-fluid"
                 alt=""
                 src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg"
               />
@@ -87,24 +99,48 @@
             </a>
           </div>
 
-          <div class="py-2 px-3">
-            <div class="d-flex justify-content-between">
-              <div class="d-flex align-items-center gap-2">
-                <a href="#"><h4 id="searchTitle"><%= offer.title %></h4></a>
+          <div class="accordion accordion-flush" id="accordionTest">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingOne">
+                <button
+                  class="accordion-button collapsed fs-4 fw-bold"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#acc-<%= offer.id %>"
+                  aria-expanded="false"
+                  aria-controls="acc-<%= offer.id %>"
+                >
+                  <a href="/offers/<%= offer._id %>">
+                    <span id="searchTitle"><%= offer.title %> </span>
+                  </a>
+                </button>
+              </h2>
+              <div
+                id="acc-<%= offer.id %>"
+                class="accordion-collapse collapse"
+                aria-labelledby="headingOne"
+                data-bs-parent="#accordionTest"
+              >
+                <div class="accordion-body">
+                  <div class="list-group list-group-flush">
+                    <li class="list-group-item" id="itemReferenceSector">
+                      <%= offer.referenceSector %>
+                    </li>
+                    <li class="list-group-item" id="itemReferenceType">
+                      <%= offer.referenceType %>
+                    </li>
+                    <li class="list-group-item">$<%= offer.price %> / Piece</li>
+                    <li class="list-group-item"><%= offer.description %></li>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <ul class="list-group list-group-flush text-muted">
-            <li class="list-group-item">
-              <small class=""
-                ><a href="#"><%= offer.author.username %></a></small
-              >
-            </li>
+          <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <small class="text-muted"
-                ><%= offer.referenceSector %> / <%= offer.referenceType
-                %></small
+                ><a href="#"><%= offer.author.username %></a></small
               >
             </li>
             <li class="list-group-item">
@@ -126,15 +162,60 @@
           </ul>
         </div>
       </div>
+
       <% } %>
     </div>
-
-    <button type="submit" class="btn btn-primary">Create auction</button>
   </form>
 </div>
 
 <script>
   const offers = {features: <%- JSON.stringify(offers) %>};
+  const currentUsername = "<%- currentUser.username %>";
+
+  let selectedOffers = new Map();
+  const createAuctionSelector = document.getElementById("createAuctionBtn");
+
+  const checkSelectedOffers = () => {
+    let sector, type, customer, creators = {};
+
+    let checksOK = selectedOffers.size >= 2;
+    if (checksOK) {
+      for (let [offerId, offer] of selectedOffers) {
+        if (sector === undefined) {
+          sector = offer.referenceSector;
+          type = offer.referenceType;
+          customer = offer.costumer;
+        }
+
+        const currUsername = offer.author.username;
+        if (sector !== offer.referenceSector || type !== offer.referenceType || customer !== offer.costumer || creators[currUsername] !== undefined || offer.author.username === currentUsername) {
+          checksOK = false;
+          break;
+        }
+        creators[currUsername] = true;
+      }
+    }
+
+    if (checksOK) {
+      createAuctionSelector.disabled = false;
+    } else {
+      createAuctionSelector.diabled = true;
+    }
+  }
+
+  for (let offer of offers.features) {
+    const selector = document.getElementById(`offer-input-${offer.id}`);
+    selector.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        // Added.
+        selectedOffers.set(offer.id, offer);
+      } else {
+        // Removed.
+        selectedOffers.delete(offer.id);
+      }
+      checkSelectedOffers();
+    })
+  }
 </script>
 
 <script src="/javascripts/filterSearch.js"></script>

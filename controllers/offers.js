@@ -15,9 +15,6 @@ module.exports.index = async (req, res) => {
 
 module.exports.directory = async (req, res) => {
   const offers = await Offer.find({}).populate("author");
-  if (offers.length > 0) {
-    console.log(offers[0]);
-  }
   res.render("offers/directory", {
     offers,
     costumers,
@@ -79,7 +76,6 @@ module.exports.editForm = async (req, res) => {
 
 module.exports.updateForm = async (req, res) => {
   const { id } = req.params;
-  // console.log(req.body)
   const offer = await Offer.findByIdAndUpdate(id, { ...req.body.offer });
   const imgs = req.files.map((f) => ({ url: f.path, filename: f.filename }));
   offer.images.push(...imgs);

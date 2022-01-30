@@ -3,15 +3,13 @@
 <h1 class="mb-4">
   Create Auction
   <span class="align-middle fs-4">
-    <span class="badge rounded-pill bg-success"
-      ><%= info.auctionCustomer %></span
-    >
-    <span class="badge rounded-pill bg-success"><%= info.sector %></span>
-    <span class="badge rounded-pill bg-success"><%= info.type %></span>
+    <span class="badge bg-primary"><%= info.auctionType %></span>
+    <span class="badge bg-primary"><%= info.sector %></span>
+    <span class="badge bg-primary"><%= info.type %></span>
   </span>
 </h1>
 
-<form method="POST" action="/auctions/create" class="mb-5">
+<form method="POST" action="/auctions/create2" class="mb-5">
   <div class="form-floating mb-3">
     <input
       type="text"
@@ -74,14 +72,6 @@
       Contract for the auction. Currently only a single contract is supported
     </div>
   </div>
-
-  <input
-    type="hidden"
-    name="auction_type"
-    value="<%= info.auctionCustomer %>"
-  />
-  <input type="hidden" name="reference_sector" value="<%= info.sector %>" />
-  <input type="hidden" name="reference_type" value="<%= info.type %>" />
 
   <div class="mb-3" id="cluster-map"></div>
 

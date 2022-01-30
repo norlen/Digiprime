@@ -19,10 +19,18 @@
         <a href="/auctions/<%= auction._id %>" class="h4 text-underline-hover">
           <%= auction.payload.name.val[0] %>
         </a>
-        <span class="text-muted"
-          >ends in <%= showDistanceToNow(auction.payload.closing_time.val[0])
-          %></span
-        >
+        <span class="text-muted">
+          <% if (auction.closingTime < Date.now()) { %>
+          <!-- no-format -->
+          ended <%= showDistanceToNow(auction.payload.closing_time.val[0]) %>
+          ago
+          <!-- no-format -->
+          <% } else { %>
+          <!-- no-format -->
+          ends in <%= showDistanceToNow(auction.payload.closing_time.val[0]) %>
+          <!-- no-format -->
+          <% } %>
+        </span>
       </div>
     </div>
 

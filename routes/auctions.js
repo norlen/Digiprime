@@ -18,6 +18,10 @@ router
   .post(isLoggedIn, catchAsync(auction.createAuction))
 
 router
+  .route('/create2')
+  .post(isLoggedIn, catchAsync(auction.createAuctionMultipleOffers))
+
+router
   .route('/:id')
   .get(isLoggedIn, catchAsync(auction.show))
   .post(isLoggedIn, catchAsync(auction.placeBid))
