@@ -1,6 +1,7 @@
 const Joi = require("joi");
 const axios = require("axios");
 const Offer = require("../models/offer");
+const User = require("../models/user");
 const {
   createNeTimeString,
   parseAsUTCDate,
@@ -11,11 +12,37 @@ const {
 const NE_BASE_URL =
   process.env.NEGOTIATION_ENGINE_BASE_URL || "http://localhost:5000";
 
-const validateCreateFromMultipleOffers = async (creatorUsername, offerIds) => {
-  if (!offerIds || !Array.isArray(offerIds) || offerIds.length < 2) {
-    throw new Error("OfferIds must be an array of at least length 2");
+const validateCreateFromSingleOffer = async (creatorUsername, offerId) => {
+  const offer = await Offer.findById(offerId).populate("author");
+  if (!offer) {
+    throw new Error("Offer not found");
+  }
+  const auctionType =
+    offer.costumer.toLowerCase() === "supply" ? "Ascending" : "Descending";
+
+  if (offer.author.username !== creatorUsername) {
+    throw new Error("Cannot create auction from other user's offer");
   }
 
+  return { offer, auctionType };
+};
+
+const validateMembers = async (creatorUsername, members) => {
+  let usernames = Array.isArray(members) ? members : [members];
+  usernames.forEach((username) => {
+    if (username === creatorUsername) {
+      throw new Error("Cannot add the creator as a member");
+    }
+  });
+
+  const users = await User.find({ username: { $in: usernames } }).exec();
+  if (users.length !== usernames.length) {
+    throw new Error("Could not find all passed members in user collection");
+  }
+  return usernames;
+};
+
+const validateCreateFromMultipleOffers = async (creatorUsername, offerIds) => {
   // Get all the relevant offers to perform additional checks.
   const offers = await Offer.find({ _id: { $in: offerIds } })
     .populate("author")
@@ -45,9 +72,27 @@ const validateCreateFromMultipleOffers = async (creatorUsername, offerIds) => {
       throw new Error("invalid");
     }
   }
+  const auctionType =
+    supplyOrDemand.toLowerCase() === "supply" ? "Descending" : "Ascending";
 
-  return { offers, sector, type, supplyOrDemand };
+  return { offers, sector, type, supplyOrDemand, auctionType };
 };
+
+const createQuerySchema = Joi.alternatives().try(
+  Joi.object({
+    from: Joi.string().valid("search").required(),
+    offerIds: Joi.array()
+      .min(2)
+      .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/, "offerId"))
+      .required(),
+  }),
+  Joi.object({
+    from: Joi.string().valid("offer").required(),
+    offerId: Joi.string()
+      .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
+      .required(),
+  })
+);
 
 /**
  * Renders the page to create auctions.
@@ -56,85 +101,60 @@ const validateCreateFromMultipleOffers = async (creatorUsername, offerIds) => {
  * @param {*} res
  */
 module.exports.create = async (req, res) => {
+  const q = await createQuerySchema.validateAsync(req.query);
   const username = req.user.username;
-  const { from, offerId } = req.query;
 
-  if (from === "search") {
+  if (q.from === "search") {
     // Check if we should render the template for that contains multiple non-owning offers.
-    const { offers, sector, type, supplyOrDemand } =
-      await validateCreateFromMultipleOffers(username, offerId);
-    const auctionType =
-      supplyOrDemand.toLowerCase() === "supply" ? "Descending" : "Ascending";
+    const { offers, sector, type, auctionType } =
+      await validateCreateFromMultipleOffers(username, q.offerIds);
 
-    const combinedOfferIds = offerId.join(",");
+    const combinedOfferIds = q.offerIds.join(",");
     res.render("auctions/create-multiple-offers", {
       offers,
       info: { sector, type, auctionType },
       offerIds: combinedOfferIds,
     });
   } else {
-    // Otherwise it's a template for a single owning offer.
-    res.render("auctions/create", {});
-  }
-};
+    // Otherwise it's from a single owning offer.
+    const { offer, auctionType } = await validateCreateFromSingleOffer(
+      username,
+      q.offerId
+    );
+    const users = await User.find({ username: { $nin: [username] } }).exec();
 
-const createAuctionSchema2 = Joi.object({
-  room_name: Joi.string().required(),
-  closing_time: Joi.date().min(Date.now()).required(),
-  quantity: Joi.number().required(),
-  articleno: Joi.array(),
-});
-
-module.exports.createAuctionMultipleOffers = async (req, res) => {
-  const username = req.user.username;
-  let data = await createAuctionSchema2.validateAsync(req.body);
-
-  const { offers, supplyOrDemand, sector, type } =
-    await validateCreateFromMultipleOffers(username, data.articleno);
-
-  try {
-    data.closing_time = createNeTimeString(data.closing_time);
-    data.auction_type =
-      supplyOrDemand.toLowerCase() === "supply" ? "Descending" : "Ascending";
-    data.reference_sector = sector;
-    data.reference_type = type;
-    data.template_type = "article";
-    data.members = offers.map((offer) => offer.author.username).join(",");
-
-    const params = new URLSearchParams(data);
-    const response = await axios.post(`${NE_BASE_URL}/create-room`, params, {
-      auth: { username },
+    res.render("auctions/create-single", {
+      offer,
+      auctionType,
+      users,
     });
-    // Response data contains a message, which contains the auction name and id.
-    // We are interested in the ID here.
-    // Example response: "The room auction #1 has been created id: 61e7f7e20daf6671113c4941"
-    const auctionId = response.data.message.split("id: ")[1];
-
-    req.flash("success", "Successfully created auction");
-    res.redirect(`/auctions/${auctionId}`);
-  } catch (error) {
-    console.error(error);
-    req.flash("error", "Failed to create auction");
-    res.render("auctions/create");
   }
 };
 
-// Schema to validate inputs to `createAuction`.
-const createAuctionSchema = Joi.object({
-  room_name: Joi.string().required(),
-  auction_type: Joi.string().required(),
-  closing_time: Joi.date().min(Date.now()).required(),
-  reference_sector: Joi.string().required(),
-  reference_type: Joi.string().required(),
-  quantity: Joi.number().required(),
-  // members: Joi.string().required(),
-  // articleno: Joi.string()
-  //   .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
-  //   .required(),
-  template_type: Joi.string().required(),
-  articleno: Joi.array(),
-  members: Joi.string(),
-});
+const CreateAuctionSchemaFinal = Joi.alternatives().try(
+  Joi.object({
+    auctionTitle: Joi.string().required(),
+    closingTime: Joi.date().min(Date.now()).required(),
+    quantity: Joi.number().required(),
+    offerId: Joi.string()
+      .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
+      .required(),
+    members: [
+      Joi.string().required(),
+      Joi.array().items(Joi.string()).required(),
+    ],
+    privacy: Joi.string().valid("Private", "Public").required(),
+  }),
+  Joi.object({
+    auctionTitle: Joi.string().required(),
+    closingTime: Joi.date().min(Date.now()).required(),
+    quantity: Joi.number().required(),
+    offerIds: Joi.array()
+      .min(2)
+      .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/, "offerId"))
+      .required(),
+  })
+);
 
 /**
  * Calls NegotationEngine to actually create the auction.
@@ -143,66 +163,57 @@ const createAuctionSchema = Joi.object({
  * @param {*} res
  */
 module.exports.createAuction = async (req, res) => {
+  let data = await CreateAuctionSchemaFinal.validateAsync(req.body);
   const username = req.user.username;
-  req.body.template_type = "article";
+  const fromSearch = data.members === undefined;
 
-  // Validate inputs and convert closing time to the correct format.
-  let data = await createAuctionSchema.validateAsync(req.body);
-  data.closing_time = createNeTimeString(data.closing_time);
+  let params = {};
+  if (fromSearch) {
+    // Auction created from an offer search.
+    const { sector, type, auctionType } =
+      await validateCreateFromMultipleOffers(username, data.offerIds);
 
-  if (Array.isArray(req.body.articleno)) {
-    // New style auction.
-    const matchingOffers = await Offer.find({
-      _id: { $in: data.articleno },
-    })
-      .populate("author")
-      .exec();
-
-    if (matchingOffers.length !== req.body.articleno.length) {
-      req.flash("error", "Failed to create auction: Invalid offer ID");
-      res.render("auctions/create");
-      return;
-    }
-
-    currentMembers = {};
-    data.articleno = data.articleno.join(",");
-    data.members = matchingOffers
-      .map((offer) => {
-        const member = offer.author.username;
-        if (currentMembers[member]) {
-          throw new Error("Cannot add multiple offers from the same company");
-        }
-        currentMembers[member] = true;
-        if (member === username) {
-          throw new Error(
-            "Cannot create an auction where you are a participant"
-          );
-        }
-        return offer.author.username;
-      })
-      .join(",");
+    params = {
+      articleno: data.offerIds.join(","),
+      reference_sector: sector,
+      reference_type: type,
+      auction_type: auctionType,
+      members: "",
+      privacy: "Private",
+    };
   } else {
-    // Old style auction.
-    if (req.body.members === "") {
-      throw new Error("Members must be specified");
-    }
+    // Auction created from a single owning-offer.
+    // Validate that all offer exists, and that all members exist.
+    const { offer, auctionType } = await validateCreateFromSingleOffer(
+      username,
+      data.offerId
+    );
+    let members = await validateMembers(username, data.members);
 
-    // Check that the offer id is valid and that the offer exists.
-    const offerId = data.articleno;
-    const numMatchingOffers = await Offer.count({ _id: offerId });
-    if (numMatchingOffers == 0) {
-      req.flash("error", "Failed to create auction: Invalid offer ID");
-      res.render("auctions/create");
-      return;
-    }
+    params = {
+      articleno: data.offerId,
+      reference_sector: offer.referenceSector,
+      reference_type: offer.referenceType,
+      auction_type: auctionType,
+      members: members,
+      privacy: data.privacy,
+    };
   }
 
+  // Create auction in NE
   try {
-    const params = new URLSearchParams(data);
-    const response = await axios.post(`${NE_BASE_URL}/create-room`, params, {
+    params = {
+      ...params,
+      room_name: data.auctionTitle,
+      quantity: data.quantity,
+      closing_time: createNeTimeString(data.closingTime),
+      template_type: "article",
+    };
+
+    const urlParams = new URLSearchParams(params);
+    const response = await axios.post(`${NE_BASE_URL}/create-room`, urlParams, {
       auth: { username },
     });
-
     // Response data contains a message, which contains the auction name and id.
     // We are interested in the ID here.
     // Example response: "The room auction #1 has been created id: 61e7f7e20daf6671113c4941"
@@ -211,6 +222,8 @@ module.exports.createAuction = async (req, res) => {
     req.flash("success", "Successfully created auction");
     res.redirect(`/auctions/${auctionId}`);
   } catch (error) {
+    console.error(error.response.data);
+
     req.flash("error", "Failed to create auction");
     res.render("auctions/create");
   }

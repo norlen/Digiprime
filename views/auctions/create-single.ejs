@@ -3,24 +3,49 @@
 <h1 class="mb-4">
   Create Auction
   <span class="align-middle fs-4">
-    <span class="badge bg-primary"><%= info.auctionType %></span>
-    <span class="badge bg-primary"><%= info.sector %></span>
-    <span class="badge bg-primary"><%= info.type %></span>
+    <span class="badge bg-primary"><%= auctionType %></span>
+    <span class="badge bg-primary"><%= offer.referenceSector %></span>
+    <span class="badge bg-primary"><%= offer.referenceType %></span>
   </span>
 </h1>
 
 <form method="POST" action="/auctions/create" class="mb-5">
-  <div class="form-floating mb-3">
-    <input
-      type="text"
-      class="form-control"
-      id="auctionTitle"
-      name="auctionTitle"
-      placeholder="Auction Title"
-      required
-    />
-    <label for="auctionTitle">Auction Title</label>
-    <div id="auctionTitleHelpBlock" class="form-text px-1"></div>
+  <div class="d-flex gap-2">
+    <div class="flex-grow-1">
+      <div class="form-floating mb-3">
+        <input
+          type="text"
+          class="form-control"
+          id="auctionTitle"
+          name="auctionTitle"
+          placeholder="Auction Title"
+          required
+        />
+        <label for="auctionTitle">Auction Title</label>
+        <div id="auctionTitleHelpBlock" class="form-text px-1"></div>
+      </div>
+    </div>
+    <div class="">
+      <input
+        type="radio"
+        class="btn-check"
+        name="privacy"
+        id="Public"
+        autocomplete="off"
+        value="Public"
+        checked
+      />
+      <label class="btn btn-outline-primary" for="Public">Public</label>
+      <input
+        type="radio"
+        class="btn-check"
+        name="privacy"
+        id="Private"
+        autocomplete="off"
+        value="Private"
+      />
+      <label class="btn btn-outline-primary" for="Private">Private</label>
+    </div>
   </div>
 
   <div class="row">
@@ -73,20 +98,32 @@
     </div>
   </div>
 
-  <div class="mb-3" id="cluster-map"></div>
+  <div class="mb-3" id="map"></div>
 
-  <h3>Invited offers</h3>
-  <div class="row row-cols-md-4 g-4">
-    <% for (let offer of offers) { %>
-    <!-- prevent-formatting -->
-    <%- include('../partials/offer-card', { offer }) %>
-    <input
-      type="hidden"
-      id="offerIds"
-      name="offerIds"
-      value="<%= offer.id %>"
-      required
-    />
+  <input
+    type="hidden"
+    id="offerId"
+    name="offerId"
+    value="<%= offer.id %>"
+    required
+  />
+
+  <h3>Invite members</h3>
+  <div class="d-flex gap-2">
+    <% for (let user of users) { %>
+    <div class="">
+      <input
+        id="member-<%= user.username %>"
+        name="members"
+        value="<%= user.username %>"
+        type="checkbox"
+        class="btn-check"
+        autocomplete="off"
+      />
+      <label class="btn btn-outline-primary" for="member-<%= user.username %>"
+        ><%= user.username %></label
+      >
+    </div>
     <% } %>
   </div>
 
@@ -101,6 +138,6 @@
 
 <script>
   const mapToken = '<%-process.env.MAPBOX_TOKEN%>';
-  const offers = {features: <%- JSON.stringify(offers) %>};
+  const offer = <%- JSON.stringify(offer) %>;
 </script>
-<script src="/javascripts/clusterMap.js"></script>
+<script src="/javascripts/showPageMap.js"></script>
