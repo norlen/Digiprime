@@ -9,8 +9,21 @@
     <div class="col-6"></div>
 
     <div class="col align-self-center">
-      <input type="text" name="auctionSearch" value="" placeholder="search..">
-      <button type="button" name="button" class="btn btn-md btn-info">Search</button>
+      <form id="search-box">
+        <div class="input-group mb-4">
+          <input
+            type="text"
+            class="search-by-name form-control"
+            id="searchBar"
+            name="name"
+            placeholder="Search Auction"
+            disabled
+          />
+          <button class="search-btn btn btn-primary" type="submit" disabled>
+            Search
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
@@ -29,14 +42,13 @@
   </thead>
   <tbody>
     <tr>
-      <th scope="row"></th>
+      <!-- <th scope="row"></th>
       <td></td>
       <td></td>
       <td></td>
       <td></td>
       <td></td>
-      <td></td>
-      <!-- <td><button type="button" name="button" class="btn btn-sm btn-success">Join auction</button></td> -->
+      <td></td> -->
     </tr>
   </tbody>
 </table>
