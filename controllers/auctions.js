@@ -12,6 +12,15 @@ const {
 const NE_BASE_URL =
   process.env.NEGOTIATION_ENGINE_BASE_URL || "http://localhost:5000";
 
+/**
+ * Validates a single offer auction. Checks that
+ * - Offer exists
+ * - The offer creator is the same as the auction creator.
+ *
+ * @param {string} creatorUsername
+ * @param {string} offerId
+ * @returns Offer from Digiprime and the auction type (Ascending, Descending)
+ */
 const validateCreateFromSingleOffer = async (creatorUsername, offerId) => {
   const offer = await Offer.findById(offerId).populate("author");
   if (!offer) {
@@ -27,6 +36,15 @@ const validateCreateFromSingleOffer = async (creatorUsername, offerId) => {
   return { offer, auctionType };
 };
 
+/**
+ * Validates members in a owned-offer auction. Checks that
+ * - Creator is not part of members.
+ * - All members exist in the Digiprime database.
+ *
+ * @param {string} creatorUsername
+ * @param {string | string[]} members
+ * @returns {string[]} member usernames
+ */
 const validateMembers = async (creatorUsername, members) => {
   let usernames = Array.isArray(members) ? members : [members];
   usernames.forEach((username) => {
@@ -42,6 +60,18 @@ const validateMembers = async (creatorUsername, members) => {
   return usernames;
 };
 
+/**
+ * Validates auction parameters for an auction containing multiple offers. Checks that
+ * - All passed offer IDs exist as offers.
+ * - All offers have the same reference sector.
+ * - All offers have the same reference type.
+ * - All offer creators are distinct.
+ * - The auction creator is not a creator of any of the offers.
+ *
+ * @param {string} creatorUsername
+ * @param {string[]} offerIds
+ * @returns information about auction and the offers contained.
+ */
 const validateCreateFromMultipleOffers = async (creatorUsername, offerIds) => {
   // Get all the relevant offers to perform additional checks.
   const offers = await Offer.find({ _id: { $in: offerIds } })
@@ -56,7 +86,7 @@ const validateCreateFromMultipleOffers = async (creatorUsername, offerIds) => {
   // Perform additional checks.
   // - Check all offers are of the same type.
   // - Ensure all members are distinct.
-  // - Ensure auction creation is a member.
+  // - Ensure auction creation is not a member.
   let sector = offers[0].referenceSector;
   let type = offers[0].referenceType;
   let supplyOrDemand = offers[0].costumer;
@@ -105,7 +135,7 @@ module.exports.create = async (req, res) => {
   const username = req.user.username;
 
   if (q.from === "search") {
-    // Check if we should render the template for that contains multiple non-owning offers.
+    // Check if we should render the template for that contains multiple non-owned offers.
     const { offers, sector, type, auctionType } =
       await validateCreateFromMultipleOffers(username, q.offerIds);
 
@@ -116,7 +146,7 @@ module.exports.create = async (req, res) => {
       offerIds: combinedOfferIds,
     });
   } else {
-    // Otherwise it's from a single owning offer.
+    // Otherwise it's from a single owned offer.
     const { offer, auctionType } = await validateCreateFromSingleOffer(
       username,
       q.offerId
@@ -131,7 +161,7 @@ module.exports.create = async (req, res) => {
   }
 };
 
-const CreateAuctionSchemaFinal = Joi.alternatives().try(
+const CreateAuctionSchema = Joi.alternatives().try(
   Joi.object({
     auctionTitle: Joi.string().required(),
     closingTime: Joi.date().min(Date.now()).required(),
@@ -163,7 +193,7 @@ const CreateAuctionSchemaFinal = Joi.alternatives().try(
  * @param {*} res
  */
 module.exports.createAuction = async (req, res) => {
-  let data = await CreateAuctionSchemaFinal.validateAsync(req.body);
+  let data = await CreateAuctionSchema.validateAsync(req.body);
   const username = req.user.username;
   const fromSearch = data.members === undefined;
 
@@ -182,8 +212,8 @@ module.exports.createAuction = async (req, res) => {
       privacy: "Private",
     };
   } else {
-    // Auction created from a single owning-offer.
-    // Validate that all offer exists, and that all members exist.
+    // Auction created from a single owned offer.
+    // Validate that all offers exists, and that all members exist.
     const { offer, auctionType } = await validateCreateFromSingleOffer(
       username,
       data.offerId
