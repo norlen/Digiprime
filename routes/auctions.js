@@ -16,7 +16,7 @@ router
   .route('/create')
   .get(isLoggedIn, catchAsync(auction.create))
   .post(isLoggedIn, catchAsync(auction.createAuction))
-
+  
 router
   .route('/:id')
   .get(isLoggedIn, catchAsync(auction.show))

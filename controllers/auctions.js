@@ -334,7 +334,11 @@ module.exports.index = async (req, res) => {
   });
   auctions.sort((lhs, rhs) => rhs.closingTime - lhs.closingTime);
 
-  res.render("auctions/index", { auctions, showDistanceToNow });
+  const perPage = 5;
+  const currentPage = req.query.page || 1;
+  const newAuctions = pagination(auctions, perPage, currentPage);
+
+  res.render("auctions/index", { newAuctions, showDistanceToNow, currentPage, totalPages: Math.ceil(auctions.length/perPage) });
 };
 
 /**
@@ -349,7 +353,11 @@ module.exports.history = async (req, res) => {
     auth: { username },
   });
 
-  res.render("auctions/history", { auctions: response.data });
+  const perPage = 10;
+  const currentPage = req.query.page || 1;
+  const newAuctions = pagination(response.data, perPage, currentPage);
+  
+  res.render("auctions/history", { newAuctions , currentPage, totalPages: Math.ceil(response.data.length/perPage)});
 };
 
 // Schema to validate inputs when placing a bid at an auction.
@@ -467,4 +475,27 @@ module.exports.getBids = async (req, res) => {
       throw error;
     }
   }
+};
+
+/**
+ * Returns perPage number of auctions for current page from auctions fetched from ne
+ * @param {*} auctions 
+ * @param {*} perPage 
+ * @param {*} currentPage 
+ * @returns 
+ */
+const pagination = (auctions, perPage, currentPage) => {
+  const startIndex = (currentPage * perPage) - perPage;
+  return getAuctions(auctions, startIndex, startIndex + perPage);
+}
+
+const getAuctions = (auctions, startIndex, endIndex) => {
+  var newAuctions = []; 
+  for ( var i = startIndex; i < endIndex; i++) {
+    if(i == auctions.length) {
+      break;
+    }
+    newAuctions.push(auctions[i]);
+  }
+  return newAuctions;
 };
