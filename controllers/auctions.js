@@ -2,6 +2,7 @@ const Joi = require("joi");
 const axios = require("axios");
 const Offer = require("../models/offer");
 const User = require("../models/user");
+const UserInformation = require("../models/userinformation");
 const formatDistanceToNow = require("date-fns/formatDistanceToNow");
 const formatDate = require("date-fns/format");
 
@@ -489,7 +490,14 @@ module.exports.getBids = async (req, res) => {
       totalPages,
     } = pagination(response.data.Bids, req.query.page, perPage);
 
-    res.render("auctions/showBids", { allBids, displayDate, currentPage, totalPages, auctionId, perPage });
+    res.render("auctions/showBids", {
+      allBids,
+      displayDate,
+      currentPage,
+      totalPages,
+      auctionId,
+      perPage,
+    });
   } catch (error) {
     if (error.isAxiosError && error.response.status === 404) {
       req.flash("error", error.response.data);

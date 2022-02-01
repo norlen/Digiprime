@@ -7,9 +7,13 @@ const UserSchema = new Schema({
         type: String,
         required : true,
         unique: true
+    },
+    image: {
+        url: String,
+        form: String
     }
 });
-
 UserSchema.plugin(passportLocalMongoose);
 
 module.exports = mongoose.model('User', UserSchema);
+
