@@ -1,34 +1,128 @@
 const Joi = require("joi");
 const axios = require("axios");
 const Offer = require("../models/offer");
-const formatDistanceToNow = require("date-fns/formatDistanceToNow");
-const formatDate = require("date-fns/format");
+const User = require("../models/user");
+const {
+  createNeTimeString,
+  parseAsUTCDate,
+  showDistanceToNow,
+  displayDate,
+} = require("../utils/time");
 
 const NE_BASE_URL =
   process.env.NEGOTIATION_ENGINE_BASE_URL || "http://localhost:5000";
 
-// Converts from a Javascript date to a time format NegotationEngine accepts.
-//
-// The required date is similar to an ISO string, but not quite. An ISO string
-// can be: '2022-01-19T15:42:25.373Z', and the required format is
-// YYYY-MM-DDTHH:MM:SS, so we have to cut off after the seconds.
-const createNeTimeString = (originalTime) => {
-  return originalTime.toISOString().split(".")[0];
+/**
+ * Validates a single offer auction. Checks that
+ * - Offer exists
+ * - The offer creator is the same as the auction creator.
+ *
+ * @param {string} creatorUsername
+ * @param {string} offerId
+ * @returns Offer from Digiprime and the auction type (Ascending, Descending)
+ */
+const validateCreateFromSingleOffer = async (creatorUsername, offerId) => {
+  const offer = await Offer.findById(offerId).populate("author");
+  if (!offer) {
+    throw new Error("Offer not found");
+  }
+  const auctionType =
+    offer.costumer.toLowerCase() === "supply" ? "Ascending" : "Descending";
+
+  if (offer.author.username !== creatorUsername) {
+    throw new Error("Cannot create auction from other user's offer");
+  }
+
+  return { offer, auctionType };
 };
 
-// Take a date string without a timezone and parses it as UTC and returns
-// it as a date.
-const parseAsUTCDate = (dateString) => {
-  return new Date(dateString.split(".")[0] + " UTC");
+/**
+ * Validates members in a owned-offer auction. Checks that
+ * - Creator is not part of members.
+ * - All members exist in the Digiprime database.
+ *
+ * @param {string} creatorUsername
+ * @param {string | string[]} members
+ * @returns {string[]} member usernames
+ */
+const validateMembers = async (creatorUsername, members) => {
+  let usernames = Array.isArray(members) ? members : [members];
+  usernames.forEach((username) => {
+    if (username === creatorUsername) {
+      throw new Error("Cannot add the creator as a member");
+    }
+  });
+
+  const users = await User.find({ username: { $in: usernames } }).exec();
+  if (users.length !== usernames.length) {
+    throw new Error("Could not find all passed members in user collection");
+  }
+  return usernames;
 };
 
-const showDistanceToNow = (dateString) => {
-  return formatDistanceToNow(parseAsUTCDate(dateString));
+/**
+ * Validates auction parameters for an auction containing multiple offers. Checks that
+ * - All passed offer IDs exist as offers.
+ * - All offers have the same reference sector.
+ * - All offers have the same reference type.
+ * - All offer creators are distinct.
+ * - The auction creator is not a creator of any of the offers.
+ *
+ * @param {string} creatorUsername
+ * @param {string[]} offerIds
+ * @returns information about auction and the offers contained.
+ */
+const validateCreateFromMultipleOffers = async (creatorUsername, offerIds) => {
+  // Get all the relevant offers to perform additional checks.
+  const offers = await Offer.find({ _id: { $in: offerIds } })
+    .populate("author")
+    .exec();
+
+  // Ensure all passed IDs are valid offers.
+  if (offers.length !== offerIds.length) {
+    throw new Error("Some or all Offer IDs are invalid");
+  }
+
+  // Perform additional checks.
+  // - Check all offers are of the same type.
+  // - Ensure all members are distinct.
+  // - Ensure auction creation is not a member.
+  let sector = offers[0].referenceSector;
+  let type = offers[0].referenceType;
+  let supplyOrDemand = offers[0].costumer;
+  let currentMembers = {};
+  for (let offer of offers) {
+    if (
+      offer.referenceSector !== sector ||
+      offer.referenceType !== type ||
+      offer.costumer !== supplyOrDemand ||
+      currentMembers[offer.author.username] ||
+      offer.author.username === creatorUsername
+    ) {
+      throw new Error("invalid");
+    }
+  }
+  const auctionType =
+    supplyOrDemand.toLowerCase() === "supply" ? "Descending" : "Ascending";
+
+  return { offers, sector, type, supplyOrDemand, auctionType };
 };
 
-const displayDate = (dateString) => {
-  return formatDate(parseAsUTCDate(dateString), "yyyy-MM-dd HH:mm");
-};
+const createQuerySchema = Joi.alternatives().try(
+  Joi.object({
+    from: Joi.string().valid("search").required(),
+    offerIds: Joi.array()
+      .min(2)
+      .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/, "offerId"))
+      .required(),
+  }),
+  Joi.object({
+    from: Joi.string().valid("offer").required(),
+    offerId: Joi.string()
+      .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
+      .required(),
+  })
+);
 
 /**
  * Renders the page to create auctions.
@@ -36,24 +130,61 @@ const displayDate = (dateString) => {
  * @param {*} req
  * @param {*} res
  */
-module.exports.create = async (_req, res) => {
-  res.render("auctions/create", {});
+module.exports.create = async (req, res) => {
+  const q = await createQuerySchema.validateAsync(req.query);
+  const username = req.user.username;
+
+  if (q.from === "search") {
+    // Check if we should render the template for that contains multiple non-owned offers.
+    const { offers, sector, type, auctionType } =
+      await validateCreateFromMultipleOffers(username, q.offerIds);
+
+    const combinedOfferIds = q.offerIds.join(",");
+    res.render("auctions/create-multiple-offers", {
+      offers,
+      info: { sector, type, auctionType },
+      offerIds: combinedOfferIds,
+    });
+  } else {
+    // Otherwise it's from a single owned offer.
+    const { offer, auctionType } = await validateCreateFromSingleOffer(
+      username,
+      q.offerId
+    );
+    const users = await User.find({ username: { $nin: [username] } }).exec();
+
+    res.render("auctions/create-single", {
+      offer,
+      auctionType,
+      users,
+    });
+  }
 };
 
-// Schema to validate inputs to `createAuction`.
-const createAuctionSchema = Joi.object({
-  room_name: Joi.string().required(),
-  auction_type: Joi.string().required(),
-  closing_time: Joi.date().min(Date.now()).required(),
-  reference_sector: Joi.string().required(),
-  reference_type: Joi.string().required(),
-  quantity: Joi.number().required(),
-  members: Joi.string().required(),
-  articleno: Joi.string()
-    .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
-    .required(),
-  template_type: Joi.string().required(),
-});
+const CreateAuctionSchema = Joi.alternatives().try(
+  Joi.object({
+    auctionTitle: Joi.string().required(),
+    closingTime: Joi.date().min(Date.now()).required(),
+    quantity: Joi.number().required(),
+    offerId: Joi.string()
+      .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
+      .required(),
+    members: [
+      Joi.string().required(),
+      Joi.array().items(Joi.string()).required(),
+    ],
+    privacy: Joi.string().valid("Private", "Public").required(),
+  }),
+  Joi.object({
+    auctionTitle: Joi.string().required(),
+    closingTime: Joi.date().min(Date.now()).required(),
+    quantity: Joi.number().required(),
+    offerIds: Joi.array()
+      .min(2)
+      .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/, "offerId"))
+      .required(),
+  })
+);
 
 /**
  * Calls NegotationEngine to actually create the auction.
@@ -62,26 +193,57 @@ const createAuctionSchema = Joi.object({
  * @param {*} res
  */
 module.exports.createAuction = async (req, res) => {
-  // Validate inputs and convert closing time to the correct format.
-  let data = await createAuctionSchema.validateAsync(req.body);
-  data.closing_time = createNeTimeString(data.closing_time);
+  let data = await CreateAuctionSchema.validateAsync(req.body);
+  const username = req.user.username;
+  const fromSearch = data.members === undefined;
 
-  // Check that the offer id is valid and that the offer exists.
-  const offerId = data.articleno;
-  const numMatchingOffers = await Offer.count({ _id: offerId });
-  if (numMatchingOffers == 0) {
-    req.flash("error", "Failed to create auction: Invalid offer ID");
-    res.render("auctions/create");
-    return;
+  let params = {};
+  if (fromSearch) {
+    // Auction created from an offer search.
+    const { sector, type, auctionType } =
+      await validateCreateFromMultipleOffers(username, data.offerIds);
+
+    params = {
+      articleno: data.offerIds.join(","),
+      reference_sector: sector,
+      reference_type: type,
+      auction_type: auctionType,
+      members: "",
+      privacy: "Private",
+    };
+  } else {
+    // Auction created from a single owned offer.
+    // Validate that all offers exists, and that all members exist.
+    const { offer, auctionType } = await validateCreateFromSingleOffer(
+      username,
+      data.offerId
+    );
+    let members = await validateMembers(username, data.members);
+
+    params = {
+      articleno: data.offerId,
+      reference_sector: offer.referenceSector,
+      reference_type: offer.referenceType,
+      auction_type: auctionType,
+      members: members,
+      privacy: data.privacy,
+    };
   }
 
+  // Create auction in NE
   try {
-    const username = req.user.username;
-    const params = new URLSearchParams(data);
-    const response = await axios.post(`${NE_BASE_URL}/create-room`, params, {
+    params = {
+      ...params,
+      room_name: data.auctionTitle,
+      quantity: data.quantity,
+      closing_time: createNeTimeString(data.closingTime),
+      template_type: "article",
+    };
+
+    const urlParams = new URLSearchParams(params);
+    const response = await axios.post(`${NE_BASE_URL}/create-room`, urlParams, {
       auth: { username },
     });
-
     // Response data contains a message, which contains the auction name and id.
     // We are interested in the ID here.
     // Example response: "The room auction #1 has been created id: 61e7f7e20daf6671113c4941"
@@ -90,6 +252,8 @@ module.exports.createAuction = async (req, res) => {
     req.flash("success", "Successfully created auction");
     res.redirect(`/auctions/${auctionId}`);
   } catch (error) {
+    console.error(error.response.data);
+
     req.flash("error", "Failed to create auction");
     res.render("auctions/create");
   }
@@ -108,20 +272,47 @@ module.exports.show = async (req, res) => {
   const response = await axios.get(`${NE_BASE_URL}/rooms/${auctionId}/info`, {
     auth: { username },
   });
+
   let auction = response.data;
-  auction.canEnd =
+  auction.closed =
     parseAsUTCDate(auction.payload.closing_time.val[0]) <= Date.now();
   auction.ended = auction.payload.buyersign.val[0] !== "";
+  auction.closingTime = parseAsUTCDate(auction.payload.closing_time.val[0]);
 
-  const offerId = auction.payload.articleno.val[0];
-  const offer = await Offer.findById(offerId);
+  const articleNumbers = auction.payload.articleno.val[0].split(",");
+  if (articleNumbers.length > 1) {
+    // New auction.
+    let offers = await Offer.find({ _id: { $in: articleNumbers } })
+      .populate("author")
+      .exec();
 
-  res.render("auctions/show", {
-    auction,
-    offer,
-    showDistanceToNow,
-    displayDate,
-  });
+    // Map bids to offers.
+    let member_to_bid = {};
+    for (let bid of auction.bids) {
+      member_to_bid[bid.sender] = bid;
+    }
+
+    const offersWithBids = offers.map((offer) => ({
+      ...offer._doc,
+      bid: member_to_bid[offer.author.username],
+    }));
+
+    res.render("auctions/show-multiple-offers", {
+      auction,
+      offers: offersWithBids,
+      showDistanceToNow,
+      displayDate,
+    });
+  } else {
+    const offer = await Offer.findById(articleNumbers[0]);
+
+    res.render("auctions/show", {
+      auction,
+      offer,
+      showDistanceToNow,
+      displayDate,
+    });
+  }
 };
 
 /**
@@ -136,16 +327,14 @@ module.exports.index = async (req, res) => {
   const response = await axios.get(`${NE_BASE_URL}/rooms/active`, {
     auth: { username },
   });
+  const auctions = response.data.map((auction) => {
+    auction.closingTime = parseAsUTCDate(auction.payload.closing_time.val[0]);
+    auction.closed = auction.closingTime <= Date.now();
+    return auction;
+  });
+  auctions.sort((lhs, rhs) => rhs.closingTime - lhs.closingTime);
 
-  const auctions = await Promise.all(
-    response.data.map(async (auction) => {
-      const offerId = auction.payload.articleno.val[0];
-      const offer = await Offer.findById(offerId);
-      return { auction, offer };
-    })
-  );
-
-  res.render("auctions/index", { auctions });
+  res.render("auctions/index", { auctions, showDistanceToNow });
 };
 
 /**
@@ -160,15 +349,7 @@ module.exports.history = async (req, res) => {
     auth: { username },
   });
 
-  const auctions = await Promise.all(
-    response.data.map(async (auction) => {
-      const offerId = auction.payload.articleno.val[0];
-      const offer = await Offer.findById(offerId);
-      return { auction, offer };
-    })
-  );
-
-  res.render("auctions/history", { auctions });
+  res.render("auctions/history", { auctions: response.data });
 };
 
 // Schema to validate inputs when placing a bid at an auction.

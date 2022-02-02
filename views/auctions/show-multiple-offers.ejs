@@ -1,0 +1,305 @@
+<% layout('layouts/boilerplate') %> <% const isCreator =
+auction.payload.created_by.val[0] === currentUser.username %>
+
+<div class="container mt-3">
+  <div class="row justify-content-between mb-3">
+    <div class="d-flex gap-2">
+      <h1><%= auction.payload.name.val[0] %></h1>
+      <span class="badge bg-primary fs-6 my-3"
+        ><%= auction.payload.auction_type.val[0] %></span
+      >
+      <% if (auction.closed) { %>
+      <span class="badge bg-danger fs-6 my-3">CLOSED</span>
+      <% } %>
+    </div>
+
+    <div class="col-4"></div>
+  </div>
+
+  <div class="row justify-content-between mb-3">
+    <div class="col-6">
+      <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between">
+          <h6>
+            <a href="/profile/<%= auction.payload.created_by.val[0] %>"
+              ><%= auction.payload.created_by.val[0] %></a
+            >
+          </h6>
+          <span class="text-muted">Created by</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <h6><%= auction.payload.reference_sector.val[0] %></h6>
+          <span class="text-muted">Reference sector</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <h6><%= auction.payload.reference_type.val[0] %></h6>
+          <span class="text-muted">Reference type</span>
+        </li>
+      </ul>
+      <% if (!isCreator && !auction.closed) { %>
+      <form
+        class="w-100 input-group mt-2"
+        method="POST"
+        action="/auctions/<%= auction._id %>"
+      >
+        <span class="input-group-text">$</span>
+        <input
+          id="bid"
+          name="bid"
+          required
+          type="text"
+          class="form-control"
+          aria-label="bid"
+          placeholder="0.00"
+        />
+        <button type="submit" class="input-group-text btn-primary">
+          Place bid
+        </button>
+      </form>
+      <% } else if (isCreator && auction.closed) { %>
+      <div class="mt-2">
+        <% if (auction.bids.length == 0) { %>
+        <button type="button" class="card-link btn btn-danger" disabled>
+          Select Winner
+        </button>
+        <small class="text-muted d-block mt-1"
+          >Cannot select winner. No bids have been placed.</small
+        >
+        <% } else { %>
+        <button
+          type="button"
+          class="card-link btn btn-danger"
+          data-bs-toggle="modal"
+          data-bs-target="#pickWinnerModal"
+        >
+          Select Winner
+        </button>
+        <% } %>
+      </div>
+      <% } %>
+    </div>
+    <div class="col-4">
+      <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between">
+          <h6><%= displayDate(auction.payload.closing_time.val[0]) %></h6>
+          <span class="text-muted">Closing time</span>
+        </li>
+        <li class="list-group-item">
+          <div class="row justify-content-between">
+            <div class="col-3 text-center">
+              <h6 id="remaining-days" class="mb-2">0</h6>
+              <span class="text-muted">Days</span>
+            </div>
+            <div class="col-3 text-center">
+              <h6 id="remaining-hours" class="mb-2">0</h6>
+              <span class="text-muted">Hours</span>
+            </div>
+            <div class="col-3 text-center">
+              <h6 id="remaining-minutes" class="mb-2">0</h6>
+              <span class="text-muted">Minutes</span>
+            </div>
+            <div class="col-3 text-center">
+              <h6 id="remaining-seconds" class="mb-2">0</h6>
+              <span class="text-muted">Seconds</span>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="mb-3" id="cluster-map"></div>
+
+  <div class="row row-cols-md-5 g-1 mb-3">
+    <% for (let offer of offers) { const pillStyle = offer.customer === "Supply"
+    ? "bg-primary" : "bg-secondary"; %>
+
+    <div class="col" id="" style="display: block">
+      <div class="card mb-1" id="offerCards">
+        <div class="position-relative">
+          <span class="position-absolute badge bg-primary m-2" id="itemCostumer"
+            ><%= offer.costumer %></span
+          >
+          <a href="/offers/<%= offer._id %>">
+            <% if (offer.images.length) {%>
+            <img class="img-fluid" alt="" src="<%=offer.images[0].url%> " />
+            <% }else { %>
+            <img
+              class="img-fluid"
+              alt=""
+              src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg"
+            />
+            <% } %>
+          </a>
+        </div>
+
+        <div class="py-2 px-3">
+          <div class="d-flex justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+              <a href="/offers/<%= offer._id %>"
+                ><h4 id="searchTitle"><%= offer.title %></h4></a
+              >
+            </div>
+          </div>
+        </div>
+
+        <ul class="list-group list-group-flush text-muted">
+          <li class="list-group-item d-flex justify-content-between">
+            <small class=""><a href="#"><%= offer.author.username %></a></small>
+            <small class="text-muted"><%= offer.location %></small>
+          </li>
+          <% if (offer.bid !== undefined) { %>
+          <li class="list-group-item">
+            <small>Highest bid: <%= offer.bid.text %></small>
+          </li>
+          <li class="list-group-item">
+            <small><%= showDistanceToNow(offer.bid.created_at) %> ago</small>
+          </li>
+          <% } else { %>
+          <li class="list-group-item"><small>No bids placed yet</small></li>
+          <% } %>
+        </ul>
+      </div>
+    </div>
+    <% } %>
+  </div>
+
+  <div class="mb-5">
+    <a class="card-link btn btn-primary" href="/auctions"
+      ><svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        class="bi bi-arrow-bar-left"
+        viewBox="0 0 16 16"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5zM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5z"
+        />
+      </svg>
+      <span>All auctions</span></a
+    >
+  </div>
+
+  <div
+    class="modal fade"
+    id="pickWinnerModal"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-lg">
+      <form class="" method="POST" action="/auctions/<%= auction._id %>/end">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">
+              Select Winning Bid
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="table-responsive-sm">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th scope="col">Sender</th>
+                    <th scope="col">Distance</th>
+                    <th scope="col">Bid</th>
+                    <th scope="col">Placed</th>
+                    <th scope="col">Select as winner</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% for (let bid of auction.bids) { %>
+                  <tr>
+                    <th scope="row"><%= bid.sender %></th>
+                    <td><%= Math.round(bid.distance) %></td>
+                    <td><%= bid.text %></td>
+                    <td><%= displayDate(bid.created_at) %></td>
+                    <td class="d-flex justify-content-center">
+                      <input
+                        type="radio"
+                        class="btn-check"
+                        name="winner"
+                        id="<%= bid.sender %>"
+                        autocomplete="off"
+                        value="<%= bid.sender %>"
+                      />
+                      <label
+                        class="btn btn-outline-primary"
+                        for="<%= bid.sender %>"
+                        >Select</label
+                      >
+                    </td>
+                  </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+            <button type="submit" class="btn btn-primary">End auction</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const mapToken = '<%-process.env.MAPBOX_TOKEN%>';
+  const offers = {features: <%- JSON.stringify(offers) %>};
+  const closingTime = new Date("<%= auction.closingTime.toString() %>");
+
+  const getSplitClosingTime = (closingTime) => {
+    let diff = closingTime.getTime() - Date.now();
+
+    const SECOND = 1000;
+    const MINUTE = 60 * SECOND;
+    const HOUR = 60 * MINUTE;
+    const DAY = 24 * HOUR;
+
+    const days = Math.max(0, Math.floor(diff / DAY));
+    diff -= days * DAY;
+    const hours = Math.max(0, Math.floor(diff / HOUR));
+    diff -= hours * HOUR;
+    const minutes = Math.max(0, Math.floor(diff / MINUTE));
+    diff -= minutes * MINUTE;
+    const seconds = Math.max(0, Math.floor(diff / SECOND));
+
+    return { days, hours, minutes, seconds };
+  };
+
+  const daySelector = document.getElementById("remaining-days");
+  const hourSelector = document.getElementById("remaining-hours");
+  const minuteSelector = document.getElementById("remaining-minutes");
+  const secondSelector = document.getElementById("remaining-seconds");
+  const updateClosingTime = () => {
+    const time = getSplitClosingTime(closingTime);
+    daySelector.innerHTML = time.days;
+    hourSelector.innerHTML = time.hours;
+    minuteSelector.innerHTML = time.minutes;
+    secondSelector.innerHTML = time.seconds;
+  }
+  updateClosingTime();
+
+  setInterval(() => {
+    updateClosingTime();
+  }, 1000);
+</script>
+
+<script src="/javascripts/clusterMap.js"></script>
