@@ -41,13 +41,13 @@
       <% for (let auction of auctions) { %>
       <tr>
         <td>
-          <a href="/auctions/<%= auction.auction._id %>">
-            <%= auction.auction.payload.name.val[0] %>
+          <a href="/auctions/<%= auction._id %>">
+            <%= auction.payload.name.val[0] %>
           </a>
         </td>
-        <td><%= auction.auction.payload.articleno.val[0] %></td>
-        <td><%= auction.auction.payload.closing_time.val[0] %></td>
-        <td><%= auction.auction.payload.highest_bidder.val[0] %></td>
+        <td><%= auction.payload.articleno.val[0] %></td>
+        <td><%= auction.payload.closing_time.val[0] %></td>
+        <td><%= auction.payload.highest_bidder.val[0] %></td>
       </tr>
       <% } %>
     </tbody>
@@ -55,7 +55,7 @@
 
   <div class="card-body text-end">
     <!-- <a class="card-link btn btn-info col-1" href="#">More</a> -->
-    <a class="card-link btn btn-info col-1" href="/auctions/">Back</a>
+    <a class="card-link btn btn-info col-1" href="/auctions">Back</a>
   </div>
 
   <!--

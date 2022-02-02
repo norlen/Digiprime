@@ -274,9 +274,8 @@ module.exports.show = async (req, res) => {
   });
 
   let auction = response.data;
-  auction.canEnd =
+  auction.closed =
     parseAsUTCDate(auction.payload.closing_time.val[0]) <= Date.now();
-  auction.closed = auction.canEnd;
   auction.ended = auction.payload.buyersign.val[0] !== "";
   auction.closingTime = parseAsUTCDate(auction.payload.closing_time.val[0]);
 
@@ -330,6 +329,7 @@ module.exports.index = async (req, res) => {
   });
   const auctions = response.data.map((auction) => {
     auction.closingTime = parseAsUTCDate(auction.payload.closing_time.val[0]);
+    auction.closed = auction.closingTime <= Date.now();
     return auction;
   });
   auctions.sort((lhs, rhs) => rhs.closingTime - lhs.closingTime);
@@ -349,15 +349,7 @@ module.exports.history = async (req, res) => {
     auth: { username },
   });
 
-  const auctions = await Promise.all(
-    response.data.map(async (auction) => {
-      const offerId = auction.payload.articleno.val[0];
-      const offer = await Offer.findById(offerId);
-      return { auction, offer };
-    })
-  );
-
-  res.render("auctions/history", { auctions });
+  res.render("auctions/history", { auctions: response.data });
 };
 
 // Schema to validate inputs when placing a bid at an auction.
