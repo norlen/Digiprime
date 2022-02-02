@@ -193,22 +193,23 @@ const CreateAuctionSchema = Joi.alternatives().try(
  * @param {*} res
  */
 module.exports.createAuction = async (req, res) => {
-  let data = await CreateAuctionSchema.validateAsync(req.body);
+  const data = await CreateAuctionSchema.validateAsync(req.body);
   const username = req.user.username;
   const fromSearch = data.members === undefined;
 
   let params = {};
   if (fromSearch) {
     // Auction created from an offer search.
-    const { sector, type, auctionType } =
+    const { offers, sector, type, auctionType } =
       await validateCreateFromMultipleOffers(username, data.offerIds);
+    const members = offers.map((offer) => offer.author.username);
 
     params = {
       articleno: data.offerIds.join(","),
       reference_sector: sector,
       reference_type: type,
       auction_type: auctionType,
-      members: "",
+      members,
       privacy: "Private",
     };
   } else {
@@ -457,7 +458,7 @@ module.exports.getBids = async (req, res) => {
     });
 
     const allBids = response.data.Bids;
-  
+
     res.render("auctions/showBids", { allBids, displayDate });
   } catch (error) {
     if (error.isAxiosError && error.response.status === 404) {
