@@ -50,7 +50,11 @@
             </div>
             <div class="col-lg-6">
                 <div class="about-avatar">
-                    <img src=<%=currentUser.image.url%> title="" alt="">
+                    <% if(!currentUser.image.url) {%>
+                        <img src="/pictures/user_pic.png" title="" alt="">
+                    <% } else {%>
+                        <img src="<%= currentUser.image.url %>" title="" alt="">
+                    <% } %>
                 </div>
             </div>
         </div>
@@ -58,7 +62,7 @@
             <div class="row">
                 <div class="col-6 col-lg-3">
                     <div class="count-data text-center">
-                        <h6 class="count h2" data-to="500" data-speed="500"><%= queryData.active %></h6>
+                        <h6 class="count h2" data-to="500" data-speed="500"><%= currAuctions %></h6>
                         <a href="/auctions">
                         <p class="m-0px font-w-600">Active auctions</p>
                         </a>
@@ -74,7 +78,7 @@
                 </div>
                 <div class="col-6 col-lg-3">
                     <div class="count-data text-center">
-                        <h6 class="count h2" data-to="850" data-speed="850"><%= queryData.history %></h6>
+                        <h6 class="count h2" data-to="850" data-speed="850"><%= histAuctions %></h6>
                         <a href="/auctions/history">
                         <p class="m-0px font-w-600">Auctions participated in</p>
                         </a>
