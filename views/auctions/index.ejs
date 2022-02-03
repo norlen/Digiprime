@@ -36,16 +36,11 @@
         </div>
         <div class="">
           <span class="text-muted">
+            <!-- prettier-ignore -->
             <% if (auction.closingTime < Date.now()) { %>
-            <!-- no-format -->
-            ended <%= showDistanceToNow(auction.payload.closing_time.val[0]) %>
-            ago
-            <!-- no-format -->
+              ended <%= showDistanceToNow(auction.payload.closing_time.val[0]) %> ago
             <% } else { %>
-            <!-- no-format -->
-            ends in <%= showDistanceToNow(auction.payload.closing_time.val[0])
-            %>
-            <!-- no-format -->
+              ends in <%= showDistanceToNow(auction.payload.closing_time.val[0]) %>
             <% } %>
           </span>
         </div>
@@ -54,4 +49,7 @@
 
     <% } %>
   </div>
+
+  <!-- prettier-ignore -->
+  <%- include('../partials/pagination', { data: auctions, currentPage, totalPages }) %>
 </div>

@@ -325,17 +325,30 @@ module.exports.show = async (req, res) => {
  */
 module.exports.index = async (req, res) => {
   const username = req.user.username;
+
   const response = await axios.get(`${NE_BASE_URL}/rooms/active`, {
     auth: { username },
   });
-  const auctions = response.data.map((auction) => {
+  const sortedAuctions = response.data.map((auction) => {
     auction.closingTime = parseAsUTCDate(auction.payload.closing_time.val[0]);
     auction.closed = auction.closingTime <= Date.now();
     return auction;
   });
-  auctions.sort((lhs, rhs) => rhs.closingTime - lhs.closingTime);
+  sortedAuctions.sort((lhs, rhs) => rhs.closingTime - lhs.closingTime);
 
-  res.render("auctions/index", { auctions, showDistanceToNow });
+  const perPage = 5;
+  const {
+    data: auctions,
+    currentPage,
+    totalPages,
+  } = pagination(sortedAuctions, req.query.page, perPage);
+
+  res.render("auctions/index", {
+    auctions,
+    showDistanceToNow,
+    currentPage,
+    totalPages,
+  });
 };
 
 /**
@@ -346,11 +359,23 @@ module.exports.index = async (req, res) => {
  */
 module.exports.history = async (req, res) => {
   const username = req.user.username;
+
   const response = await axios.get(`${NE_BASE_URL}/rooms/history`, {
     auth: { username },
   });
 
-  res.render("auctions/history", { auctions: response.data });
+  const perPage = 10;
+  const {
+    data: auctions,
+    currentPage,
+    totalPages,
+  } = pagination(response.data, req.query.page, perPage);
+
+  res.render("auctions/history", {
+    auctions,
+    currentPage,
+    totalPages,
+  });
 };
 
 // Schema to validate inputs when placing a bid at an auction.
@@ -468,4 +493,40 @@ module.exports.getBids = async (req, res) => {
       throw error;
     }
   }
+};
+
+/**
+ * Returns elementPerPage number of elements from the array passed. The array should be sorted
+ * before passed here.
+ *
+ * @param {any[]} array
+ * @param {number} page
+ * @param {number} elementsPerPage
+ * @returns array with elements from the current page.
+ */
+const pagination = (array, currentPage, elementsPerPage) => {
+  const totalPages = Math.floor(array.length / elementsPerPage) + 1;
+  let currPage = 1;
+
+  try {
+    if (typeof currentPage === "number") {
+      currPage = Math.max(1, currentPage);
+    }
+    if (typeof currentPage === "string") {
+      const parsed = parseInt(currentPage);
+      if (!isNaN(parsed)) {
+        currPage = Math.max(1, parsed);
+      }
+    }
+  } catch (err) {}
+
+  // Pages are 1-indexed, so convert to zero index.
+  const startIdx = (currPage - 1) * elementsPerPage;
+  const data = array.splice(startIdx, elementsPerPage);
+
+  return {
+    data,
+    currentPage: currPage,
+    totalPages,
+  };
 };
