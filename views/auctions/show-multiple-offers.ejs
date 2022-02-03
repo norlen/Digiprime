@@ -153,7 +153,10 @@ auction.payload.created_by.val[0] === currentUser.username %>
             <small>Highest bid: <%= offer.bid.text %></small>
           </li>
           <li class="list-group-item">
-            <small><%= showDistanceToNow(offer.bid.created_at) %> ago</small>
+            <small
+              ><%= formatDistanceToNow(new Date(offer.bid.created_at)) %>
+              ago</small
+            >
           </li>
           <% } else { %>
           <li class="list-group-item"><small>No bids placed yet</small></li>
