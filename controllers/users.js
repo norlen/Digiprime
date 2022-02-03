@@ -87,20 +87,14 @@ module.exports.logout = (req, res) => {
 };
 
 module.exports.profilePage = async (req, res) => {
-  // Hämta antalet Current auctions för en användare från NE.
-  const username = req.user.username;
-  const activeRes = await axios.get(`${NE_BASE_URL}/rooms/active/number`, {
-    auth: { username },
-  });
-  // Hämta antalet historiska auctions för en användare från NE.
-  const historyRes = await axios.get(`${NE_BASE_URL}/rooms/history/number`, {
-    auth: { username },
-  });
-  const currAuctions = activeRes.data;
-  const histAuctions = historyRes.data;
+  const userName = req.params.name;
+
+  // Retrieves number of historic auctions and active auctions.
+  const response = await axios.get(`${NE_BASE_URL}/rooms/stats/${userName}`);
+  const { historic, active } = response.data;
 
   let queryData = await UserInformation.findOne({
-    username: `${req.params.name ? req.params.name : req.user.username}`,
+    username: `${userName}`,
   });
   if (!queryData) {
     queryData = {
@@ -120,7 +114,7 @@ module.exports.profilePage = async (req, res) => {
     };
   }
 
-  res.render("users/profile", { queryData, currAuctions, histAuctions });
+  res.render("users/profile", { queryData, historic, active });
 };
 
 module.exports.editPage = async (req, res) => {
