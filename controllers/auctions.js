@@ -280,38 +280,63 @@ module.exports.show = async (req, res) => {
   auction.closingTime = new Date(auction.payload.closing_time.val[0]);
 
   const articleNumbers = auction.payload.articleno.val[0].split(",");
-  if (articleNumbers.length > 1) {
-    // New auction.
-    let offers = await Offer.find({ _id: { $in: articleNumbers } })
-      .populate("author")
-      .exec();
+  if (auction.ended) {
+    // We want to display a winning offer here.
+    // For the single-offer auction we displayed the auctioned offer.
+    // For mulutple-offer auction we display the winning offer.
+    const members = auction.members.map((member) => member._id.username);
 
-    // Map bids to offers.
-    let member_to_bid = {};
-    for (let bid of auction.bids) {
-      member_to_bid[bid.sender] = bid;
+    let offer;
+    if (articleNumbers.length > 1) {
+      offer = await Offer.find({
+        _id: { $in: articleNumbers },
+        username: { $in: members },
+      })
+        .populate("author")
+        .exec();
+    } else {
+      offer = await Offer.findById(articleNumbers[0]).populate("author");
     }
 
-    const offersWithBids = offers.map((offer) => ({
-      ...offer._doc,
-      bid: member_to_bid[offer.author.username],
-    }));
-
-    res.render("auctions/show-multiple-offers", {
+    res.render("auctions/auctionEndedAuctioneerView", {
       auction,
-      offers: offersWithBids,
-      formatDistanceToNow,
+      offer,
       displayDate,
     });
   } else {
-    const offer = await Offer.findById(articleNumbers[0]);
+    if (articleNumbers.length > 1) {
+      // New auction.
+      let offers = await Offer.find({ _id: { $in: articleNumbers } })
+        .populate("author")
+        .exec();
 
-    res.render("auctions/show", {
-      auction,
-      offer,
-      formatDistanceToNow,
-      displayDate,
-    });
+      // Map bids to offers.
+      let member_to_bid = {};
+      for (let bid of auction.bids) {
+        member_to_bid[bid.sender] = bid;
+      }
+
+      const offersWithBids = offers.map((offer) => ({
+        ...offer._doc,
+        bid: member_to_bid[offer.author.username],
+      }));
+
+      res.render("auctions/show-multiple-offers", {
+        auction,
+        offers: offersWithBids,
+        formatDistanceToNow,
+        displayDate,
+      });
+    } else {
+      const offer = await Offer.findById(articleNumbers[0]);
+
+      res.render("auctions/show", {
+        auction,
+        offer,
+        formatDistanceToNow,
+        displayDate,
+      });
+    }
   }
 };
 
