@@ -482,9 +482,14 @@ module.exports.getBids = async (req, res) => {
       auth: { username },
     });
 
-    const allBids = response.data.Bids;
+    const perPage = 10;
+    const {
+      data: allBids,
+      currentPage,
+      totalPages,
+    } = pagination(response.data.Bids, req.query.page, perPage);
 
-    res.render("auctions/showBids", { allBids, displayDate });
+    res.render("auctions/showBids", { allBids, displayDate, currentPage, totalPages, auctionId, perPage });
   } catch (error) {
     if (error.isAxiosError && error.response.status === 404) {
       req.flash("error", error.response.data);
