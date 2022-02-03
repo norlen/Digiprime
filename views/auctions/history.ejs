@@ -46,7 +46,7 @@
           </a>
         </td>
         <td><%= auction.payload.articleno.val[0] %></td>
-        <td><%= auction.payload.closing_time.val[0] %></td>
+        <td><%= displayDate(auction.payload.closing_time.val[0]) %></td>
         <td><%= auction.payload.highest_bidder.val[0] %></td>
       </tr>
       <% } %>

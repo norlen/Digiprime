@@ -38,9 +38,9 @@
           <span class="text-muted">
             <!-- prettier-ignore -->
             <% if (auction.closingTime < Date.now()) { %>
-              ended <%= showDistanceToNow(auction.payload.closing_time.val[0]) %> ago
+              ended <%= formatDistanceToNow(new Date(auction.payload.closing_time.val[0])) %> ago
             <% } else { %>
-              ends in <%= showDistanceToNow(auction.payload.closing_time.val[0]) %>
+              ends in <%= formatDistanceToNow(new Date(auction.payload.closing_time.val[0])) %>
             <% } %>
           </span>
         </div>

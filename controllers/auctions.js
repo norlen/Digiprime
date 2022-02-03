@@ -2,12 +2,12 @@ const Joi = require("joi");
 const axios = require("axios");
 const Offer = require("../models/offer");
 const User = require("../models/user");
-const {
-  createNeTimeString,
-  parseAsUTCDate,
-  showDistanceToNow,
-  displayDate,
-} = require("../utils/time");
+const formatDistanceToNow = require("date-fns/formatDistanceToNow");
+const formatDate = require("date-fns/format");
+
+const displayDate = (dateString) => {
+  return formatDate(new Date(dateString), "yyyy-MM-dd HH:mm");
+};
 
 const NE_BASE_URL =
   process.env.NEGOTIATION_ENGINE_BASE_URL || "http://localhost:5000";
@@ -237,7 +237,7 @@ module.exports.createAuction = async (req, res) => {
       ...params,
       room_name: data.auctionTitle,
       quantity: data.quantity,
-      closing_time: createNeTimeString(data.closingTime),
+      closing_time: new Date(data.closingTime).toISOString(),
       template_type: "article",
     };
 
@@ -275,10 +275,9 @@ module.exports.show = async (req, res) => {
   });
 
   let auction = response.data;
-  auction.closed =
-    parseAsUTCDate(auction.payload.closing_time.val[0]) <= Date.now();
+  auction.closed = new Date(auction.payload.closing_time.val[0]) <= Date.now();
   auction.ended = auction.payload.buyersign.val[0] !== "";
-  auction.closingTime = parseAsUTCDate(auction.payload.closing_time.val[0]);
+  auction.closingTime = new Date(auction.payload.closing_time.val[0]);
 
   const articleNumbers = auction.payload.articleno.val[0].split(",");
   if (articleNumbers.length > 1) {
@@ -301,7 +300,7 @@ module.exports.show = async (req, res) => {
     res.render("auctions/show-multiple-offers", {
       auction,
       offers: offersWithBids,
-      showDistanceToNow,
+      formatDistanceToNow,
       displayDate,
     });
   } else {
@@ -310,7 +309,7 @@ module.exports.show = async (req, res) => {
     res.render("auctions/show", {
       auction,
       offer,
-      showDistanceToNow,
+      formatDistanceToNow,
       displayDate,
     });
   }
@@ -330,7 +329,7 @@ module.exports.index = async (req, res) => {
     auth: { username },
   });
   const sortedAuctions = response.data.map((auction) => {
-    auction.closingTime = parseAsUTCDate(auction.payload.closing_time.val[0]);
+    auction.closingTime = new Date(auction.payload.closing_time.val[0]);
     auction.closed = auction.closingTime <= Date.now();
     return auction;
   });
@@ -345,7 +344,7 @@ module.exports.index = async (req, res) => {
 
   res.render("auctions/index", {
     auctions,
-    showDistanceToNow,
+    formatDistanceToNow,
     currentPage,
     totalPages,
   });
@@ -375,6 +374,7 @@ module.exports.history = async (req, res) => {
     auctions,
     currentPage,
     totalPages,
+    displayDate,
   });
 };
 

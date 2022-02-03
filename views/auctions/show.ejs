@@ -57,8 +57,8 @@
           </ul>
 
           <div class="card-footer text-muted">
-            created <%= showDistanceToNow(auction.payload.created_at.val[0]) %>
-            ago
+            created <%= formatDistanceToNow(new
+            Date(auction.payload.created_at.val[0])) %> ago
           </div>
         </div>
       </div>
@@ -154,7 +154,8 @@
         </table>
 
         <a class="btn btn-primary" href="/auctions/<%= auction._id %>/bids">
-          View all bids</a>
+          View all bids</a
+        >
       </div>
     </div>
   </div>
