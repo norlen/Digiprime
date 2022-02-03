@@ -1,0 +1,188 @@
+<% if (totalPages > 1) { %>
+<ul class="pagination justify-content-center">
+  <% if (currentPage == 1) { %>
+  <li class="page-item disabled">
+    <a class="page-link">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        class="bi bi-chevron-double-left"
+        viewBox="0 0 16 16"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M8.354 1.646a.5.5 0 0 1 0 .708L2.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"
+        />
+        <path
+          fill-rule="evenodd"
+          d="M12.354 1.646a.5.5 0 0 1 0 .708L6.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"
+        />
+      </svg>
+    </a>
+  </li>
+  <li class="page-item disabled">
+    <a class="page-link"
+      ><svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        class="bi bi-chevron-left"
+        viewBox="0 0 16 16"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"
+        />
+      </svg>
+    </a>
+  </li>
+  <% } else { %>
+  <li class="page-item">
+    <a class="page-link" href="/auctions/history?page=1"
+      ><svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        class="bi bi-chevron-double-left"
+        viewBox="0 0 16 16"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M8.354 1.646a.5.5 0 0 1 0 .708L2.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"
+        />
+        <path
+          fill-rule="evenodd"
+          d="M12.354 1.646a.5.5 0 0 1 0 .708L6.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"
+        />
+      </svg>
+    </a>
+  </li>
+  <li class="page-item">
+    <a class="page-link" href="/auctions/history?page=<%= currentPage - 1 %>"
+      ><svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        class="bi bi-chevron-left"
+        viewBox="0 0 16 16"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"
+        />
+      </svg>
+    </a>
+  </li>
+  <% } %>
+  <!--prettier-ignore -->
+  <%
+      const pageButtons = 8;
+      const halfPageButtons = pageButtons / 2;
+      let startIdx, endIdx;
+      if (currentPage <= halfPageButtons) {
+        startIdx = 1;
+        endIdx = Math.min(totalPages, startIdx + pageButtons);
+      } else if (totalPages - currentPage <= halfPageButtons) {
+        startIdx = totalPages - pageButtons;
+        endIdx = totalPages;
+      } else {
+        startIdx = currentPage - halfPageButtons;
+        endIdx = startIdx + pageButtons;
+      }
+      
+      for (let i = startIdx; i <= endIdx; i++) {
+    %>
+    <% if (i == currentPage) { %>
+  <li class="page-item active">
+    <a class="page-link" href="/auctions/history?page=<%= i %>"><%= i %></a>
+  </li>
+  <% } else { %>
+  <li class="page-item">
+    <a class="page-link" href="/auctions/history?page=<%= i %>"><%= i %></a>
+  </li>
+  <% } %> <% } %> <% if (currentPage == totalPages) { %>
+  <li class="page-item disabled">
+    <a class="page-link">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        class="bi bi-chevron-right"
+        viewBox="0 0 16 16"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"
+        />
+      </svg>
+    </a>
+  </li>
+  <li class="page-item disabled">
+    <a class="page-link">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        class="bi bi-chevron-double-right"
+        viewBox="0 0 16 16"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M3.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L9.293 8 3.646 2.354a.5.5 0 0 1 0-.708z"
+        />
+        <path
+          fill-rule="evenodd"
+          d="M7.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L13.293 8 7.646 2.354a.5.5 0 0 1 0-.708z"
+        />
+      </svg>
+    </a>
+  </li>
+  <% } else { %>
+  <li class="page-item">
+    <a class="page-link" href="/auctions/history?page=<%= currentPage + 1 %>">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        class="bi bi-chevron-right"
+        viewBox="0 0 16 16"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"
+        />
+      </svg>
+    </a>
+  </li>
+  <li class="page-item">
+    <a class="page-link" href="/auctions/history?page=<%= totalPages %>">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        class="bi bi-chevron-double-right"
+        viewBox="0 0 16 16"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M3.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L9.293 8 3.646 2.354a.5.5 0 0 1 0-.708z"
+        />
+        <path
+          fill-rule="evenodd"
+          d="M7.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L13.293 8 7.646 2.354a.5.5 0 0 1 0-.708z"
+        />
+      </svg>
+    </a>
+  </li>
+  <% } %>
+</ul>
+<% } %>

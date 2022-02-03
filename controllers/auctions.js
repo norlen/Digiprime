@@ -324,21 +324,30 @@ module.exports.show = async (req, res) => {
  */
 module.exports.index = async (req, res) => {
   const username = req.user.username;
+
   const response = await axios.get(`${NE_BASE_URL}/rooms/active`, {
     auth: { username },
   });
-  const auctions = response.data.map((auction) => {
+  const sortedAuctions = response.data.map((auction) => {
     auction.closingTime = parseAsUTCDate(auction.payload.closing_time.val[0]);
     auction.closed = auction.closingTime <= Date.now();
     return auction;
   });
-  auctions.sort((lhs, rhs) => rhs.closingTime - lhs.closingTime);
+  sortedAuctions.sort((lhs, rhs) => rhs.closingTime - lhs.closingTime);
 
   const perPage = 5;
-  const currentPage = req.query.page || 1;
-  const newAuctions = pagination(auctions, perPage, currentPage);
+  const {
+    data: auctions,
+    currentPage,
+    totalPages,
+  } = pagination(sortedAuctions, req.query.page, perPage);
 
-  res.render("auctions/index", { newAuctions, showDistanceToNow, currentPage, totalPages: Math.ceil(auctions.length/perPage) });
+  res.render("auctions/index", {
+    auctions,
+    showDistanceToNow,
+    currentPage,
+    totalPages,
+  });
 };
 
 /**
@@ -349,15 +358,23 @@ module.exports.index = async (req, res) => {
  */
 module.exports.history = async (req, res) => {
   const username = req.user.username;
+
   const response = await axios.get(`${NE_BASE_URL}/rooms/history`, {
     auth: { username },
   });
 
   const perPage = 10;
-  const currentPage = req.query.page || 1;
-  const newAuctions = pagination(response.data, perPage, currentPage);
-  
-  res.render("auctions/history", { newAuctions , currentPage, totalPages: Math.ceil(response.data.length/perPage)});
+  const {
+    data: auctions,
+    currentPage,
+    totalPages,
+  } = pagination(response.data, req.query.page, perPage);
+
+  res.render("auctions/history", {
+    auctions,
+    currentPage,
+    totalPages,
+  });
 };
 
 // Schema to validate inputs when placing a bid at an auction.
@@ -465,7 +482,7 @@ module.exports.getBids = async (req, res) => {
     });
 
     const allBids = response.data.Bids;
-  
+
     res.render("auctions/showBids", { allBids, displayDate });
   } catch (error) {
     if (error.isAxiosError && error.response.status === 404) {
@@ -478,24 +495,37 @@ module.exports.getBids = async (req, res) => {
 };
 
 /**
- * Returns perPage number of auctions for current page from auctions fetched from ne
- * @param {*} auctions 
- * @param {*} perPage 
- * @param {*} currentPage 
- * @returns 
+ * Returns elementPerPage number of elements from the array passed. The array should be sorted
+ * before passed here.
+ *
+ * @param {any[]} array
+ * @param {number} page
+ * @param {number} elementsPerPage
+ * @returns array with elements from the current page.
  */
-const pagination = (auctions, perPage, currentPage) => {
-  const startIndex = (currentPage * perPage) - perPage;
-  return getAuctions(auctions, startIndex, startIndex + perPage);
-}
+const pagination = (array, currentPage, elementsPerPage) => {
+  const totalPages = Math.floor(array.length / elementsPerPage) + 1;
+  let currPage = 1;
 
-const getAuctions = (auctions, startIndex, endIndex) => {
-  var newAuctions = []; 
-  for ( var i = startIndex; i < endIndex; i++) {
-    if(i == auctions.length) {
-      break;
+  try {
+    if (typeof currentPage === "number") {
+      currPage = Math.max(1, currentPage);
     }
-    newAuctions.push(auctions[i]);
-  }
-  return newAuctions;
+    if (typeof currentPage === "string") {
+      const parsed = parseInt(currentPage);
+      if (!isNaN(parsed)) {
+        currPage = Math.max(1, parsed);
+      }
+    }
+  } catch (err) {}
+
+  // Pages are 1-indexed, so convert to zero index.
+  const startIdx = (currPage - 1) * elementsPerPage;
+  const data = array.splice(startIdx, elementsPerPage);
+
+  return {
+    data,
+    currentPage: currPage,
+    totalPages,
+  };
 };

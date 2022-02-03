@@ -38,7 +38,7 @@
 
     <tbody>
       <!-- for each aution -->
-      <% for (let auction of newAuctions) { %>
+      <% for (let auction of auctions) { %>
       <tr>
         <td>
           <a href="/auctions/<%= auction._id %>">
@@ -53,26 +53,6 @@
     </tbody>
   </table>
 
-  <div class="row">
-    <div class="col-sm-6">
-      <% if(totalPages > 1) { %>
-        <ul class="pagination">
-          <% for (var page = 0; page < totalPages; page++) { %>
-            <% if ((page+1) == currentPage) { %> 
-              <li class="page-item active"><a class="page-link" href="/auctions/history/?page=<%=page+1%>"><%=page+1%></a></li>
-            <% } else { %> 
-              <li class="page-item"><a class="page-link" href="/auctions/history/?page=<%=page+1%>"><%=page+1%></a></li>
-            <% } %>
-          <% } %>
-        </ul>  
-      <% } %>
-    </div>
-
-    <div class="col-sm-6">
-      <div class="card-body text-end">
-        <a class="card-link btn btn-info col-3" href="/auctions/">Back</a>
-      </div>
-    </div>
-  </div>
-
+  <!-- prettier-ignore -->
+  <%- include('../partials/pagination', { data: auctions, currentPage, totalPages }) %>
 </div>
