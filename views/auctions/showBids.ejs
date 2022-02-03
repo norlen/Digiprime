@@ -3,24 +3,28 @@
 <h1>Bids</h1>
 
 <table class="table table-hover">
-    <thead>
+  <thead>
+    <tr>
+      <th scope="col"><p class="h4">Bid no</p></th>
+      <th scope="col"><p class="h4">Sender</p></th>
+      <th scope="col"><p class="h4">Distance</p></th>
+      <th scope="col"><p class="h4">Time for bid</p></th>
+      <th scope="col"><p class="h4">Bid amount</p></th>
+    </tr>
+  </thead>
+  <tbody> 
+    <% var count = 0 %>
+    <% for (let bid of allBids) { %>
       <tr>
-        <th scope="col"><p class="h4">Bid no</p></th>
-        <th scope="col"><p class="h4">Sender</p></th>
-        <th scope="col"><p class="h4">Distance</p></th>
-        <th scope="col"><p class="h4">Time for bid</p></th>
-        <th scope="col"><p class="h4">Bid amount</p></th>
+        <td scope="row"><%= ((currentPage-1)*perPage) + count++ %></th>
+        <td><strong><%= bid.sender.val[0] %></strong></td>
+        <td><%= Math.round(bid.distance.val[0]) %></td>
+        <td><%= displayDate(bid.created_at.val[0]) %></td>
+        <td><p><strong><%=bid.text.val[0] %> $</strong></p></td>
       </tr>
-    </thead>
-    <tbody>
-        <% for (let bid = 0; bid < allBids.length; bid++) { %>
-      <tr>
-        <td scope="row"><%= bid %></th>
-        <td><strong><%= allBids[bid].sender.val[0] %></strong></td>
-        <td><%= Math.round(allBids[bid].distance.val[0]) %></td>
-        <td><%= displayDate(allBids[bid].created_at.val[0]) %></td>
-        <td><p><strong><%= allBids[bid].text.val[0] %> $</strong></p></td>
-      </tr>
-      <% } %>
+    <% } %>
     </tbody>
-  </table>
+</table>
+
+<!-- prettier-ignore -->
+<%- include('../partials/pagination', { data: allBids, currentPage, totalPages, path: `${auctionId}/bids` }) %>
