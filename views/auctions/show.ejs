@@ -63,7 +63,24 @@
         </div>
       </div>
 
-      <a class="card-link btn btn-info col-5" href="/auctions">Back</a>
+      <div class="mb-5">
+        <a class="card-link btn btn-primary" href="/auctions"
+          ><svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="currentColor"
+            class="bi bi-arrow-bar-left"
+            viewBox="0 0 16 16"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5zM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5z"
+            />
+          </svg>
+          <span>All auctions</span></a
+        >
+      </div>
     </div>
 
     <!-- Höger kolumn -->
@@ -74,7 +91,9 @@
           <h3>
             Auction: <%= auction.payload.room_name.val[0] %> <% if
             (auction.ended) { %>
-            <span class="badge bg-danger">Ended</span>
+            <span class="badge bg-danger">ENDED</span>
+            <% } else if (auction.closed) { %>
+              <span class="badge bg-danger">CLOSED</span>    
             <% } else { %>
             <span class="badge bg-primary"
               ><%= auction.payload.auction_type.val[0] %></span
@@ -100,18 +119,25 @@
           <% var auctioneer = auction.members[0].added_by ==
           currentUser.username ? 1 : 0; %>
           <!-- 0 = budare, 1 = skapare av auktion -->
-          <% if (auctioneer && auction.canEnd) { %>
+          <% if (auctioneer && auction.closed && !auction.ended) { %>
+            <% if (auction.bids.length == 0) { %>
+              <button type="button" class="card-link btn btn-danger" disabled>
+                Select Winner
+              </button>
+              <small class="text-muted d-block mt-1"
+                >Cannot select winner. No bids have been placed.</small>
+            <% } else { %>
+              <button
+                type="button"
+                class="card-link btn btn-info col-12"
+                data-bs-toggle="modal"
+                data-bs-target="#pickWinnerModal"
+              >
+                Pick Winner
+              </button>
+            <% } %>
 
-          <button
-            type="button"
-            class="card-link btn btn-info col-12"
-            data-bs-toggle="modal"
-            data-bs-target="#pickWinnerModal"
-          >
-            Pick Winner
-          </button>
-
-          <% } else if (!auctioneer) { %>
+          <% } else if (!auctioneer && !auction.ended && !auction.closed) { %>
 
           <label class="form-label" for="bid">Offer Price</label>
           <form class="" method="POST" action="/auctions/<%= auction._id %>">
