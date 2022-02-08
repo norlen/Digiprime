@@ -66,6 +66,7 @@
       <li class="list-group-item">
         <small class="text-muted"><%= offer.location %></small>
       </li>
+      <% if (includeSelectForAuction) { %>
       <li
         class="list-group-item d-flex align-items-center justify-content-between"
       >
@@ -79,6 +80,7 @@
           aria-label="Checkbox for following text input"
         />
       </li>
+      <% } %>
     </ul>
   </div>
 </div>

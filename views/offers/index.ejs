@@ -26,7 +26,7 @@
   <div class="row row-cols-1 row-cols-md-3 g-4">
     <!-- prettier-ignore -->
     <% for (let offer of offers) { %>
-        <%- include('../partials/offer-default', { offer }) %>
+        <%- include('../partials/offer-default', { offer, includeSelectForAuction: false }) %>
     <% } %>
   </div>
 </div>
