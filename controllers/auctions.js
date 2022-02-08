@@ -260,6 +260,22 @@ module.exports.createAuction = async (req, res) => {
   }
 };
 
+const getContractDetails = (contract, offerId, offerTitle) => {
+  const text = contract.split("Buyer signature")[0];
+  const [textPreOfferId, textPostOfferId] = text.split(offerId);
+  const buyerSig = contract
+    .split("Seller signature")[0]
+    .split("Buyer signature")[1];
+  const sellerSig = contract.split("Seller signature")[1];
+  const offerText = `${offerTitle} (${offerId})`;
+
+  return {
+    text: `${textPreOfferId}${offerText}${textPostOfferId}`,
+    sellerSignature: sellerSig,
+    buyerSignature: buyerSig,
+  };
+};
+
 /**
  * Display a single auction.
  *
@@ -283,22 +299,41 @@ module.exports.show = async (req, res) => {
   if (auction.ended) {
     // We want to display a winning offer here.
     // For the single-offer auction we displayed the auctioned offer.
-    // For mulutple-offer auction we display the winning offer.
-    const members = auction.members.map((member) => member._id.username);
+    // For multiple-offer auction we display the winning offer.
 
     let offer;
     if (articleNumbers.length > 1) {
-      offer = await Offer.find({
-        _id: { $in: articleNumbers },
-        username: { $in: members },
-      })
+      const offers = await Offer.find({ _id: { $in: articleNumbers } })
         .populate("author")
         .exec();
+
+      // Get the offer of the highest bidder.
+      const highestBidder = auction.payload.highest_bidder.val[0];
+      for (let potentialOffer of offers) {
+        if (potentialOffer.author.username === highestBidder) {
+          offer = potentialOffer;
+          break;
+        }
+      }
     } else {
       offer = await Offer.findById(articleNumbers[0]).populate("author");
     }
 
-    res.render("auctions/auctionEndedAuctioneerView", {
+    // Get the winning contract from NE.
+    const { data: contractData } = await axios.get(
+      `${NE_BASE_URL}/rooms/${auctionId}/end`,
+      {
+        auth: { username },
+      }
+    );
+    const contract = getContractDetails(
+      contractData.contract,
+      offer._id,
+      offer.title
+    );
+
+    res.render("auctions/auction-ended-auctioneer-view", {
+      contract,
       auction,
       offer,
       displayDate,
@@ -506,6 +541,7 @@ module.exports.getBids = async (req, res) => {
     const response = await axios.get(`${NE_BASE_URL}/rooms/${auctionId}`, {
       auth: { username },
     });
+    console.log(response.data.Bids[0].created_at);
 
     const perPage = 10;
     const {

@@ -1,33 +1,29 @@
 <% layout('layouts/boilerplate') %>
 
 <div class="container">
-  <h1>Auction ended</h1>
-
   <div class="row">
     <div class="col-sm">
-      <div class="border p-2">
-        <p>
-          Congratulations! The auction you have been participating in has ended.
-          <br /><br />
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          miniuat. Duis aute irure dolor in reprehenderit in voluptate velit
-          esse cillu
-        </p>
-      </div>
-
-      <br /><br /><br />
-
-      <div class="">
+      <h1>
+        <%= auction.payload.room_name.val[0] %>
+        <span class="badge bg-danger fs-6 mt-3">ENDED</span>
+      </h1>
+      <p class="text-muted">
+        Congratulations! The auction you have been participating in has ended.
+      </p>
+      <div class="pt-3">
         <h3>CONTRACTUAL AGREEMENT</h3>
-        <br />
-        <h4>Contract type</h4>
+        <p><%= contract.text %></p>
         <p>
-          Contract text - Lorem ipsum dolor sit amet, consectetur adipisicing
-          elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-          aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
-          laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
-          in reprehenderitlaborum.
+          Buyer signature:
+          <span class="badge rounded-pill bg-secondary">
+            <%= contract.buyerSignature %>
+          </span>
+        </p>
+        <p>
+          Seller signature:
+          <span class="badge rounded-pill bg-secondary">
+            <%= contract.sellerSignature %>
+          </span>
         </p>
       </div>
     </div>
@@ -70,18 +66,14 @@
       <table class="table table-bordered">
         <tbody>
           <tr>
-            <th scope="row">Room name:</th>
-            <td><%= auction.payload.room_name.val[0] %></td>
-          </tr>
-          <tr>
-            <th scope="row">Highest bid:</th>
-            <td>$<%= auction.payload.highest_bid.val[0] %></td>
-          </tr>
-          <tr>
             <th scope="row">Highest bidder:</th>
             <td>
               <a href="#"><%= auction.payload.highest_bidder.val[0] %></a>
             </td>
+          </tr>
+          <tr>
+            <th scope="row">Highest bid:</th>
+            <td>$<%= auction.payload.highest_bid.val[0] %></td>
           </tr>
           <tr>
             <th scope="row">Auction created date:</th>
@@ -93,7 +85,12 @@
           </tr>
         </tbody>
       </table>
-      <button type="button" class="btn btn-lg btn-info" name="button">
+      <button
+        type="button"
+        class="btn btn-lg btn-primary"
+        name="button"
+        disabled
+      >
         Get in contact
       </button>
     </div>
