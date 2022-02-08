@@ -260,6 +260,22 @@ module.exports.createAuction = async (req, res) => {
   }
 };
 
+const getContractDetails = (contract, offerId, offerTitle) => {
+  const text = contract.split("Buyer signature")[0];
+  const [textPreOfferId, textPostOfferId] = text.split(offerId);
+  const buyerSig = contract
+    .split("Seller signature")[0]
+    .split("Buyer signature")[1];
+  const sellerSig = contract.split("Seller signature")[1];
+  const offerText = `${offerTitle} (${offerId})`;
+
+  return {
+    text: `${textPreOfferId}${offerText}${textPostOfferId}`,
+    sellerSignature: sellerSig,
+    buyerSignature: buyerSig,
+  };
+};
+
 /**
  * Display a single auction.
  *
@@ -280,38 +296,82 @@ module.exports.show = async (req, res) => {
   auction.closingTime = new Date(auction.payload.closing_time.val[0]);
 
   const articleNumbers = auction.payload.articleno.val[0].split(",");
-  if (articleNumbers.length > 1) {
-    // New auction.
-    let offers = await Offer.find({ _id: { $in: articleNumbers } })
-      .populate("author")
-      .exec();
+  if (auction.ended) {
+    // We want to display a winning offer here.
+    // For the single-offer auction we displayed the auctioned offer.
+    // For multiple-offer auction we display the winning offer.
 
-    // Map bids to offers.
-    let member_to_bid = {};
-    for (let bid of auction.bids) {
-      member_to_bid[bid.sender] = bid;
+    let offer;
+    if (articleNumbers.length > 1) {
+      const offers = await Offer.find({ _id: { $in: articleNumbers } })
+        .populate("author")
+        .exec();
+
+      // Get the offer of the highest bidder.
+      const highestBidder = auction.payload.highest_bidder.val[0];
+      for (let potentialOffer of offers) {
+        if (potentialOffer.author.username === highestBidder) {
+          offer = potentialOffer;
+          break;
+        }
+      }
+    } else {
+      offer = await Offer.findById(articleNumbers[0]).populate("author");
     }
 
-    const offersWithBids = offers.map((offer) => ({
-      ...offer._doc,
-      bid: member_to_bid[offer.author.username],
-    }));
+    // Get the winning contract from NE.
+    const { data: contractData } = await axios.get(
+      `${NE_BASE_URL}/rooms/${auctionId}/end`,
+      {
+        auth: { username },
+      }
+    );
+    const contract = getContractDetails(
+      contractData.contract,
+      offer._id,
+      offer.title
+    );
 
-    res.render("auctions/show-multiple-offers", {
+    res.render("auctions/auction-ended-auctioneer-view", {
+      contract,
       auction,
-      offers: offersWithBids,
-      formatDistanceToNow,
+      offer,
       displayDate,
     });
   } else {
-    const offer = await Offer.findById(articleNumbers[0]);
+    if (articleNumbers.length > 1) {
+      // New auction.
+      let offers = await Offer.find({ _id: { $in: articleNumbers } })
+        .populate("author")
+        .exec();
 
-    res.render("auctions/show", {
-      auction,
-      offer,
-      formatDistanceToNow,
-      displayDate,
-    });
+      // Map bids to offers.
+      let member_to_bid = {};
+      for (let bid of auction.bids) {
+        member_to_bid[bid.sender] = bid;
+      }
+
+      const offersWithBids = offers.map((offer) => ({
+        ...offer._doc,
+        bid: member_to_bid[offer.author.username],
+      }));
+
+      res.render("auctions/show-multiple-offers", {
+        auction,
+        offers: offersWithBids,
+        formatDistanceToNow,
+        displayDate,
+      });
+    } else {
+      const offer = await Offer.findById(articleNumbers[0]);
+
+      res.render("auctions/show", {
+        auction,
+        offer,
+        formatDistanceToNow,
+        displayDate,
+      });
+    }
   }
 };
 
@@ -481,6 +541,7 @@ module.exports.getBids = async (req, res) => {
     const response = await axios.get(`${NE_BASE_URL}/rooms/${auctionId}`, {
       auth: { username },
     });
+    console.log(response.data.Bids[0].created_at);
 
     const perPage = 10;
     const {
@@ -489,7 +550,14 @@ module.exports.getBids = async (req, res) => {
       totalPages,
     } = pagination(response.data.Bids, req.query.page, perPage);
 
-    res.render("auctions/showBids", { allBids, displayDate, currentPage, totalPages, auctionId, perPage });
+    res.render("auctions/showBids", {
+      allBids,
+      displayDate,
+      currentPage,
+      totalPages,
+      auctionId,
+      perPage,
+    });
   } catch (error) {
     if (error.isAxiosError && error.response.status === 404) {
       req.flash("error", error.response.data);

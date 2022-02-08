@@ -5,9 +5,9 @@ auction.payload.created_by.val[0] === currentUser.username %>
   <div class="row justify-content-between mb-3">
     <div class="d-flex gap-2">
       <h1><%= auction.payload.name.val[0] %></h1>
-      <span class="badge bg-primary fs-6 my-3"
-        ><%= auction.payload.auction_type.val[0] %></span
-      >
+      <span class="badge bg-primary fs-6 my-3">
+        <%= auction.payload.auction_type.val[0] %>
+      </span>
       <% if (auction.closed) { %>
       <span class="badge bg-danger fs-6 my-3">CLOSED</span>
       <% } %>
@@ -34,6 +34,10 @@ auction.payload.created_by.val[0] === currentUser.username %>
         <li class="list-group-item d-flex justify-content-between">
           <h6><%= auction.payload.reference_type.val[0] %></h6>
           <span class="text-muted">Reference type</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <h6><%= auction.payload.quantity.val[0] %></h6>
+          <span class="text-muted">Quantity</span>
         </li>
       </ul>
       <% if (!isCreator && !auction.closed) { %>
@@ -168,8 +172,8 @@ auction.payload.created_by.val[0] === currentUser.username %>
   </div>
 
   <div class="mb-5">
-    <a class="card-link btn btn-primary" href="/auctions"
-      ><svg
+    <a class="card-link btn btn-primary" href="/auctions">
+      <svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"
         height="16"
@@ -182,8 +186,11 @@ auction.payload.created_by.val[0] === currentUser.username %>
           d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5zM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5z"
         />
       </svg>
-      <span>All auctions</span></a
-    >
+      <span>All auctions</span>
+    </a>
+    <a href="/auctions/<%= auction._id %>/bids" class="btn btn-primary">
+      View all bids
+    </a>
   </div>
 
   <div
