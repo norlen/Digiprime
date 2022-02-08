@@ -3,13 +3,14 @@ const mapboxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
 const mapboxToken = process.env.MAPBOX_TOKEN;
 const geocoder = mapboxGeocoding({ accessToken: mapboxToken });
 const { cloudinary } = require("../cloudinary");
+const formatDistanceToNow = require("date-fns/formatDistanceToNow");
 
 const costumers = ["Supply", "Demand"];
 const referenceSectors = ["Composites", "Batteries"];
 const referenceTypes = ["Material", "Product"];
 
 module.exports.index = async (req, res) => {
-  const offers = await Offer.find({});
+  const offers = await Offer.find({}).populate("author");
   res.render("offers/index", { offers });
 };
 
@@ -56,7 +57,7 @@ module.exports.show = async (req, res) => {
     req.flash("error", "Cannot find that offer!");
     return res.redirect("/offers");
   }
-  res.render("offers/show", { offer });
+  res.render("offers/show", { offer, formatDistanceToNow });
 };
 
 module.exports.editForm = async (req, res) => {

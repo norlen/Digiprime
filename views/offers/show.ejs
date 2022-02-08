@@ -36,45 +36,22 @@
     </div>
 
     <div class="card mb-3">
-      <div class="accordion accordion-flush" id="accordionTest">
-        <div class="accordion-item">
-          <h2 class="accordion-header" id="headingOne">
-            <button
-              class="accordion-button collapsed fs-4 fw-bold"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#collapseOne"
-              aria-expanded="false"
-              aria-controls="collapseOne"
-            >
-              <%= offer.title %> <span class="text-white">.</span>
-              <span class="badge rounded-pill bg-success"
-                ><%= offer.costumer %></span
-              >
-            </button>
-          </h2>
-          <div
-            id="collapseOne"
-            class="accordion-collapse collapse"
-            aria-labelledby="headingOne"
-            data-bs-parent="#accordionTest"
-          >
-            <div class="accordion-body">
-              <div class="list-group list-group-flush">
-                <li class="list-group-item"><%= offer.referenceSector %></li>
-                <li class="list-group-item"><%= offer.referenceType %></li>
-                <li class="list-group-item">$<%= offer.price %> / Piece</li>
-                <li class="list-group-item"><%= offer.description %></li>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div class="d-flex flex-row">
+        <h2 class="my-3 mx-4"><%= offer.title %></h2>
+        <span class="badge bg-success my-4"> <%= offer.costumer %> </span>
       </div>
 
       <ul class="list-group list-group-flush">
+        <li class="list-group-item"><%= offer.referenceSector %></li>
+        <li class="list-group-item"><%= offer.referenceType %></li>
+        <li class="list-group-item">$<%= offer.price %> / Piece</li>
+        <li class="list-group-item"><%= offer.description %></li>
         <li class="list-group-item text-muted"><%= offer.location %></li>
         <li class="list-group-item">
-          Submitted by <%= offer.author.username %>
+          Submitted by
+          <a href="/profile/<%= offer.author.username %>"
+            ><%= offer.author.username %></a
+          >
         </li>
         <!-- <li class="list-group-item">$<%= offer.price %> / Piece</li> -->
       </ul>
@@ -100,7 +77,10 @@
         >
       </div>
       <% } %>
-      <div class="card-footer text-muted">2 day ago</div>
+      <div class="card-footer text-muted">
+        created <%= formatDistanceToNow(new Date(offer._id.getTimestamp())) %>
+        ago
+      </div>
     </div>
   </div>
   <div class="col-6">
