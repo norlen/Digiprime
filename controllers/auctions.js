@@ -2,7 +2,6 @@ const Joi = require("joi");
 const axios = require("axios");
 const Offer = require("../models/offer");
 const User = require("../models/user");
-const UserInformation = require("../models/userinformation");
 const formatDistanceToNow = require("date-fns/formatDistanceToNow");
 const formatDate = require("date-fns/format");
 
@@ -239,7 +238,7 @@ module.exports.createAuction = async (req, res) => {
       room_name: data.auctionTitle,
       quantity: data.quantity,
       closing_time: new Date(data.closingTime).toISOString(),
-      template_type: "article",
+      templatetype: "article",
     };
 
     const urlParams = new URLSearchParams(params);
@@ -296,8 +295,18 @@ module.exports.show = async (req, res) => {
   auction.ended = auction.payload.buyersign.val[0] !== "";
   auction.closingTime = new Date(auction.payload.closing_time.val[0]);
 
-  const articleNumbers = auction.payload.articleno.val[0].split(",");
+  let isWinnerOrCreator = false;
   if (auction.ended) {
+    if (username === auction.payload.created_by.val[0]) {
+      isWinnerOrCreator = true;
+    }
+    if (username === auction.payload.highest_bidder.val[0]) {
+      isWinnerOrCreator = true;
+    }
+  }
+
+  const articleNumbers = auction.payload.articleno.val[0].split(",");
+  if (auction.ended && isWinnerOrCreator) {
     // We want to display a winning offer here.
     // For the single-offer auction we displayed the auctioned offer.
     // For multiple-offer auction we display the winning offer.

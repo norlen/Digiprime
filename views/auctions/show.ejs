@@ -1,71 +1,53 @@
-<% layout('layouts/boilerplate') %>
+<% layout('layouts/boilerplate') %> <% const isCreator =
+auction.payload.created_by.val[0] === currentUser.username %>
 
 <div class="container mt-3">
+  <div class="row justify-content-between mb-3">
+    <div class="d-flex gap-2">
+      <h1><%= auction.payload.name.val[0] %></h1>
+      <span class="badge bg-primary fs-6 my-3">
+        <%= auction.payload.auction_type.val[0] %>
+      </span>
+      <% if (auction.closed) { %>
+      <span class="badge bg-danger fs-6 my-3">CLOSED</span>
+      <% } %>
+    </div>
+
+    <div class="col-4"></div>
+  </div>
+
   <div class="row">
     <!-- Vänster kolumn - Offers -->
+
     <div class="col-sm-6">
-      <div class="col" id="eachBlock">
-        <div class="card mb-3">
+      <div class="card mb-3">
+        <a href="/offers/<%= offer._id %>">
+          <% if (offer.images.length) {%>
+          <img class="img-fluid" alt="" src="<%=offer.images[0].url%> " />
+          <% }else { %>
           <img
             class="img-fluid"
             alt=""
             src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg"
           />
-
-          <div class="accordion accordion-flush" id="accordionTest">
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="headingOne">
-                <button
-                  class="accordion-button collapsed fs-4 fw-bold"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#collapseOne"
-                  aria-expanded="false"
-                  aria-controls="collapseOne"
-                >
-                  <%= offer.title %> <span class="text-white">.</span>
-                  <span class="badge rounded-pill bg-success"
-                    ><%= offer.costumer %></span
-                  >
-                </button>
-              </h2>
-              <div
-                id="collapseOne"
-                class="accordion-collapse collapse"
-                aria-labelledby="headingOne"
-                data-bs-parent="#accordionTest"
-              >
-                <div class="accordion-body">
-                  <div class="list-group list-group-flush">
-                    <li class="list-group-item">
-                      <%= offer.referenceSector %>
-                    </li>
-                    <li class="list-group-item"><%= offer.referenceType %></li>
-                    <li class="list-group-item">$<%= offer.price %> / Piece</li>
-                    <li class="list-group-item"><%= offer.description %></li>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item text-muted"><%= offer.location %></li>
-            <li class="list-group-item">
-              Submitted by <%= auction.payload.created_by.val[0] %>
-            </li>
-          </ul>
-
-          <div class="card-footer text-muted">
-            created <%= formatDistanceToNow(new
-            Date(auction.payload.created_at.val[0])) %> ago
-          </div>
+          <% } %>
+        </a>
+        <div class="d-flex flex-row">
+          <h2 class="my-3 mx-4">
+            <a href="/offers/<%= offer._id %>"><%= offer.title %></a>
+          </h2>
+          <span class="badge bg-success my-4"> <%= offer.costumer %> </span>
         </div>
+
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><%= offer.description %></li>
+          <li class="list-group-item text-muted"><%= offer.location %></li>
+        </ul>
       </div>
 
       <div class="mb-5">
-        <a class="card-link btn btn-primary" href="/auctions"
-          ><svg
+        <a class="card-link btn btn-primary" href="/auctions">
+          <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
             height="16"
@@ -78,96 +60,110 @@
               d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5zM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5z"
             />
           </svg>
-          <span>All auctions</span></a
-        >
+          <span>All auctions</span>
+        </a>
       </div>
     </div>
 
     <!-- Höger kolumn -->
     <div class="col-sm-6">
-      <!-- Info om rum och lägga bud -->
-      <div class="card">
-        <div class="card-body bg-light text-center">
-          <h3>
-            Auction: <%= auction.payload.room_name.val[0] %>
-            <!-- prettier-ignore -->
-            <% if (auction.ended) { %>
-            <span class="badge bg-danger">ENDED</span>
-            <% } else if (auction.closed) { %>
-            <span class="badge bg-danger">CLOSED</span>
-            <% } else { %>
-            <span class="badge bg-primary">
-              <%= auction.payload.auction_type.val[0] %>
-            </span>
-            <% } %>
-          </h3>
-        </div>
+      <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between">
+          <h6>
+            <a href="/profile/<%= auction.payload.created_by.val[0] %>"
+              ><%= auction.payload.created_by.val[0] %></a
+            >
+          </h6>
+          <span class="text-muted">Created by</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <h6><%= auction.payload.reference_sector.val[0] %></h6>
+          <span class="text-muted">Reference sector</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <h6><%= auction.payload.reference_type.val[0] %></h6>
+          <span class="text-muted">Reference type</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <h6><%= auction.payload.quantity.val[0] %></h6>
+          <span class="text-muted">Quantity</span>
+        </li>
+      </ul>
 
-        <div class="card-body text">
-          <table class="table table-borderless">
-            <tbody>
-              <td>Starting bid:</td>
-              <td class="text-end">$<%= offer.price %></td>
-            </tbody>
-            <tbody>
-              <td>Closing time:</td>
-              <td class="text-end">
-                <%= displayDate(auction.payload.closing_time.val[0]) %>
-              </td>
-            </tbody>
-          </table>
-
-          <% var auctioneer = auction.members[0].added_by ==
-          currentUser.username ? 1 : 0; %>
-          <!-- 0 = budare, 1 = skapare av auktion -->
-          <% if (auctioneer && auction.closed && !auction.ended) { %> <% if
-          (auction.bids.length == 0) { %>
-          <button type="button" class="card-link btn btn-danger" disabled>
-            Select Winner
-          </button>
-          <small class="text-muted d-block mt-1"
-            >Cannot select winner. No bids have been placed.</small
-          >
-          <% } else { %>
-          <button
-            type="button"
-            class="card-link btn btn-info col-12"
-            data-bs-toggle="modal"
-            data-bs-target="#pickWinnerModal"
-          >
-            Pick Winner
-          </button>
-          <% } %> <% } else if (!auctioneer && !auction.ended &&
-          !auction.closed) { %>
-
-          <label class="form-label" for="bid">Offer Price</label>
-          <form class="" method="POST" action="/auctions/<%= auction._id %>">
-            <div class="input-group mb-3">
-              <span class="input-group-text" id="bid-label">$</span>
-              <input
-                type="text"
-                class="form-control"
-                id="bid"
-                placeholder="0.00"
-                aria-label="bid"
-                aria-describedby="bid-label"
-                name="bid"
-                required
-              />
+      <div class="mt-1">
+        <ul class="list-group">
+          <li class="list-group-item d-flex justify-content-between">
+            <h6><%= displayDate(auction.payload.closing_time.val[0]) %></h6>
+            <span class="text-muted">Closing time</span>
+          </li>
+          <li class="list-group-item">
+            <div class="row justify-content-between">
+              <div class="col-3 text-center">
+                <h6 id="remaining-days" class="mb-2">0</h6>
+                <span class="text-muted">Days</span>
+              </div>
+              <div class="col-3 text-center">
+                <h6 id="remaining-hours" class="mb-2">0</h6>
+                <span class="text-muted">Hours</span>
+              </div>
+              <div class="col-3 text-center">
+                <h6 id="remaining-minutes" class="mb-2">0</h6>
+                <span class="text-muted">Minutes</span>
+              </div>
+              <div class="col-3 text-center">
+                <h6 id="remaining-seconds" class="mb-2">0</h6>
+                <span class="text-muted">Seconds</span>
+              </div>
             </div>
-            <button type="submit" class="card-link btn btn-info col-12">
-              Place Bid
-            </button>
-          </form>
-
-          <% } %>
-        </div>
+          </li>
+        </ul>
       </div>
 
-      <br />
-      <h3>Bid History</h3>
+      <% if (!isCreator && !auction.closed) { %>
+      <form
+        class="w-100 input-group mt-2"
+        method="POST"
+        action="/auctions/<%= auction._id %>"
+      >
+        <span class="input-group-text">$</span>
+        <input
+          id="bid"
+          name="bid"
+          required
+          type="text"
+          class="form-control"
+          aria-label="bid"
+          placeholder="0.00"
+        />
+        <button type="submit" class="input-group-text btn-primary">
+          Place bid
+        </button>
+      </form>
+      <% } else if (isCreator && auction.closed) { %>
+      <div class="mt-2">
+        <% if (auction.bids.length == 0) { %>
+        <button type="button" class="card-link btn btn-danger" disabled>
+          Select Winner
+        </button>
+        <small class="text-muted d-block mt-1"
+          >Cannot select winner. No bids have been placed.</small
+        >
+        <% } else { %>
+        <button
+          type="button"
+          class="card-link btn btn-primary w-100"
+          data-bs-toggle="modal"
+          data-bs-target="#pickWinnerModal"
+        >
+          Select Winner
+        </button>
+        <% } %>
+      </div>
+      <% } %>
 
       <!-- Bud historik-->
+      <h4 class="mt-4">Bid History</h4>
+
       <div class="card">
         <table class="table">
           <% for (let bid of auction.bids) { %>
@@ -263,3 +259,43 @@
     </div>
   </div>
 </div>
+
+<script>
+  const closingTime = new Date("<%= auction.closingTime.toString() %>");
+
+  const getSplitClosingTime = (closingTime) => {
+    let diff = closingTime.getTime() - Date.now();
+
+    const SECOND = 1000;
+    const MINUTE = 60 * SECOND;
+    const HOUR = 60 * MINUTE;
+    const DAY = 24 * HOUR;
+
+    const days = Math.max(0, Math.floor(diff / DAY));
+    diff -= days * DAY;
+    const hours = Math.max(0, Math.floor(diff / HOUR));
+    diff -= hours * HOUR;
+    const minutes = Math.max(0, Math.floor(diff / MINUTE));
+    diff -= minutes * MINUTE;
+    const seconds = Math.max(0, Math.floor(diff / SECOND));
+
+    return { days, hours, minutes, seconds };
+  };
+
+  const daySelector = document.getElementById("remaining-days");
+  const hourSelector = document.getElementById("remaining-hours");
+  const minuteSelector = document.getElementById("remaining-minutes");
+  const secondSelector = document.getElementById("remaining-seconds");
+  const updateClosingTime = () => {
+    const time = getSplitClosingTime(closingTime);
+    daySelector.innerHTML = time.days;
+    hourSelector.innerHTML = time.hours;
+    minuteSelector.innerHTML = time.minutes;
+    secondSelector.innerHTML = time.seconds;
+  };
+  updateClosingTime();
+
+  setInterval(() => {
+    updateClosingTime();
+  }, 1000);
+</script>
