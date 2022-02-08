@@ -2,6 +2,7 @@ const Joi = require("joi");
 const axios = require("axios");
 const Offer = require("../models/offer");
 const User = require("../models/user");
+const UserInformation = require("../models/userinformation");
 const formatDistanceToNow = require("date-fns/formatDistanceToNow");
 const formatDate = require("date-fns/format");
 
