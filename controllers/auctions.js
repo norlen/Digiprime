@@ -395,7 +395,7 @@ module.exports.show = async (req, res) => {
 module.exports.index = async (req, res) => {
   const username = req.user.username;
 
-  const response = await axios.get(`${NE_BASE_URL}/rooms/active`, {
+  const response = await axios.get(`${NE_BASE_URL}/rooms/all`, {
     auth: { username },
   });
   const sortedAuctions = response.data.map((auction) => {
@@ -405,12 +405,18 @@ module.exports.index = async (req, res) => {
   });
   sortedAuctions.sort((lhs, rhs) => rhs.closingTime - lhs.closingTime);
 
+  const filteredAuctions = sortedAuctions.filter((auction) => {
+    const hasBids = auction.bids.length > 0;
+    const hasWinner = auction.payload.buyersign.val[0] !== "";
+    return !auction.closed || (!hasWinner && hasBids);
+  });
+
   const perPage = 5;
   const {
     data: auctions,
     currentPage,
     totalPages,
-  } = pagination(sortedAuctions, req.query.page, perPage);
+  } = pagination(filteredAuctions, req.query.page, perPage);
 
   res.render("auctions/index", {
     auctions,
@@ -429,8 +435,18 @@ module.exports.index = async (req, res) => {
 module.exports.history = async (req, res) => {
   const username = req.user.username;
 
-  const response = await axios.get(`${NE_BASE_URL}/rooms/history`, {
+  const response = await axios.get(`${NE_BASE_URL}/rooms/all`, {
     auth: { username },
+  });
+  const fixedAuctions = response.data.map((auction) => {
+    auction.closingTime = new Date(auction.payload.closing_time.val[0]);
+    auction.closed = auction.closingTime <= Date.now();
+    return auction;
+  });
+  const filteredAuctions = fixedAuctions.filter((auction) => {
+    const hasBids = auction.bids.length > 0;
+    const hasWinner = auction.payload.buyersign.val[0] !== "";
+    return !(!auction.closed || (!hasWinner && hasBids));
   });
 
   const perPage = 10;
@@ -438,7 +454,7 @@ module.exports.history = async (req, res) => {
     data: auctions,
     currentPage,
     totalPages,
-  } = pagination(response.data, req.query.page, perPage);
+  } = pagination(filteredAuctions, req.query.page, perPage);
 
   res.render("auctions/history", {
     auctions,
