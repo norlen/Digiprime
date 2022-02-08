@@ -4,13 +4,9 @@ const catchAsync = require("../utils/catchAsync");
 const auction = require("../controllers/auctions");
 const { isLoggedIn } = require("../middleware");
 
-router
-  .route("/")
-  .get(isLoggedIn, catchAsync(auction.index));
+router.route("/").get(isLoggedIn, catchAsync(auction.index));
 
-router
-  .route("/history")
-  .get(isLoggedIn, catchAsync(auction.history));
+router.route("/history").get(isLoggedIn, catchAsync(auction.history));
 
 router
   .route("/create")
@@ -27,8 +23,6 @@ router
   .get(isLoggedIn, catchAsync(auction.showHighestBids))
   .post(isLoggedIn, catchAsync(auction.selectWinner));
 
-router
-  .route("/:id/bids")
-  .get(isLoggedIn, catchAsync(auction.getBids));
+router.route("/:id/bids").get(isLoggedIn, catchAsync(auction.getBids));
 
 module.exports = router;

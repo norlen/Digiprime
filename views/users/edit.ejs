@@ -1,6 +1,6 @@
 <% layout('layouts/boilerplatetwo') %>
 
-<form method="POST" action="/editPage">
+<form method="POST" action="/profile/edit">
   <div class="container rounded bg-white mt-1 mb-5">
     <div class="row">
       <div class="col-md-3 border-right">
@@ -18,8 +18,8 @@
             src="<%= currentUser.image.url %>"
           />
           <% } %>
-          <span class="font-weight-bold"><%=currentUser.username%></span>
-          <span class="text-black-50"><%=currentUser.email%></span>
+          <span class="font-weight-bold"><%= currentUser.username %></span>
+          <span class="text-black-50"><%= currentUser.email %></span>
         </div>
       </div>
       <div class="col-md-5 border-right">
@@ -36,7 +36,7 @@
                 type="text"
                 class="form-control"
                 placeholder="first name"
-                value=""
+                value="<%= fields.firstname %>"
               />
             </div>
             <div class="col-md-6">
@@ -46,7 +46,7 @@
                 name="surname"
                 type="text"
                 class="form-control"
-                value=""
+                value="<%= fields.surname %>"
                 placeholder="surname"
               />
             </div>
@@ -60,7 +60,7 @@
                 type="text"
                 class="form-control"
                 placeholder="enter phone number"
-                value=""
+                value="<%= fields.phone %>"
               />
             </div>
             <div class="col-md-12">
@@ -71,7 +71,7 @@
                 type="text"
                 class="form-control"
                 placeholder="enter address line 1"
-                value=""
+                value="<%= fields.address1 %>"
               />
             </div>
             <div class="col-md-12">
@@ -82,7 +82,7 @@
                 type="text"
                 class="form-control"
                 placeholder="enter address line 2"
-                value=""
+                value="<%= fields.address2 %>"
               />
             </div>
             <div class="col-md-12">
@@ -93,7 +93,7 @@
                 type="text"
                 class="form-control"
                 placeholder="enter postcode"
-                value=""
+                value="<%= fields.postcode %>"
               />
             </div>
             <div class="col-md-12">
@@ -104,7 +104,7 @@
                 type="text"
                 class="form-control"
                 placeholder="enter Area"
-                value=""
+                value="<%= fields.area %>"
               />
             </div>
           </div>
@@ -117,7 +117,7 @@
                 type="text"
                 class="form-control"
                 placeholder="country"
-                value=""
+                value="<%= fields.country %>"
               />
             </div>
             <div class="col-md-6">
@@ -127,7 +127,7 @@
                 name="state"
                 type="text"
                 class="form-control"
-                value=""
+                value="<%= fields.state %>"
                 placeholder="state"
               />
             </div>
@@ -149,11 +149,12 @@
               aria-label="Default select example"
               id="description"
               name="description"
+              value="<%= fields.description %>"
               required
             >
-              <option value="private">private person</option>
-              <option value="company">company</option>
-              <option value="middleman">middleman</option>
+              <option value="private" <%= fields.description === "private" ? "selected" : "" %>>private person</option>
+              <option value="company" <%= fields.description === "company" ? "selected" : "" %>>company</option>
+              <option value="middleman" <%= fields.description === "middleman" ? "selected" : "" %>>middleman</option>
             </select>
           </div>
           <br />
@@ -177,6 +178,7 @@
                 class="form-control"
                 id="details"
                 name="details"
+                value="<%= fields.details %>"
                 rows="3"
               ></textarea>
             </div>

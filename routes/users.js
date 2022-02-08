@@ -3,8 +3,6 @@ const router = express.Router();
 const passport = require("passport");
 const catchAsync = require("../utils/catchAsync");
 const users = require("../controllers/users");
-const { User } = require("../models/user");
-const { session } = require("passport");
 const { isLoggedIn } = require("../middleware");
 
 router
@@ -23,16 +21,15 @@ router
     users.createLogin
   );
 
-
 router
-  .route("/profilePage/:name")
-  .post(isLoggedIn, catchAsync(users.profilePage))
-  .get(isLoggedIn, catchAsync(users.profilePage));
-
-router
-  .route("/editPage")
+  .route("/profile/edit")
   .get(isLoggedIn, catchAsync(users.editPage))
   .post(isLoggedIn, catchAsync(users.createEditPage));
+
+router
+  .route("/profile/:name")
+  .post(isLoggedIn, catchAsync(users.profilePage))
+  .get(isLoggedIn, catchAsync(users.profilePage));
 
 router.get("/logout", users.logout);
 

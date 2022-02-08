@@ -542,7 +542,6 @@ module.exports.getBids = async (req, res) => {
     const response = await axios.get(`${NE_BASE_URL}/rooms/${auctionId}`, {
       auth: { username },
     });
-    console.log(response.data.Bids[0].created_at);
 
     const perPage = 10;
     const {

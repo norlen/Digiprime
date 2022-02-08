@@ -9,23 +9,6 @@ const axios = require("axios");
 const NE_BASE_URL =
   process.env.NEGOTIATION_ENGINE_BASE_URL || "http://localhost:5000";
 
-// Schema to validate inputs for `creating profile`.
-const createUserSchema = Joi.object({
-  username: Joi.string().allow(null, ""),
-  email: Joi.string().allow(null, ""),
-  firstname: Joi.string().allow(null, ""),
-  surname: Joi.string().allow(null, ""),
-  phone: Joi.string().allow(null, ""),
-  address1: Joi.string().allow(null, ""),
-  address2: Joi.string().allow(null, ""),
-  postcode: Joi.string().allow(null, ""),
-  area: Joi.string().allow(null, ""),
-  country: Joi.string().allow(null, ""),
-  state: Joi.string().allow(null, ""),
-  description: Joi.string().allow(null, ""),
-  details: Joi.string().allow(null, ""),
-});
-
 module.exports.register = (req, res) => {
   res.render("users/register");
 };
@@ -87,30 +70,17 @@ module.exports.logout = (req, res) => {
 };
 
 module.exports.profilePage = async (req, res) => {
-  const userName = req.params.name;
+  const username = req.params.name;
 
   // Retrieves number of historic auctions and active auctions.
-  const response = await axios.get(`${NE_BASE_URL}/rooms/stats/${userName}`);
+  const response = await axios.get(`${NE_BASE_URL}/rooms/stats/${username}`);
   const { historic, active } = response.data;
 
-  let queryData = await UserInformation.findOne({
-    username: `${userName}`,
-  });
+  let queryData = await UserInformation.findOne({ username });
   if (!queryData) {
     queryData = {
-      username: "",
-      email: "",
-      firstname: "",
-      surname: "",
-      phone: "",
-      address1: "",
-      address2: "",
-      postcode: "",
-      area: "",
-      country: "",
-      state: "",
-      description: "",
-      details: "",
+      username,
+      email: req.user.email,
     };
   }
 
@@ -118,34 +88,41 @@ module.exports.profilePage = async (req, res) => {
 };
 
 module.exports.editPage = async (req, res) => {
-  res.render("users/edit");
+  const { username } = req.user;
+  let fields = (await UserInformation.findOne({ username })) || {};
+
+  res.render("users/edit", { fields });
 };
 
+// Schema to validate inputs for `creating profile`.
+const profileSchema = Joi.object({
+  firstname: Joi.string().allow(""),
+  surname: Joi.string().allow(""),
+  phone: Joi.string().allow(""),
+  address1: Joi.string().allow(""),
+  address2: Joi.string().allow(""),
+  postcode: Joi.string().allow(""),
+  area: Joi.string().allow(""),
+  country: Joi.string().allow(""),
+  state: Joi.string().allow(""),
+  description: Joi.string().allow(""),
+  details: Joi.string().allow(""),
+});
+
 module.exports.createEditPage = async (req, res) => {
-  const filter = { username: req.user.username };
-  const option = { new: true, upsert: true };
-  let userinfo = {};
-  Object.assign(
-    userinfo,
-    req.user.username ? { username: req.user.username } : null,
-    req.user.email ? { email: req.user.email } : null,
-    req.body.firstname ? { firstname: req.body.firstname } : null,
-    req.body.surname ? { surname: req.body.surname } : null,
-    req.body.phone ? { phone: req.body.phone } : null,
-    req.body.address1 ? { address1: req.body.address1 } : null,
-    req.body.address2 ? { address2: req.body.address2 } : null,
-    req.body.postcode ? { postcode: req.body.postcode } : null,
-    req.body.area ? { area: req.body.area } : null,
-    req.body.country ? { country: req.body.country } : null,
-    req.body.state ? { state: req.body.state } : null,
-    req.body.description ? { description: req.body.description } : null,
-    req.body.details ? { details: req.body.details } : null
-  );
+  const { id, username } = req.user;
+  const info = await profileSchema.validateAsync(req.body);
 
-  //validate inputs.
-  const userSchema = await createUserSchema.validateAsync(userinfo);
+  const data = {
+    ...info,
+    username,
+    email: req.user.email,
+  };
+  const options = {
+    new: true,
+    upsert: true,
+  };
+  await UserInformation.findOneAndUpdate({ _id: id }, data, options);
 
-  //Update DB.
-  await UserInformation.findOneAndUpdate(filter, userSchema, option);
-  res.redirect("/profilePage");
+  res.redirect(`/profile/${username}`);
 };

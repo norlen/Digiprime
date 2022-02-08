@@ -68,7 +68,9 @@
           <tr>
             <th scope="row">Highest bidder:</th>
             <td>
-              <a href="#"><%= auction.payload.highest_bidder.val[0] %></a>
+              <a href="/profile/<%= auction.payload.highest_bidder.val[0] %>"
+                ><%= auction.payload.highest_bidder.val[0] %></a
+              >
             </td>
           </tr>
           <tr>

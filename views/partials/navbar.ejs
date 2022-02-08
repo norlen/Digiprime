@@ -65,9 +65,16 @@
               <hr />
             </li>
             <li>
-              <a class="dropdown-item" href="/profilePage/<%=currentUser.username%>">Profile page</a>
+              <a
+                class="dropdown-item"
+                href="/profile/<%=currentUser.username%>"
+              >
+                Profile page
+              </a>
             </li>
-            <li><a class="dropdown-item" href="/editPage">Edit Profile</a></li>
+            <li>
+              <a class="dropdown-item" href="/profile/edit">Edit Profile</a>
+            </li>
             <li><a class="dropdown-item" href="/logout">Log Out</a></li>
           </ul>
         </li>
