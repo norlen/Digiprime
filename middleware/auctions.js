@@ -1,6 +1,6 @@
-const Joi = require("joi");
 const Offer = require("../models/offer");
 const User = require("../models/user");
+const { getCreateAuctionSchema, createQuerySchema } = require("../schemas");
 
 /**
  * Validates a single offer auction. Checks that
@@ -98,32 +98,19 @@ const validateCreateFromMultipleOffers = async (creatorUsername, offerIds) => {
   return { offers, sector, type, supplyOrDemand, auctionType };
 };
 
-const createQuerySchema = Joi.alternatives().try(
-  Joi.object({
-    from: Joi.string().valid("search").required(),
-    offerIds: Joi.array()
-      .min(2)
-      .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/, "offerId"))
-      .required(),
-  }),
-  Joi.object({
-    from: Joi.string().valid("offer").required(),
-    offerId: Joi.string()
-      .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
-      .required(),
-  })
-);
-
 module.exports.validateGetCreateAuction = async (req, res, next) => {
-  const q = await createQuerySchema.validateAsync(req.query);
+  const { error } = createQuerySchema.validate(req.body);
+  if (error) {
+    const msg = error.details.map((el) => el.message).join(",");
+    throw new ExpressError(msg, 400);
+  }
   const username = req.user.username;
 
-  if (q.from === "search") {
+  if (req.body.from === "search") {
     const { offers, sector, type, auctionType } =
-      await validateCreateFromMultipleOffers(username, q.offerIds);
+      await validateCreateFromMultipleOffers(username, req.body.offerIds);
 
-    req.body = {
-      ...req.body,
+    res.locals = {
       offers,
       sector,
       type,
@@ -133,12 +120,11 @@ module.exports.validateGetCreateAuction = async (req, res, next) => {
     // Otherwise it's from a single owned offer.
     const { offer, auctionType } = await validateCreateFromSingleOffer(
       username,
-      q.offerId
+      req.body.offerId
     );
     const users = await User.find({ username: { $nin: [username] } }).exec();
 
-    req.body = {
-      ...req.body,
+    res.locals = {
       offer,
       auctionType,
       users,
@@ -148,42 +134,20 @@ module.exports.validateGetCreateAuction = async (req, res, next) => {
   next();
 };
 
-const CreateAuctionSchema = Joi.alternatives().try(
-  Joi.object({
-    auctionTitle: Joi.string().required(),
-    closingTime: Joi.date().min(Date.now()).required(),
-    quantity: Joi.number().required(),
-    offerId: Joi.string()
-      .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
-      .required(),
-    members: [
-      Joi.string().required(),
-      Joi.array().items(Joi.string()).required(),
-    ],
-    privacy: Joi.string().valid("Private", "Public").required(),
-  }),
-  Joi.object({
-    auctionTitle: Joi.string().required(),
-    closingTime: Joi.date().min(Date.now()).required(),
-    quantity: Joi.number().required(),
-    offerIds: Joi.array()
-      .min(2)
-      .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/, "offerId"))
-      .required(),
-  })
-);
-
 module.exports.validatePostCreateAuction = async (req, res, next) => {
-  const data = await CreateAuctionSchema.validateAsync(req.body);
+  const { error } = getCreateAuctionSchema.validate(req.body);
+  if (error) {
+    const msg = error.details.map((el) => el.message).join(",");
+    throw new ExpressError(msg, 400);
+  }
   const username = req.user.username;
-  const fromSearch = data.members === undefined;
+  const fromSearch = req.body.members === undefined;
 
   if (fromSearch) {
     const { offers, sector, type, auctionType } =
-      await validateCreateFromMultipleOffers(username, data.offerIds);
+      await validateCreateFromMultipleOffers(username, req.body.offerIds);
 
-    req.body = {
-      ...req.body,
+    res.locals = {
       offers,
       sector,
       type,
@@ -194,12 +158,11 @@ module.exports.validatePostCreateAuction = async (req, res, next) => {
     // Otherwise it's from a single owned offer.
     const { offer, auctionType } = await validateCreateFromSingleOffer(
       username,
-      data.offerId
+      req.body.offerId
     );
-    let members = await validateMembers(username, data.members);
+    let members = await validateMembers(username, req.body.members);
 
-    req.body = {
-      ...req.body,
+    res.locals = {
       offer,
       auctionType,
       members,
