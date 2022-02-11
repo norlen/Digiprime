@@ -3,6 +3,10 @@ const router = express.Router();
 const catchAsync = require("../utils/catchAsync");
 const auction = require("../controllers/auctions");
 const { isLoggedIn } = require("../middleware");
+const {
+  validateGetCreateAuction,
+  validatePostCreateAuction,
+} = require("../middleware/auctions");
 
 router.route("/").get(isLoggedIn, catchAsync(auction.index));
 
@@ -10,8 +14,12 @@ router.route("/history").get(isLoggedIn, catchAsync(auction.history));
 
 router
   .route("/create")
-  .get(isLoggedIn, catchAsync(auction.create))
-  .post(isLoggedIn, catchAsync(auction.createAuction));
+  .get(isLoggedIn, validateGetCreateAuction, catchAsync(auction.create))
+  .post(
+    isLoggedIn,
+    validatePostCreateAuction,
+    catchAsync(auction.createAuction)
+  );
 
 router
   .route("/:id")
