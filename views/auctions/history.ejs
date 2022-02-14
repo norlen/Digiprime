@@ -3,7 +3,7 @@
 <div class="container mt-3">
   <h1>History</h1>
 
-  <!-- Sök rutan -->
+  <!-- Search bar -->
   <div class="row">
     <div class="col-sm-6"></div>
 
@@ -26,6 +26,7 @@
     </div>
   </div>
 
+  <!-- History table -->
   <table class="table table-hover">
     <thead>
       <tr>
@@ -37,8 +38,8 @@
     </thead>
 
     <tbody>
-      <!-- for each aution -->
-      <% for (let auction of auctions) { %>
+      <!-- One row per auction -->
+      <% for (let auction of page.data) { %>
       <tr>
         <td>
           <a href="/auctions/<%= auction._id %>">
@@ -54,5 +55,5 @@
   </table>
 
   <!-- prettier-ignore -->
-  <%- include('../partials/pagination', { data: auctions, currentPage, totalPages, path: "history" }) %>
+  <%- include('../partials/pagination', { page, path: "/auctions/history" }) %>
 </div>

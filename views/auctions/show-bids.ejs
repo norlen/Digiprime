@@ -14,17 +14,17 @@
   </thead>
   <tbody> 
     <% var count = 0 %>
-    <% for (let bid of allBids) { %>
+    <% for (let bid of page.data) { %>
       <tr>
-        <td scope="row"><%= ((currentPage-1)*perPage) + count++ %></th>
+        <td scope="row"><%= ((page.currentPage - 1) * page.perPage) + count++ %></th>
         <td><strong><%= bid.sender.val[0] %></strong></td>
         <td><%= Math.round(bid.distance.val[0]) %></td>
         <td><%= displayDate(bid.created_at.val[0]) %></td>
-        <td><p><strong><%=bid.text.val[0] %> $</strong></p></td>
+        <td><p><strong><%= bid.text.val[0] %> $</strong></p></td>
       </tr>
     <% } %>
     </tbody>
 </table>
 
 <!-- prettier-ignore -->
-<%- include('../partials/pagination', { data: allBids, currentPage, totalPages, path: `${auctionId}/bids` }) %>
+<%- include('../partials/pagination', { page, path: `/auctions/${auctionId}/bids` }) %>

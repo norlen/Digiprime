@@ -7,7 +7,7 @@
   </div>
 
   <div class="row mt-4 d-flex flex-column gap-4">
-    <% for (let auction of auctions) { %>
+    <% for (let auction of page.data) { %>
     <div class="d-flex flex-row gap-2">
       <div class="d-flex flex-column">
         <div class="d-flex flex-row gap-2 align-items-center">
@@ -51,5 +51,5 @@
   </div>
 
   <!-- prettier-ignore -->
-  <%- include('../partials/pagination', { data: auctions, currentPage, totalPages, path: "" }) %>
+  <%- include('../partials/pagination', { page, path: "/auctions" }) %>
 </div>

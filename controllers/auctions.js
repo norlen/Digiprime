@@ -1,16 +1,63 @@
-const Joi = require("joi");
-const axios = require("axios");
 const Offer = require("../models/offer");
+const User = require("../models/user");
 const formatDistanceToNow = require("date-fns/formatDistanceToNow");
-const formatDate = require("date-fns/format");
-const { createAuction } = require("../lib/ne");
+const ne = require("../lib/ne");
+const {
+  displayDate,
+  validateCreateFromSingleOffer,
+  validateCreateFromMultipleOffers,
+  validateMembers,
+} = require("../lib/auction");
+const { paginate } = require("../lib/paginate");
 
-const displayDate = (dateString) => {
-  return formatDate(new Date(dateString), "yyyy-MM-dd HH:mm");
+/**
+ * Render auction creation page for a single offer.
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+const createAuctionSingle = async (req, res) => {
+  const { offerId } = req.query;
+  const { username } = req.user;
+
+  // Otherwise it's from a single owned offer.
+  const { offer, auctionType } = await validateCreateFromSingleOffer(
+    username,
+    offerId
+  );
+  const users = await User.find({ username: { $nin: [username] } }).exec();
+
+  res.render("auctions/create-single", {
+    offer,
+    auctionType,
+    users,
+    _csrf: req.csrfToken(),
+  });
 };
 
-const NE_BASE_URL =
-  process.env.NEGOTIATION_ENGINE_BASE_URL || "http://localhost:5000";
+/**
+ * Render auction creation page for multiple offers.
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+const createAuctionMultiple = async (req, res) => {
+  const { offerIds } = req.query;
+  const { username } = req.user;
+
+  // Check if we should render the template for that contains multiple non-owned offers.
+  const { offers, ...rest } = await validateCreateFromMultipleOffers(
+    username,
+    offerIds
+  );
+
+  res.render("auctions/create-multiple-offers", {
+    offers,
+    info: { ...rest },
+    offerIds: offerIds.join(","),
+    _csrf: req.csrfToken(),
+  });
+};
 
 /**
  * Renders the page to create auctions.
@@ -21,24 +68,65 @@ const NE_BASE_URL =
 module.exports.create = async (req, res) => {
   if (req.query.from === "search") {
     // Check if we should render the template for that contains multiple non-owned offers.
-    const { offers, sector, type, auctionType } = req.body;
-
-    const combinedOfferIds = req.query.offerIds.join(",");
-    res.render("auctions/create-multiple-offers", {
-      offers,
-      info: { sector, type, auctionType },
-      offerIds: combinedOfferIds,
-    });
+    await createAuctionMultiple(req, res);
   } else {
     // Otherwise it's from a single owned offer.
-    const { offer, auctionType, users } = req.body;
-
-    res.render("auctions/create-single", {
-      offer,
-      auctionType,
-      users,
-    });
+    await createAuctionSingle(req, res);
   }
+};
+
+/**
+ * Creates data required for NE call when creating auction for a single offer auction.
+ *
+ * @param {string} username
+ * @param {object} data
+ */
+const postCreateAuctionSingle = async (username, data) => {
+  // Auction created from a single owned offer.
+  // Validate that all offers exists, and that all members exist.
+  const { offer, auctionType } = await validateCreateFromSingleOffer(
+    username,
+    data.offerId
+  );
+  const members = await validateMembers(username, data.members);
+
+  return {
+    room_name: data.auctionTitle,
+    quantity: data.quantity,
+    closing_time: new Date(data.closingTime).toISOString(),
+    templatetype: "article",
+    articleno: data.offerId,
+    reference_sector: offer.referenceSector,
+    reference_type: offer.referenceType,
+    auction_type: auctionType,
+    members,
+    privacy: data.privacy,
+  };
+};
+
+/**
+ * Creates data required for NE call when creating auction for a multiple offer auction.
+ *
+ * @param {string} username
+ * @param {object} data
+ */
+const postCreateAuctionMultiple = async (username, data) => {
+  const { offers, sector, type, auctionType } =
+    await validateCreateFromMultipleOffers(username, data.offerIds);
+  const members = offers.map((offer) => offer.author.username);
+
+  return {
+    room_name: data.auctionTitle,
+    quantity: data.quantity,
+    closing_time: new Date(data.closingTime).toISOString(),
+    templatetype: "article",
+    articleno: data.offerIds.join(","),
+    reference_sector: sector,
+    reference_type: type,
+    auction_type: auctionType,
+    members,
+    privacy: "Private",
+  };
 };
 
 /**
@@ -48,48 +136,17 @@ module.exports.create = async (req, res) => {
  * @param {*} res
  */
 module.exports.createAuction = async (req, res) => {
-  const username = req.user.username;
-  const { auctionTitle, quantity, closingTime } = req.body;
-
-  let data = {
-    room_name: auctionTitle,
-    quantity: quantity,
-    closing_time: new Date(closingTime).toISOString(),
-    templatetype: "article",
-  };
-
-  if (req.body.fromSearch) {
-    // Auction created from an offer search.
-    const { offerIds, offers, sector, type, auctionType } = req.body;
-    const members = offers.map((offer) => offer.author.username);
-
-    data = {
-      ...data,
-      articleno: offerIds.join(","),
-      reference_sector: sector,
-      reference_type: type,
-      auction_type: auctionType,
-      members,
-      privacy: "Private",
-    };
-  } else {
-    // Auction created from a single owned offer.
-    // Validate that all offers exists, and that all members exist.
-    const { offer, auctionType, members, offerId, privacy } = req.body;
-
-    data = {
-      ...data,
-      articleno: offerId,
-      reference_sector: offer.referenceSector,
-      reference_type: offer.referenceType,
-      auction_type: auctionType,
-      members: members,
-      privacy: privacy,
-    };
-  }
+  const fromSearch = req.body.members === undefined;
+  const { username } = req.user;
 
   try {
-    const auctionId = await createAuction(username, data);
+    let data;
+    if (fromSearch) {
+      data = await postCreateAuctionMultiple(username, req.body);
+    } else {
+      data = await postCreateAuctionSingle(username, req.body);
+    }
+    const auctionId = await ne.createAuction(username, data);
 
     req.flash("success", "Successfully created auction");
     res.redirect(`/auctions/${auctionId}`);
@@ -105,20 +162,86 @@ module.exports.createAuction = async (req, res) => {
   }
 };
 
-const getContractDetails = (contract, offerId, offerTitle) => {
-  const text = contract.split("Buyer signature")[0];
-  const [textPreOfferId, textPostOfferId] = text.split(offerId);
-  const buyerSig = contract
-    .split("Seller signature")[0]
-    .split("Buyer signature")[1];
-  const sellerSig = contract.split("Seller signature")[1];
-  const offerText = `${offerTitle} (${offerId})`;
+const showSingleAuction = async (req, res, auction, articleNumber) => {
+  const offer = await Offer.findById(articleNumber);
 
-  return {
-    text: `${textPreOfferId}${offerText}${textPostOfferId}`,
-    sellerSignature: sellerSig,
-    buyerSignature: buyerSig,
-  };
+  res.render("auctions/show", {
+    auction,
+    offer,
+    formatDistanceToNow,
+    displayDate,
+    _csrf: req.csrfToken(),
+  });
+};
+
+const showMultipleAuction = async (req, res, auction, articleNumbers) => {
+  let offers = await Offer.find({ _id: { $in: articleNumbers } })
+    .populate("author")
+    .exec();
+
+  // Map bids to offers.
+  let member_to_bid = {};
+  for (let bid of auction.bids) {
+    member_to_bid[bid.sender] = bid;
+  }
+
+  const offersWithBids = offers.map((offer) => ({
+    ...offer._doc,
+    bid: member_to_bid[offer.author.username],
+  }));
+
+  res.render("auctions/show-multiple-offers", {
+    auction,
+    offers: offersWithBids,
+    formatDistanceToNow,
+    displayDate,
+    _csrf: req.csrfToken(),
+  });
+};
+
+const showAuctionEnded = async (
+  req,
+  res,
+  username,
+  auctionId,
+  auction,
+  offerIds
+) => {
+  // We want to display a winning offer here.
+  // For the single-offer auction we displayed the auctioned offer.
+  // For multiple-offer auction we display the winning offer.
+
+  let offer;
+  if (offerIds.length > 1) {
+    const offers = await Offer.find({ _id: { $in: offerIds } })
+      .populate("author")
+      .exec();
+
+    // Get the offer of the highest bidder.
+    const highestBidder = auction.payload.highest_bidder.val[0];
+    for (let potentialOffer of offers) {
+      if (potentialOffer.author.username === highestBidder) {
+        offer = potentialOffer;
+        break;
+      }
+    }
+  } else {
+    offer = await Offer.findById(offerIds[0]).populate("author");
+  }
+
+  const contract = await ne.getWinner(
+    username,
+    auctionId,
+    offer.id,
+    offer.title
+  );
+
+  res.render("auctions/auction-ended-auctioneer-view", {
+    contract,
+    auction,
+    offer,
+    displayDate,
+  });
 };
 
 /**
@@ -128,18 +251,14 @@ const getContractDetails = (contract, offerId, offerTitle) => {
  * @param {*} res
  */
 module.exports.show = async (req, res) => {
-  const username = req.user.username;
-  const auctionId = req.params.id;
+  const { id: auctionId } = req.params;
+  const { username } = req.user;
 
-  const response = await axios.get(`${NE_BASE_URL}/rooms/${auctionId}/info`, {
-    auth: { username },
-  });
+  // Fetch auction information.
+  const auction = await ne.getAuction(username, auctionId);
+  const articleNumbers = auction.payload.articleno.val[0].split(",");
 
-  let auction = response.data;
-  auction.closed = new Date(auction.payload.closing_time.val[0]) <= Date.now();
-  auction.ended = auction.payload.buyersign.val[0] !== "";
-  auction.closingTime = new Date(auction.payload.closing_time.val[0]);
-
+  // Check if the user is a winner or creator of auction.
   let isWinnerOrCreator = false;
   if (auction.ended) {
     if (username === auction.payload.created_by.val[0]) {
@@ -150,83 +269,20 @@ module.exports.show = async (req, res) => {
     }
   }
 
-  const articleNumbers = auction.payload.articleno.val[0].split(",");
-  if (auction.ended && isWinnerOrCreator) {
-    // We want to display a winning offer here.
-    // For the single-offer auction we displayed the auctioned offer.
-    // For multiple-offer auction we display the winning offer.
-
-    let offer;
-    if (articleNumbers.length > 1) {
-      const offers = await Offer.find({ _id: { $in: articleNumbers } })
-        .populate("author")
-        .exec();
-
-      // Get the offer of the highest bidder.
-      const highestBidder = auction.payload.highest_bidder.val[0];
-      for (let potentialOffer of offers) {
-        if (potentialOffer.author.username === highestBidder) {
-          offer = potentialOffer;
-          break;
-        }
-      }
-    } else {
-      offer = await Offer.findById(articleNumbers[0]).populate("author");
-    }
-
-    // Get the winning contract from NE.
-    const { data: contractData } = await axios.get(
-      `${NE_BASE_URL}/rooms/${auctionId}/end`,
-      {
-        auth: { username },
-      }
-    );
-    const contract = getContractDetails(
-      contractData.contract,
-      offer._id,
-      offer.title
-    );
-
-    res.render("auctions/auction-ended-auctioneer-view", {
-      contract,
+  // Render relevant page.
+  if (auction.ended && isWinnerOrCreator && auction.highest_bidder !== "") {
+    await showAuctionEnded(
+      req,
+      res,
+      username,
+      auctionId,
       auction,
-      offer,
-      displayDate,
-    });
+      articleNumbers
+    );
+  } else if (articleNumbers.length > 1) {
+    await showMultipleAuction(req, res, auction, articleNumbers);
   } else {
-    if (articleNumbers.length > 1) {
-      // New auction.
-      let offers = await Offer.find({ _id: { $in: articleNumbers } })
-        .populate("author")
-        .exec();
-
-      // Map bids to offers.
-      let member_to_bid = {};
-      for (let bid of auction.bids) {
-        member_to_bid[bid.sender] = bid;
-      }
-
-      const offersWithBids = offers.map((offer) => ({
-        ...offer._doc,
-        bid: member_to_bid[offer.author.username],
-      }));
-
-      res.render("auctions/show-multiple-offers", {
-        auction,
-        offers: offersWithBids,
-        formatDistanceToNow,
-        displayDate,
-      });
-    } else {
-      const offer = await Offer.findById(articleNumbers[0]);
-
-      res.render("auctions/show", {
-        auction,
-        offer,
-        formatDistanceToNow,
-        displayDate,
-      });
-    }
+    await showSingleAuction(req, res, auction, articleNumbers[0]);
   }
 };
 
@@ -238,36 +294,12 @@ module.exports.show = async (req, res) => {
  * @param {*} res
  */
 module.exports.index = async (req, res) => {
-  const username = req.user.username;
+  const { username } = req.user;
 
-  const response = await axios.get(`${NE_BASE_URL}/rooms/all`, {
-    auth: { username },
-  });
-  const sortedAuctions = response.data.map((auction) => {
-    auction.closingTime = new Date(auction.payload.closing_time.val[0]);
-    auction.closed = auction.closingTime <= Date.now();
-    return auction;
-  });
-  sortedAuctions.sort((lhs, rhs) => rhs.closingTime - lhs.closingTime);
-
-  const filteredAuctions = sortedAuctions.filter((auction) => {
-    const hasBids = auction.bids.length > 0;
-    const hasWinner = auction.payload.buyersign.val[0] !== "";
-    return !auction.closed || (!hasWinner && hasBids);
-  });
-
-  const perPage = 5;
-  const {
-    data: auctions,
-    currentPage,
-    totalPages,
-  } = pagination(filteredAuctions, req.query.page, perPage);
-
+  const auctions = await ne.getActiveAuctions(username);
   res.render("auctions/index", {
-    auctions,
+    page: paginate(auctions, req.query.page, 5),
     formatDistanceToNow,
-    currentPage,
-    totalPages,
   });
 };
 
@@ -278,44 +310,14 @@ module.exports.index = async (req, res) => {
  * @param {*} res
  */
 module.exports.history = async (req, res) => {
-  const username = req.user.username;
+  const { username } = req.user;
 
-  const response = await axios.get(`${NE_BASE_URL}/rooms/all`, {
-    auth: { username },
-  });
-  const fixedAuctions = response.data.map((auction) => {
-    auction.closingTime = new Date(auction.payload.closing_time.val[0]);
-    auction.closed = auction.closingTime <= Date.now();
-    return auction;
-  });
-  const filteredAuctions = fixedAuctions.filter((auction) => {
-    const hasBids = auction.bids.length > 0;
-    const hasWinner = auction.payload.buyersign.val[0] !== "";
-    return !(!auction.closed || (!hasWinner && hasBids));
-  });
-
-  const perPage = 10;
-  const {
-    data: auctions,
-    currentPage,
-    totalPages,
-  } = pagination(filteredAuctions, req.query.page, perPage);
-
+  const auctions = await ne.getAuctionHistory(username);
   res.render("auctions/history", {
-    auctions,
-    currentPage,
-    totalPages,
+    page: paginate(auctions, req.query.page, 10),
     displayDate,
   });
 };
-
-// Schema to validate inputs when placing a bid at an auction.
-const placeBidSchema = Joi.object({
-  id: Joi.string()
-    .pattern(/^[0-9a-fA-F]{24}$/, "auctionId")
-    .required(),
-  bid: Joi.number().min(1).required(),
-});
 
 /**
  * Place a single bid to Negotiation Engine and refresh the page to display.
@@ -324,17 +326,13 @@ const placeBidSchema = Joi.object({
  * @param {*} res
  */
 module.exports.placeBid = async (req, res) => {
-  const username = req.user.username;
-  const { id: auctionId, bid } = await placeBidSchema.validateAsync({
-    ...req.params,
-    ...req.body,
-  });
+  const { id: auctionId } = req.params;
+  const { bid } = req.body;
+  const { username } = req.user;
 
   try {
-    const params = new URLSearchParams({ message_input: bid });
-    await axios.post(`${NE_BASE_URL}/rooms/${auctionId}`, params, {
-      auth: { username },
-    });
+    await ne.placeBid(username, auctionId, bid);
+
     req.flash("success", `Successfully placed bid: ${bid}`);
     res.redirect(`/auctions/${auctionId}`);
   } catch (error) {
@@ -347,14 +345,6 @@ module.exports.placeBid = async (req, res) => {
   }
 };
 
-// Validate inputs to `selectWinner`.
-const selectWinnerSchema = Joi.object({
-  id: Joi.string()
-    .pattern(/^[0-9a-fA-F]{24}$/)
-    .required(),
-  winner: Joi.string().required(),
-});
-
 /**
  * Takes a winner and marks that user as the winner of the auction.
  *
@@ -362,71 +352,44 @@ const selectWinnerSchema = Joi.object({
  * @param {*} res
  */
 module.exports.selectWinner = async (req, res) => {
-  const username = req.user.username;
-  const { id: auctionId, winner } = await selectWinnerSchema.validateAsync({
-    ...req.params,
-    ...req.body,
-  });
+  const { id: auctionId } = req.params;
+  const { winner } = req.body;
+  const { username } = req.user;
 
   try {
-    const params = new URLSearchParams({ winner });
-    const response = await axios.post(
-      `${NE_BASE_URL}/rooms/${auctionId}/end`,
-      params,
-      { auth: { username } }
-    );
+    await ne.selectWinner(username, auctionId, winner);
 
-    // Success cases:
-    // 1. Set winner.
-    // 2. Winner has already been selected.
-    // So, if the case is not (1) we should display an error.
-    if (response.data.message === "winner has been selected") {
-      req.flash("success", `${winner} has been selected as the winner`);
-      res.redirect(`/auctions/${auctionId}`);
-    } else {
-      req.flash("error", request.data.message);
-      res.redirect(`/auctions/${auctionId}`);
-    }
+    req.flash("success", `${winner} has been selected as the winner`);
+    res.redirect(`/auctions/${auctionId}`);
   } catch (error) {
     // Failure cases:
     // 1. Selected winner does not participate in auction.
     // 2. Not room admin.
+    // 3. Winner has already been selected.
     if (
       error.isAxiosError &&
       (error.response.status === 400 || error.response.status === 403)
     ) {
       req.flash("error", error.response.data.message);
-      res.redirect(`/auctions/${auctionId}`);
+    } else {
+      req.flash("error", error.message);
     }
 
-    // For other errors, we display the regular error.
-    throw error;
+    res.redirect(`/auctions/${auctionId}`);
   }
 };
 
 module.exports.getBids = async (req, res) => {
-  const username = req.user.username;
-  const auctionId = req.params.id;
+  const { id: auctionId } = req.params;
+  const { username } = req.user;
 
   try {
-    const response = await axios.get(`${NE_BASE_URL}/rooms/${auctionId}`, {
-      auth: { username },
-    });
+    const bids = await ne.getBids(username, auctionId);
 
-    const perPage = 10;
-    const {
-      data: allBids,
-      currentPage,
-      totalPages,
-    } = pagination(response.data.Bids, req.query.page, perPage);
-
-    res.render("auctions/showBids", {
-      allBids,
-      displayDate,
-      currentPage,
-      totalPages,
+    res.render("auctions/show-bids", {
       auctionId,
-      perPage,
+      page: paginate(bids, req.query.page, 10),
+      displayDate,
     });
   } catch (error) {
     if (error.isAxiosError && error.response.status === 404) {
@@ -436,40 +399,4 @@ module.exports.getBids = async (req, res) => {
       throw error;
     }
   }
-};
-
-/**
- * Returns elementPerPage number of elements from the array passed. The array should be sorted
- * before passed here.
- *
- * @param {any[]} array
- * @param {number} page
- * @param {number} elementsPerPage
- * @returns array with elements from the current page.
- */
-const pagination = (array, currentPage, elementsPerPage) => {
-  const totalPages = Math.floor(array.length / elementsPerPage) + 1;
-  let currPage = 1;
-
-  try {
-    if (typeof currentPage === "number") {
-      currPage = Math.max(1, currentPage);
-    }
-    if (typeof currentPage === "string") {
-      const parsed = parseInt(currentPage);
-      if (!isNaN(parsed)) {
-        currPage = Math.max(1, parsed);
-      }
-    }
-  } catch (err) {}
-
-  // Pages are 1-indexed, so convert to zero index.
-  const startIdx = (currPage - 1) * elementsPerPage;
-  const data = array.splice(startIdx, elementsPerPage);
-
-  return {
-    data,
-    currentPage: currPage,
-    totalPages,
-  };
 };

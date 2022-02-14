@@ -1,5 +1,6 @@
-<% layout('layouts/boilerplate') %> <% const isCreator =
-auction.payload.created_by.val[0] === currentUser.username %>
+<!-- prettier-ignore -->
+<% layout('layouts/boilerplate') %>
+<% const isCreator = auction.payload.created_by.val[0] === currentUser.username %>
 
 <div class="container mt-3">
   <div class="row justify-content-between mb-3">
@@ -125,6 +126,7 @@ auction.payload.created_by.val[0] === currentUser.username %>
         method="POST"
         action="/auctions/<%= auction._id %>"
       >
+        <input type="hidden" name="_csrf" value="<%= _csrf %>" />
         <span class="input-group-text">$</span>
         <input
           id="bid"
@@ -192,6 +194,7 @@ auction.payload.created_by.val[0] === currentUser.username %>
   >
     <div class="modal-dialog modal-lg">
       <form class="" method="POST" action="/auctions/<%= auction._id %>/end">
+        <input type="hidden" name="_csrf" value="<%= _csrf %>" />
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">

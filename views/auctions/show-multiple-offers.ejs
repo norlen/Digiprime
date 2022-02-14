@@ -1,5 +1,6 @@
-<% layout('layouts/boilerplate') %> <% const isCreator =
-auction.payload.created_by.val[0] === currentUser.username %>
+<!-- prettier-ignore -->
+<% layout('layouts/boilerplate') %>
+<% const isCreator = auction.payload.created_by.val[0] === currentUser.username %>
 
 <div class="container mt-3">
   <div class="row justify-content-between mb-3">
@@ -46,6 +47,7 @@ auction.payload.created_by.val[0] === currentUser.username %>
         method="POST"
         action="/auctions/<%= auction._id %>"
       >
+        <input type="hidden" name="_csrf" value="<%= _csrf %>" />
         <span class="input-group-text">$</span>
         <input
           id="bid"
@@ -115,8 +117,11 @@ auction.payload.created_by.val[0] === currentUser.username %>
   <div class="mb-3" id="cluster-map"></div>
 
   <div class="row row-cols-md-5 g-1 mb-3">
-    <% for (let offer of offers) { const pillStyle = offer.customer === "Supply"
-    ? "bg-primary" : "bg-secondary"; %>
+    <!-- prettier-ignore -->
+    <%
+      for (let offer of offers) {
+        const pillStyle = offer.costumer === "Supply" ? "bg-primary" : "bg-secondary";
+    %>
 
     <div class="col" id="" style="display: block">
       <div class="card mb-1" id="offerCards">
@@ -127,7 +132,7 @@ auction.payload.created_by.val[0] === currentUser.username %>
           <a href="/offers/<%= offer._id %>">
             <% if (offer.images.length) {%>
             <img class="img-fluid" alt="" src="<%=offer.images[0].url%> " />
-            <% }else { %>
+            <% } else { %>
             <img
               class="img-fluid"
               alt=""
@@ -202,6 +207,7 @@ auction.payload.created_by.val[0] === currentUser.username %>
   >
     <div class="modal-dialog modal-lg">
       <form class="" method="POST" action="/auctions/<%= auction._id %>/end">
+        <input type="hidden" name="_csrf" value="<%= _csrf %>" />
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">

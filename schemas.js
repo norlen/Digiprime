@@ -47,45 +47,81 @@ module.exports.reviewSchema = Joi.object({
 
 module.exports.getCreateAuctionSchema = Joi.alternatives().try(
   Joi.object({
-    from: Joi.string().valid("search").required().escapeHTML(),
+    from: Joi.string().valid("search").required(),
     offerIds: Joi.array()
       .min(2)
       .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/, "offerId"))
-      .required()
-      .escapeHTML(),
+      .required(),
   }),
   Joi.object({
-    from: Joi.string().valid("offer").required().escapeHTML(),
+    from: Joi.string().valid("offer").required(),
     offerId: Joi.string()
       .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
-      .required()
-      .escapeHTML(),
+      .required(),
   })
 );
 
 module.exports.createAuctionSchema = Joi.alternatives().try(
   Joi.object({
+    _csrf: Joi.string().required().escapeHTML(),
     auctionTitle: Joi.string().required().escapeHTML(),
-    closingTime: Joi.date().min(Date.now()).required().escapeHTML(),
-    quantity: Joi.number().required().escapeHTML(),
+    closingTime: Joi.date().min(Date.now()).required(),
+    quantity: Joi.number().required(),
     offerId: Joi.string()
       .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
-      .required()
-      .escapeHTML(),
+      .required(),
     members: [
       Joi.string().required().escapeHTML(),
-      Joi.array().items(Joi.string()).required().escapeHTML(),
+      Joi.array().items(Joi.string().escapeHTML()).required(),
     ],
     privacy: Joi.string().valid("Private", "Public").required().escapeHTML(),
   }),
   Joi.object({
+    _csrf: Joi.string().required().escapeHTML(),
     auctionTitle: Joi.string().required().escapeHTML(),
-    closingTime: Joi.date().min(Date.now()).required().escapeHTML(),
-    quantity: Joi.number().required().escapeHTML(),
+    closingTime: Joi.date().min(Date.now()).required(),
+    quantity: Joi.number().required(),
     offerIds: Joi.array()
       .min(2)
       .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/, "offerId"))
-      .required()
-      .escapeHTML(),
+      .required(),
   })
 );
+
+// Schema to validate inputs when placing a bid at an auction.
+module.exports.placeBidSchema = Joi.object({
+  _csrf: Joi.string().required().escapeHTML(),
+  bid: Joi.number().min(1).required(),
+});
+
+// Validate inputs to `selectWinner`.
+module.exports.selectWinnerSchema = Joi.object({
+  _csrf: Joi.string().required().escapeHTML(),
+  winner: Joi.string().required().escapeHTML(),
+});
+
+module.exports.IdSchema = Joi.object({
+  id: Joi.string()
+    .pattern(/^[0-9a-fA-F]{24}$/)
+    .required(),
+});
+
+// Schema to validate inputs for `creating profile`.
+module.exports.profileSchema = Joi.object({
+  _csrf: Joi.string().required().escapeHTML(),
+  firstname: Joi.string().allow("").escapeHTML(),
+  surname: Joi.string().allow("").escapeHTML(),
+  phone: Joi.string().allow("").escapeHTML(),
+  address1: Joi.string().allow("").escapeHTML(),
+  address2: Joi.string().allow("").escapeHTML(),
+  postcode: Joi.string().allow("").escapeHTML(),
+  area: Joi.string().allow("").escapeHTML(),
+  country: Joi.string().allow("").escapeHTML(),
+  state: Joi.string().allow("").escapeHTML(),
+  description: Joi.string().allow("").escapeHTML(),
+  details: Joi.string().allow("").escapeHTML(),
+});
+
+module.exports.usernameSchema = Joi.object({
+  username: Joi.string().escapeHTML(),
+});
