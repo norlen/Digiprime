@@ -29,7 +29,8 @@ const production = process.env.NODE_ENV === "production";
 const port = process.env.PORT || 3000;
 const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/offer-test";
 const cloudinaryHostUrl = process.env.CLOUDINARY_HOST_URL || "";
-const secret = "thisshouldbeabettersecret!";
+const secret = process.env.SECRET || "thisshouldbeabettersecret!";
+const secrets = secret.split(",");
 
 mongoose.connect(dbUrl, {
   useNewUrlParser: true,
@@ -70,7 +71,7 @@ store.on("error", function (e) {
 const sessionConfig = {
   store,
   name: "session",
-  secret,
+  secret: secrets,
   resave: false,
   saveUninitialized: true,
   cookie: {
@@ -172,5 +173,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, () => {
-  console.log(`Serving port ${port}`);
+  console.log(`Serving on http://localhost/${port}`);
 });

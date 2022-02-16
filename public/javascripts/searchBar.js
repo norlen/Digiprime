@@ -27,18 +27,18 @@
 //     }
 // })
 
-const nameForm = document.querySelector('#search-box');
-nameForm.addEventListener('input', (event) => {
-	event.preventDefault();
-	const term = event.target.value.toLowerCase();
-	let titles = document.querySelectorAll('#searchTitle');
-	Array.from(titles).forEach(function(title) {
-		let searchResult = title.textContent || title.innerText;
-		// console.log(searchResult)
-		if (searchResult.toLowerCase().indexOf(term) != -1) {
-			title.closest('#eachBlock').style.display = 'block';
-		} else {
-			title.closest('#eachBlock').style.display = 'none';
-		}
-	});
+const nameForm = document.querySelector("#search-box");
+nameForm.addEventListener("input", (event) => {
+  event.preventDefault();
+  const term = event.target.value.toLowerCase();
+  let titles = document.querySelectorAll("#searchTitle");
+  Array.from(titles).forEach(function (title) {
+    let searchResult = title.textContent || title.innerText;
+
+    if (searchResult.toLowerCase().indexOf(term) != -1) {
+      title.closest("#eachBlock").style.display = "block";
+    } else {
+      title.closest("#eachBlock").style.display = "none";
+    }
+  });
 });
