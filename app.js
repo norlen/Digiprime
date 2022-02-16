@@ -25,12 +25,12 @@ const { csrfProtection } = require("./utils/csrf");
 
 const User = require("./models/user");
 
-const production = process.env.NODE_ENV === "production";
 const port = process.env.PORT || 3000;
 const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/offer-test";
 const cloudinaryHostUrl = process.env.CLOUDINARY_HOST_URL || "";
 const secret = process.env.SECRET || "thisshouldbeabettersecret!";
 const secrets = secret.split(",");
+const useTls = process.env.USE_TLS || false;
 
 mongoose.connect(dbUrl, {
   useNewUrlParser: true,
@@ -78,7 +78,7 @@ const sessionConfig = {
     httpOnly: true,
     expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
     maxAge: 1000 * 60 * 60 * 24 * 7,
-    secure: production,
+    secure: useTls,
   },
 };
 
