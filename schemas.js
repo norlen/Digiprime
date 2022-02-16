@@ -25,6 +25,7 @@ const extension = (joi) => ({
 const Joi = BaseJoi.extend(extension);
 
 module.exports.offerSchema = Joi.object({
+  _csrf: Joi.string().required().escapeHTML(),
   offer: Joi.object({
     title: Joi.string().required().escapeHTML(),
     price: Joi.number().required().min(0),
@@ -39,10 +40,18 @@ module.exports.offerSchema = Joi.object({
 });
 
 module.exports.reviewSchema = Joi.object({
+  _csrf: Joi.string().required().escapeHTML(),
   review: Joi.object({
     body: Joi.string().required().escapeHTML(),
     rating: Joi.number().required().min(1).max(5),
   }).required(),
+});
+
+module.exports.registerSchema = Joi.object({
+  username: Joi.string().required().escapeHTML(),
+  email: Joi.string().email().required().escapeHTML(),
+  location: Joi.string().required().escapeHTML(),
+  password: Joi.string().email().escapeHTML(),
 });
 
 module.exports.getCreateAuctionSchema = Joi.alternatives().try(

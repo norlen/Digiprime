@@ -1,6 +1,5 @@
 const User = require("../models/user");
 const UserInformation = require("../models/userinformation");
-const Joi = require("joi");
 
 const mapboxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
 const mapboxToken = process.env.MAPBOX_TOKEN;
@@ -62,27 +61,30 @@ module.exports.logout = (req, res) => {
 };
 
 module.exports.profilePage = async (req, res) => {
-  const username = req.params.username;
+  const { username } = req.params;
 
   // Retrieves number of historic auctions and active auctions.
-  const { historic, active } = await ne.getStats(username);
+  // const { historic, active } = await ne.getStats(username);
 
-  let queryData = await UserInformation.findOne({ username });
-  if (!queryData) {
-    queryData = {
-      username,
-      email: req.user.email,
-    };
-  }
+  let data = await UserInformation.findOne({ username });
+  data = { ...data._doc, username };
 
-  res.render("users/profile", { queryData, historic, active });
+  res.render("users/profile", {
+    data,
+    historic: 0,
+    active: 0,
+  });
 };
 
 module.exports.editPage = async (req, res) => {
   const { username } = req.user;
-  let fields = (await UserInformation.findOne({ username })) || {};
 
-  res.render("users/edit", { fields });
+  let currentData = await UserInformation.findOne({ username });
+  currentData = currentData === undefined ? {} : currentData;
+
+  res.render("users/edit", {
+    data: currentData,
+  });
 };
 
 module.exports.createEditPage = async (req, res) => {

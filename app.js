@@ -21,12 +21,15 @@ const reviewRoutes = require("./routes/reviews");
 const userRoutes = require("./routes/users");
 const auctionRoutes = require("./routes/auctions");
 
+const { csrfProtection } = require("./utils/csrf");
+
 const User = require("./models/user");
 
+const production = process.env.NODE_ENV === "production";
 const port = process.env.PORT || 3000;
 const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/offer-test";
 const cloudinaryHostUrl = process.env.CLOUDINARY_HOST_URL || "";
-const secret = process.env.SECRET || "thisshouldbeabettersecret!";
+const secret = "thisshouldbeabettersecret!";
 
 mongoose.connect(dbUrl, {
   useNewUrlParser: true,
@@ -74,6 +77,7 @@ const sessionConfig = {
     httpOnly: true,
     expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
     maxAge: 1000 * 60 * 60 * 24 * 7,
+    secure: production,
   },
 };
 
@@ -138,6 +142,12 @@ app.use((req, res, next) => {
   res.locals.currentUser = req.user;
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
+  next();
+});
+
+app.use(csrfProtection);
+app.use((req, res, next) => {
+  res.locals._csrf = req.csrfToken();
   next();
 });
 

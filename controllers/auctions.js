@@ -31,7 +31,6 @@ const createAuctionSingle = async (req, res) => {
     offer,
     auctionType,
     users,
-    _csrf: req.csrfToken(),
   });
 };
 
@@ -55,7 +54,6 @@ const createAuctionMultiple = async (req, res) => {
     offers,
     info: { ...rest },
     offerIds: offerIds.join(","),
-    _csrf: req.csrfToken(),
   });
 };
 
@@ -170,7 +168,6 @@ const showSingleAuction = async (req, res, auction, articleNumber) => {
     offer,
     formatDistanceToNow,
     displayDate,
-    _csrf: req.csrfToken(),
   });
 };
 
@@ -195,7 +192,6 @@ const showMultipleAuction = async (req, res, auction, articleNumbers) => {
     offers: offersWithBids,
     formatDistanceToNow,
     displayDate,
-    _csrf: req.csrfToken(),
   });
 };
 

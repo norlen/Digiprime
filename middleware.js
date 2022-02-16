@@ -11,6 +11,7 @@ const {
   placeBidSchema,
   selectWinnerSchema,
   IdSchema,
+  registerSchema,
 } = require("./schemas.js");
 
 module.exports.isLoggedIn = (req, res, next) => {
@@ -124,3 +125,4 @@ module.exports.validateSelectWinner = validateBody(selectWinnerSchema);
 // Users.
 module.exports.validateUsername = validateParams(usernameSchema, 404);
 module.exports.validateEditProfile = validateBody(profileSchema);
+module.exports.validateRegister = validateBody(registerSchema);

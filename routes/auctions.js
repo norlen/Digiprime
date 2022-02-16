@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const catchAsync = require("../utils/catchAsync");
 const auction = require("../controllers/auctions");
-const { csrfProtection } = require("../utils/csrf");
 const {
   isLoggedIn,
   validateGetCreateAuction,
@@ -18,26 +17,19 @@ router.route("/history").get(isLoggedIn, catchAsync(auction.history));
 
 router
   .route("/create")
-  .get(
-    isLoggedIn,
-    csrfProtection,
-    validateGetCreateAuction,
-    catchAsync(auction.create)
-  )
+  .get(isLoggedIn, validateGetCreateAuction, catchAsync(auction.create))
   .post(
     isLoggedIn,
-    csrfProtection,
     validatePostCreateAuction,
     catchAsync(auction.createAuction)
   );
 
 router
   .route("/:id")
-  .get(isLoggedIn, csrfProtection, validIdQuery, catchAsync(auction.show))
+  .get(isLoggedIn, validIdQuery, catchAsync(auction.show))
   .post(
     isLoggedIn,
     validIdQuery,
-    csrfProtection,
     validatePlaceBid,
     catchAsync(auction.placeBid)
   );
@@ -47,7 +39,6 @@ router
   .post(
     isLoggedIn,
     validIdQuery,
-    csrfProtection,
     validateSelectWinner,
     catchAsync(auction.selectWinner)
   );

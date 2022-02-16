@@ -7,12 +7,13 @@ const {
   isLoggedIn,
   validateEditProfile,
   validateUsername,
+  validateRegister,
 } = require("../middleware");
 
 router
   .route("/register")
   .get(users.register)
-  .post(catchAsync(users.createRegister));
+  .post(validateRegister, catchAsync(users.createRegister));
 
 router
   .route("/login")
@@ -25,15 +26,17 @@ router
     users.createLogin
   );
 
-router
-  .route("/profile/edit")
-  .get(isLoggedIn, catchAsync(users.editPage))
-  .post(isLoggedIn, validateEditProfile, catchAsync(users.createEditPage));
+router.route("/profile/edit").get(isLoggedIn, catchAsync(users.editPage)).post(
+  isLoggedIn,
+
+  validateEditProfile,
+  catchAsync(users.createEditPage)
+);
 
 router
   .route("/profile/:username")
-  .get(validateUsername, isLoggedIn, catchAsync(users.profilePage));
+  .get(validateUsername, catchAsync(users.profilePage));
 
-router.get("/logout", users.logout);
+router.post("/logout", users.logout);
 
 module.exports = router;

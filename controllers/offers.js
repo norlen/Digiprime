@@ -25,7 +25,11 @@ module.exports.directory = async (req, res) => {
 };
 
 module.exports.newForm = (req, res) => {
-  res.render("offers/new", { costumers, referenceSectors, referenceTypes });
+  res.render("offers/new", {
+    costumers,
+    referenceSectors,
+    referenceTypes,
+  });
 };
 
 module.exports.create = async (req, res, next) => {
@@ -57,7 +61,10 @@ module.exports.show = async (req, res) => {
     req.flash("error", "Cannot find that offer!");
     return res.redirect("/offers");
   }
-  res.render("offers/show", { offer, formatDistanceToNow });
+  res.render("offers/show", {
+    offer,
+    formatDistanceToNow,
+  });
 };
 
 module.exports.editForm = async (req, res) => {
