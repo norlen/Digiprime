@@ -48,6 +48,7 @@ module.exports.reviewSchema = Joi.object({
 });
 
 module.exports.registerSchema = Joi.object({
+  _csrf: Joi.string().required().escapeHTML(),
   username: Joi.string().required().escapeHTML(),
   email: Joi.string().email().required().escapeHTML(),
   location: Joi.string().required().escapeHTML(),

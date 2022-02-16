@@ -26,12 +26,10 @@ router
     users.createLogin
   );
 
-router.route("/profile/edit").get(isLoggedIn, catchAsync(users.editPage)).post(
-  isLoggedIn,
-
-  validateEditProfile,
-  catchAsync(users.createEditPage)
-);
+router
+  .route("/profile/edit")
+  .get(isLoggedIn, catchAsync(users.editPage))
+  .post(isLoggedIn, validateEditProfile, catchAsync(users.createEditPage));
 
 router
   .route("/profile/:username")
