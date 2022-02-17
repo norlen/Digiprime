@@ -71,7 +71,7 @@ module.exports.isReviewAuthor = async (req, res, next) => {
  * @returns
  */
 // prettier-ignore
-const validateBody = (schema, statusCode = 400) => async (req, res, next) => {
+const validateBody = (schema, statusCode = 400) => (req, res, next) => {
   const { error } = schema.validate(req.body);
   if (error) {
     const msg = error.details.map((el) => el.message).join(",");
@@ -88,7 +88,7 @@ const validateBody = (schema, statusCode = 400) => async (req, res, next) => {
  * @returns
  */
 // prettier-ignore
-const validateQuery = (schema, statusCode = 400) => async (req, res, next) => {
+const validateQuery = (schema, statusCode = 400) => (req, res, next) => {
   const { error } = schema.validate(req.query);
   if (error) {
     const msg = error.details.map((el) => el.message).join(",");
@@ -105,7 +105,7 @@ const validateQuery = (schema, statusCode = 400) => async (req, res, next) => {
  * @returns
  */
 // prettier-ignore
-const validateParams = (schema, statusCode = 400) => async (req, res, next) => {
+const validateParams = (schema, statusCode = 400) => (req, res, next) => {
   const { error } = schema.validate(req.params);
   if (error) {
     const msg = error.details.map((el) => el.message).join(",");
