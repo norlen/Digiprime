@@ -25,7 +25,7 @@ const extension = (joi) => ({
 const Joi = BaseJoi.extend(extension);
 
 module.exports.offerSchema = Joi.object({
-  _csrf: Joi.string().required().escapeHTML(),
+  // _csrf: Joi.string().required().escapeHTML(),
   offer: Joi.object({
     title: Joi.string().required().escapeHTML(),
     price: Joi.number().required().min(0),
@@ -40,7 +40,7 @@ module.exports.offerSchema = Joi.object({
 });
 
 module.exports.reviewSchema = Joi.object({
-  _csrf: Joi.string().required().escapeHTML(),
+  // _csrf: Joi.string().required().escapeHTML(),
   review: Joi.object({
     body: Joi.string().required().escapeHTML(),
     rating: Joi.number().required().min(1).max(5),
@@ -48,7 +48,7 @@ module.exports.reviewSchema = Joi.object({
 });
 
 module.exports.registerSchema = Joi.object({
-  _csrf: Joi.string().required().escapeHTML(),
+  // _csrf: Joi.string().required().escapeHTML(),
   username: Joi.string().required().escapeHTML(),
   email: Joi.string().email().required().escapeHTML(),
   location: Joi.string().required().escapeHTML(),
@@ -73,7 +73,7 @@ module.exports.getCreateAuctionSchema = Joi.alternatives().try(
 
 module.exports.createAuctionSchema = Joi.alternatives().try(
   Joi.object({
-    _csrf: Joi.string().required().escapeHTML(),
+    // _csrf: Joi.string().required().escapeHTML(),
     auctionTitle: Joi.string().required().escapeHTML(),
     closingTime: Joi.date().min(Date.now()).required(),
     quantity: Joi.number().required(),
@@ -87,7 +87,7 @@ module.exports.createAuctionSchema = Joi.alternatives().try(
     privacy: Joi.string().valid("Private", "Public").required().escapeHTML(),
   }),
   Joi.object({
-    _csrf: Joi.string().required().escapeHTML(),
+    // _csrf: Joi.string().required().escapeHTML(),
     auctionTitle: Joi.string().required().escapeHTML(),
     closingTime: Joi.date().min(Date.now()).required(),
     quantity: Joi.number().required(),
@@ -100,13 +100,13 @@ module.exports.createAuctionSchema = Joi.alternatives().try(
 
 // Schema to validate inputs when placing a bid at an auction.
 module.exports.placeBidSchema = Joi.object({
-  _csrf: Joi.string().required().escapeHTML(),
+  // _csrf: Joi.string().required().escapeHTML(),
   bid: Joi.number().min(1).required(),
 });
 
 // Validate inputs to `selectWinner`.
 module.exports.selectWinnerSchema = Joi.object({
-  _csrf: Joi.string().required().escapeHTML(),
+  // _csrf: Joi.string().required().escapeHTML(),
   winner: Joi.string().required().escapeHTML(),
 });
 
@@ -118,7 +118,7 @@ module.exports.IdSchema = Joi.object({
 
 // Schema to validate inputs for `creating profile`.
 module.exports.profileSchema = Joi.object({
-  _csrf: Joi.string().required().escapeHTML(),
+  // _csrf: Joi.string().required().escapeHTML(),
   firstname: Joi.string().allow("").escapeHTML(),
   surname: Joi.string().allow("").escapeHTML(),
   phone: Joi.string().allow("").escapeHTML(),

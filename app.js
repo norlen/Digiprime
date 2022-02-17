@@ -21,7 +21,7 @@ const reviewRoutes = require("./routes/reviews");
 const userRoutes = require("./routes/users");
 const auctionRoutes = require("./routes/auctions");
 
-const { csrfProtection } = require("./utils/csrf");
+// const { csrfProtection } = require("./utils/csrf");
 
 const User = require("./models/user");
 
@@ -146,11 +146,11 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(csrfProtection);
-app.use((req, res, next) => {
-  res.locals._csrf = req.csrfToken();
-  next();
-});
+// app.use(csrfProtection);
+// app.use((req, res, next) => {
+//   res.locals._csrf = req.csrfToken();
+//   next();
+// });
 
 app.use("/", userRoutes);
 app.use("/offers", offerRoutes);

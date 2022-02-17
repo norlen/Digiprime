@@ -47,7 +47,7 @@
         method="POST"
         action="/auctions/<%= auction._id %>"
       >
-        <input type="hidden" name="_csrf" value="<%= _csrf %>" />
+        <!-- <input type="hidden" name="_csrf" value="" /> -->
         <span class="input-group-text">$</span>
         <input
           id="bid"
@@ -207,7 +207,7 @@
   >
     <div class="modal-dialog modal-lg">
       <form class="" method="POST" action="/auctions/<%= auction._id %>/end">
-        <input type="hidden" name="_csrf" value="<%= _csrf %>" />
+        <!-- <input type="hidden" name="_csrf" value="" /> -->
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">
