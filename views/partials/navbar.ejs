@@ -21,14 +21,8 @@
         <a class="nav-link" href="/auctions">Current Auctions</a>
       </div>
 
-      <div class="navbar-nav ms-auto">
-        <% if(!currentUser) {%>
-        <a class="nav-link" href="/login">Log In</a>
-        <a class="nav-link" href="/register">Register</a>
-      </div>
-      <% } else {%>
-
-      <ul class="navbar-nav">
+      <% if (currentUser) { %>
+      <ul class="navbar-nav ms-auto">
         <li class="nav-item dropdown mx-4">
           <a
             class="nav-link dropdown-toggle"
@@ -39,16 +33,16 @@
             aria-haspopup="true"
             aria-expanded="false"
           >
-            <% if(!currentUser.image.url) {%>
+            <% if (currentUser.image && currentUser.image.url) { %>
             <img
-              src="/pictures/user_pic.png"
+              src="<%= currentUser.image.url %>"
               width="30"
               height="30"
               class="rounded-circle"
             />
-            <% } else {%>
+            <% } else { %>
             <img
-              src="<%= currentUser.image.url %>"
+              src="/pictures/user_pic.png"
               width="30"
               height="30"
               class="rounded-circle"
@@ -67,7 +61,7 @@
             <li>
               <a
                 class="dropdown-item"
-                href="/profile/<%=currentUser.username%>"
+                href="/profile/<%= currentUser.username %>"
               >
                 Profile page
               </a>
@@ -75,10 +69,22 @@
             <li>
               <a class="dropdown-item" href="/profile/edit">Edit Profile</a>
             </li>
-            <li><a class="dropdown-item" href="/logout">Log Out</a></li>
+            <li>
+              <form action="/logout" method="POST">
+                <input type="hidden" name="_csrf" value="<%= _csrf %>" />
+                <button type="submit" class="btn btn-link dropdown-item">
+                  Log out
+                </button>
+              </form>
+            </li>
           </ul>
         </li>
       </ul>
+      <% } else {%>
+      <div class="navbar-nav ms-auto">
+        <a class="nav-link" href="/login">Log In</a>
+        <a class="nav-link" href="/register">Register</a>
+      </div>
       <% } %>
     </div>
   </div>

@@ -86,7 +86,7 @@
 
 <script>
   const offers = {features: <%- JSON.stringify(offers) %>};
-  const currentUsername = "<%- currentUser.username %>";
+  const currentUsername = "<%- currentUser ? currentUser.username : undefined %>";
 
   let selectedOffers = new Map();
   const createAuctionSelector = document.getElementById("createAuctionBtn");
@@ -104,7 +104,11 @@
         }
 
         const currUsername = offer.author.username;
-        if (sector !== offer.referenceSector || type !== offer.referenceType || customer !== offer.costumer || creators[currUsername] !== undefined || offer.author.username === currentUsername) {
+        if (sector !== offer.referenceSector ||
+            type !== offer.referenceType ||
+            customer !== offer.costumer ||
+            creators[currUsername] !== undefined ||
+            offer.author.username === currentUsername) {
           checksOK = false;
           break;
         }

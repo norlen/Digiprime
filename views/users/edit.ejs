@@ -1,22 +1,26 @@
-<% layout('layouts/boilerplatetwo') %>
+<% layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/stylesheets/profile.css">
+<link rel="stylesheet" href="/stylesheets/edit.css">
 
 <form method="POST" action="/profile/edit">
+  <input type="hidden" name="_csrf" value="<%= _csrf %>" />
+  
   <div class="container rounded bg-white mt-1 mb-5">
     <div class="row">
       <div class="col-md-3 border-right">
         <div class="d-flex flex-column align-items-center text-center p-3 py-5">
-          <% if(!currentUser.image.url) {%>
-          <img
-            class="rounded-circle mt-5"
-            width="150px"
-            src="/pictures/user_pic.png"
-          />
+          <% if (currentUser.image && currentUser.image.url) {%>
+            <img
+              class="rounded-circle mt-5"
+              width="150px"
+              src="<%= currentUser.image.url %>"
+            />
           <% } else {%>
-          <img
-            class="rounded-circle mt-5"
-            width="150px"
-            src="<%= currentUser.image.url %>"
-          />
+            <img
+              class="rounded-circle mt-5"
+              width="150px"
+              src="/pictures/user_pic.png"
+            />
           <% } %>
           <span class="font-weight-bold"><%= currentUser.username %></span>
           <span class="text-black-50"><%= currentUser.email %></span>
@@ -36,7 +40,7 @@
                 type="text"
                 class="form-control"
                 placeholder="first name"
-                value="<%= fields.firstname %>"
+                value="<%= data.firstname %>"
               />
             </div>
             <div class="col-md-6">
@@ -46,7 +50,7 @@
                 name="surname"
                 type="text"
                 class="form-control"
-                value="<%= fields.surname %>"
+                value="<%= data.surname %>"
                 placeholder="surname"
               />
             </div>
@@ -60,7 +64,7 @@
                 type="text"
                 class="form-control"
                 placeholder="enter phone number"
-                value="<%= fields.phone %>"
+                value="<%= data.phone %>"
               />
             </div>
             <div class="col-md-12">
@@ -71,7 +75,7 @@
                 type="text"
                 class="form-control"
                 placeholder="enter address line 1"
-                value="<%= fields.address1 %>"
+                value="<%= data.address1 %>"
               />
             </div>
             <div class="col-md-12">
@@ -82,7 +86,7 @@
                 type="text"
                 class="form-control"
                 placeholder="enter address line 2"
-                value="<%= fields.address2 %>"
+                value="<%= data.address2 %>"
               />
             </div>
             <div class="col-md-12">
@@ -93,7 +97,7 @@
                 type="text"
                 class="form-control"
                 placeholder="enter postcode"
-                value="<%= fields.postcode %>"
+                value="<%= data.postcode %>"
               />
             </div>
             <div class="col-md-12">
@@ -104,7 +108,7 @@
                 type="text"
                 class="form-control"
                 placeholder="enter Area"
-                value="<%= fields.area %>"
+                value="<%= data.area %>"
               />
             </div>
           </div>
@@ -117,7 +121,7 @@
                 type="text"
                 class="form-control"
                 placeholder="country"
-                value="<%= fields.country %>"
+                value="<%= data.country %>"
               />
             </div>
             <div class="col-md-6">
@@ -127,7 +131,7 @@
                 name="state"
                 type="text"
                 class="form-control"
-                value="<%= fields.state %>"
+                value="<%= data.state %>"
                 placeholder="state"
               />
             </div>
@@ -149,12 +153,12 @@
               aria-label="Default select example"
               id="description"
               name="description"
-              value="<%= fields.description %>"
+              value="<%= data.description %>"
               required
             >
-              <option value="private" <%= fields.description === "private" ? "selected" : "" %>>private person</option>
-              <option value="company" <%= fields.description === "company" ? "selected" : "" %>>company</option>
-              <option value="middleman" <%= fields.description === "middleman" ? "selected" : "" %>>middleman</option>
+              <option value="private" <%= data.description === "private" ? "selected" : "" %>>private person</option>
+              <option value="company" <%= data.description === "company" ? "selected" : "" %>>company</option>
+              <option value="middleman" <%= data.description === "middleman" ? "selected" : "" %>>middleman</option>
             </select>
           </div>
           <br />
@@ -178,7 +182,7 @@
                 class="form-control"
                 id="details"
                 name="details"
-                value="<%= fields.details %>"
+                value="<%= data.details %>"
                 rows="3"
               ></textarea>
             </div>

@@ -26,4 +26,5 @@ const UserInformationSchema = new Schema({
   offers: { type: Number },
   wins: { type: Number },
 });
+
 module.exports = mongoose.model("UserInformation", UserInformationSchema);

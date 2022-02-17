@@ -25,8 +25,7 @@ db.once("open", () => {
 });
 
 const sample = (array) => array[Math.floor(Math.random() * array.length)];
-const between = (min, max) =>
-  Math.floor(Math.random() * (MAX_PRICE - MIN_PRICE)) + MIN_PRICE;
+const between = (min, max) => min + Math.floor(Math.random() * (max - min));
 
 const seedDB = async () => {
   const users = await User.find().exec();

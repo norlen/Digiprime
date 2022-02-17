@@ -12,7 +12,7 @@
         <% }) %>
       </div>
 
-      <% if(offer.images.length> 1) { %>
+      <% if (offer.images.length > 1) { %>
       <button
         class="carousel-control-prev"
         type="button"
@@ -56,7 +56,7 @@
         <!-- <li class="list-group-item">$<%= offer.price %> / Piece</li> -->
       </ul>
 
-      <% if(currentUser && offer.author.equals(currentUser._id)) {%>
+      <% if (currentUser && offer.author.equals(currentUser._id)) { %>
       <div class="card-body text-center d-flex gap-2 justify-content-between">
         <a
           class="card-link btn btn-primary col-3"
@@ -68,6 +68,7 @@
           action="/offers/<%= offer._id %>?_method=DELETE"
           method="POST"
         >
+          <input type="hidden" name="_csrf" value="<%= _csrf %>" />
           <button type="submit" class="btn btn-danger w-100">Delete</button>
         </form>
         <a
@@ -86,7 +87,7 @@
   <div class="col-6">
     <div class="mb-3" id="map"></div>
     <div class="card">
-      <% if(currentUser){ %>
+      <% if (currentUser) { %>
       <div class="card-body">
         <h2 class="card-title">Leave a Review</h2>
         <!-- <a href="/offers">All offers</a> -->
@@ -100,6 +101,7 @@
                                 <label class="form-label" for="rating">Rating</label>
                                 <input class="form-range" type="range" min="1" max="5" name="review[rating]" id="rating">
                             </div> -->
+          <input type="hidden" name="_csrf" value="<%= _csrf %>" />
           <div>
             <fieldset class="starability-basic">
               <input
@@ -169,7 +171,7 @@
       </div>
     </div>
 
-    <% for(let review of offer.reviews) { %>
+    <% for (let review of offer.reviews) { %>
     <div class="card mb-3">
       <div class="card-body">
         <h5 class="card-title"><%= review.author.username %></h5>
@@ -178,11 +180,12 @@
         </p>
         <!-- <h6 class="card-subtitle mb-2 text-muted">By <%= review.author.username %></h6> -->
         <p class="card-text">Review: <%= review.body %></p>
-        <% if(currentUser && review.author.equals(currentUser._id)) {%>
+        <% if (currentUser && review.author.equals(currentUser._id)) { %>
         <form
           action="/offers/<%= offer._id %>/reviews/<%= review._id %>?_method=DELETE"
           method="POST"
         >
+          <input type="hidden" name="_csrf" value="<%= _csrf %>" />
           <button class="btn btn-sm btn-danger">Delete</button>
         </form>
         <% } %>

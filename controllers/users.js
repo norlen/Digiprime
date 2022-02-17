@@ -1,13 +1,10 @@
 const User = require("../models/user");
 const UserInformation = require("../models/userinformation");
-const Joi = require("joi");
 
 const mapboxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
 const mapboxToken = process.env.MAPBOX_TOKEN;
 const geocoder = mapboxGeocoding({ accessToken: mapboxToken });
-const axios = require("axios");
-const NE_BASE_URL =
-  process.env.NEGOTIATION_ENGINE_BASE_URL || "http://localhost:5000";
+const ne = require("../lib/ne");
 
 module.exports.register = (req, res) => {
   res.render("users/register");
@@ -30,13 +27,7 @@ module.exports.createRegister = async (req, res, next) => {
     const coordinates = geoData.body.features[0].geometry.coordinates
       .map((v) => v.toString())
       .join(",");
-    const body = {
-      email,
-      username,
-      password,
-      sign: coordinates,
-    };
-    await axios.post(`${NE_BASE_URL}/signup`, body);
+    await ne.signup(username, email, password, coordinates);
     // TEMPORARY END.
 
     const user = new User({ email, username });
@@ -70,51 +61,37 @@ module.exports.logout = (req, res) => {
 };
 
 module.exports.profilePage = async (req, res) => {
-  const username = req.params.name;
+  const { username } = req.params;
 
   // Retrieves number of historic auctions and active auctions.
-  const response = await axios.get(`${NE_BASE_URL}/rooms/stats/${username}`);
-  const { historic, active } = response.data;
+  // const { historic, active } = await ne.getStats(username);
 
-  let queryData = await UserInformation.findOne({ username });
-  if (!queryData) {
-    queryData = {
-      username,
-      email: req.user.email,
-    };
-  }
+  let data = await UserInformation.findOne({ username });
+  data = { ...data._doc, username };
 
-  res.render("users/profile", { queryData, historic, active });
+  res.render("users/profile", {
+    data,
+    historic: 0,
+    active: 0,
+  });
 };
 
 module.exports.editPage = async (req, res) => {
   const { username } = req.user;
-  let fields = (await UserInformation.findOne({ username })) || {};
 
-  res.render("users/edit", { fields });
+  let currentData = await UserInformation.findOne({ username });
+  currentData = currentData === undefined ? {} : currentData;
+
+  res.render("users/edit", {
+    data: currentData,
+  });
 };
-
-// Schema to validate inputs for `creating profile`.
-const profileSchema = Joi.object({
-  firstname: Joi.string().allow(""),
-  surname: Joi.string().allow(""),
-  phone: Joi.string().allow(""),
-  address1: Joi.string().allow(""),
-  address2: Joi.string().allow(""),
-  postcode: Joi.string().allow(""),
-  area: Joi.string().allow(""),
-  country: Joi.string().allow(""),
-  state: Joi.string().allow(""),
-  description: Joi.string().allow(""),
-  details: Joi.string().allow(""),
-});
 
 module.exports.createEditPage = async (req, res) => {
   const { id, username } = req.user;
-  const info = await profileSchema.validateAsync(req.body);
 
   const data = {
-    ...info,
+    ...req.body,
     username,
     email: req.user.email,
   };

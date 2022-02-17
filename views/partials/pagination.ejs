@@ -1,6 +1,6 @@
-<% if (totalPages > 1) { %>
+<% if (page.totalPages > 1) { %>
 <ul class="pagination justify-content-center">
-  <% if (currentPage == 1) { %>
+  <% if (page.currentPage == 1) { %>
   <li class="page-item disabled">
     <a class="page-link">
       <svg
@@ -41,7 +41,7 @@
   </li>
   <% } else { %>
   <li class="page-item">
-    <a class="page-link" href="/auctions/<%=path%>?page=1"
+    <a class="page-link" href="<%= path %>?page=1"
       ><svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"
@@ -62,7 +62,7 @@
     </a>
   </li>
   <li class="page-item">
-    <a class="page-link" href="/auctions/<%=path%>?page=<%= currentPage - 1 %>"
+    <a class="page-link" href="<%= path %>?page=<%= page.currentPage - 1 %>"
       ><svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"
@@ -81,31 +81,34 @@
   <% } %>
   <!--prettier-ignore -->
   <%
-      const pageButtons = 8;
-      const halfPageButtons = pageButtons / 2;
-      let startIdx, endIdx;
-      if (currentPage <= halfPageButtons) {
-        startIdx = 1;
-        endIdx = Math.min(totalPages, startIdx + pageButtons);
-      } else if (totalPages - currentPage <= halfPageButtons) {
-        startIdx = totalPages - pageButtons;
-        endIdx = totalPages;
-      } else {
-        startIdx = currentPage - halfPageButtons;
-        endIdx = startIdx + pageButtons;
-      }
-      
-      for (let i = startIdx; i <= endIdx; i++) {
-    %>
-    <% if (i == currentPage) { %>
+    const pageButtons = 8;
+    const halfPageButtons = pageButtons / 2;
+    let startIdx, endIdx;
+    if (page.currentPage <= halfPageButtons) {
+      startIdx = 1;
+      endIdx = Math.min(page.totalPages, startIdx + pageButtons);
+    } else if (page.totalPages - page.currentPage <= halfPageButtons) {
+      startIdx = page.totalPages - pageButtons;
+      endIdx = page.totalPages;
+    } else {
+      startIdx = page.currentPage - halfPageButtons;
+      endIdx = startIdx + pageButtons;
+    }
+    
+    for (let i = startIdx; i <= endIdx; i++) {
+  %>
+  <% if (i == page.currentPage) { %>
   <li class="page-item active">
-    <a class="page-link" href="/auctions/<%=path%>?page=<%= i %>"><%= i %></a>
+    <a class="page-link" href="<%= path %>?page=<%= i %>"><%= i %></a>
   </li>
   <% } else { %>
   <li class="page-item">
-    <a class="page-link" href="/auctions/<%=path%>?page=<%= i %>"><%= i %></a>
+    <a class="page-link" href="<%= path %>?page=<%= i %>"><%= i %></a>
   </li>
-  <% } %> <% } %> <% if (currentPage == totalPages) { %>
+  <!-- prettier-ignore -->
+  <% } %>
+  <% } %>
+  <% if (page.currentPage == page.totalPages) { %>
   <li class="page-item disabled">
     <a class="page-link">
       <svg
@@ -146,7 +149,7 @@
   </li>
   <% } else { %>
   <li class="page-item">
-    <a class="page-link" href="/auctions/<%=path%>?page=<%= currentPage + 1 %>">
+    <a class="page-link" href="<%= path %>?page=<%= page.currentPage + 1 %>">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"
@@ -163,7 +166,7 @@
     </a>
   </li>
   <li class="page-item">
-    <a class="page-link" href="/auctions/<%=path%>?page=<%= totalPages %>">
+    <a class="page-link" href="<%= path %>?page=<%= page.totalPages %>">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"
