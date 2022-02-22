@@ -12,6 +12,7 @@ const {
   selectWinnerSchema,
   IdSchema,
   registerSchema,
+  validateCreateNegotiation,
 } = require("./schemas.js");
 
 module.exports.isLoggedIn = (req, res, next) => {
@@ -64,7 +65,7 @@ module.exports.isReviewAuthor = async (req, res, next) => {
 };
 
 /**
- * Validates against a Joi schema.
+ * Validates the body against a Joi schema.
  *
  * @param {object} schema Joi schema to validate against.
  * @param {number} statusCode status code to return on failure, defaults to 400.
@@ -81,7 +82,7 @@ const validateBody = (schema, statusCode = 400) => (req, res, next) => {
 };
 
 /**
- * Validates against a Joi schema.
+ * Validates the query against a Joi schema.
  *
  * @param {object} schema Joi schema to validate against.
  * @param {number} statusCode status code to return on failure, defaults to 400.
@@ -98,7 +99,7 @@ const validateQuery = (schema, statusCode = 400) => (req, res, next) => {
 };
 
 /**
- * Validates against a Joi schema.
+ * Validates the parameters against a Joi schema.
  *
  * @param {object} schema Joi schema to validate against.
  * @param {number} statusCode status code to return on failure, defaults to 400.
@@ -114,15 +115,47 @@ const validateParams = (schema, statusCode = 400) => (req, res, next) => {
   next();
 };
 
-// Auctions.
+/**
+ * Checks if the parameters contains an `id` field with a valid mongo id.
+ */
 module.exports.validIdQuery = validateParams(IdSchema, 404);
 
-module.exports.validateGetCreateAuction = validateQuery(getCreateAuctionSchema);
-module.exports.validatePostCreateAuction = validateBody(createAuctionSchema);
+/**
+ * Validate fields when placing a bid.
+ */
 module.exports.validatePlaceBid = validateBody(placeBidSchema);
+
+/**
+ * Validate query against expected fields for creating auction.
+ */
+module.exports.validateGetCreateAuction = validateQuery(getCreateAuctionSchema);
+
+/**
+ * Validate fields when creating an auction.
+ */
+module.exports.validatePostCreateAuction = validateBody(createAuctionSchema);
+
+/**
+ * Validate fields when selecting a winner in an auction.
+ */
 module.exports.validateSelectWinner = validateBody(selectWinnerSchema);
 
-// Users.
+/**
+ * Validate the the parameter contains a valid username.
+ */
 module.exports.validateUsername = validateParams(usernameSchema, 404);
+
+/**
+ * Validate fields when editing user profile.
+ */
 module.exports.validateEditProfile = validateBody(profileSchema);
+
+/**
+ * Valide fields on signup.
+ */
 module.exports.validateRegister = validateBody(registerSchema);
+
+/**
+ * Validate fields when creating a negotiation.
+ */
+module.exports.validateNegotiation = validateBody(validateCreateNegotiation);

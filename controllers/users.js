@@ -67,7 +67,7 @@ module.exports.profilePage = async (req, res) => {
   // const { historic, active } = await ne.getStats(username);
 
   let data = await UserInformation.findOne({ username });
-  data = { ...data._doc, username };
+  data = data ? { ...data._doc, username } : { username };
 
   res.render("users/profile", {
     data,

@@ -20,6 +20,7 @@ const offerRoutes = require("./routes/offers");
 const reviewRoutes = require("./routes/reviews");
 const userRoutes = require("./routes/users");
 const auctionRoutes = require("./routes/auctions");
+const negotiationRoutes = require("./routes/negotiation");
 
 // const { csrfProtection } = require("./utils/csrf");
 
@@ -156,6 +157,7 @@ app.use("/", userRoutes);
 app.use("/offers", offerRoutes);
 app.use("/offers/:id/reviews", reviewRoutes);
 app.use("/auctions", auctionRoutes);
+app.use("/negotiations", negotiationRoutes);
 
 app.get("/", (req, res) => {
   res.render("home");

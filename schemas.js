@@ -52,7 +52,7 @@ module.exports.registerSchema = Joi.object({
   username: Joi.string().required().escapeHTML(),
   email: Joi.string().email().required().escapeHTML(),
   location: Joi.string().required().escapeHTML(),
-  password: Joi.string().email().escapeHTML(),
+  password: Joi.string().required().escapeHTML(),
 });
 
 module.exports.getCreateAuctionSchema = Joi.alternatives().try(
@@ -134,4 +134,15 @@ module.exports.profileSchema = Joi.object({
 
 module.exports.usernameSchema = Joi.object({
   username: Joi.string().escapeHTML(),
+});
+
+// Schema to validate against creating a negotiation.
+module.exports.validateCreateNegotiation = Joi.object({
+  // _csrf: Joi.string().required().escapeHTML(),
+  offerId: Joi.string()
+    .pattern(/^[0-9a-fA-F]{24}$/)
+    .required(),
+  title: Joi.string().required().escapeHTML(),
+  contract: Joi.string().required().escapeHTML(),
+  quantity: Joi.number().required(),
 });
