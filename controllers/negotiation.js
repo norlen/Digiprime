@@ -26,8 +26,6 @@ module.exports.show = async (req, res) => {
   const { username } = req.user;
 
   const negotiation = await ne.getNegotiation(username, negotiationId);
-  // TODO: Check if it does not exist, then 404.
-  // i.e. throw new ExpressError("Negotiation not found", 404);
 
   res.render("negotiations/show", {});
 };
