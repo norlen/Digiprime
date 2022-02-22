@@ -10,7 +10,17 @@ const ExpressError = require("../utils/ExpressError");
  * @param {*} res
  */
 module.exports.showCreate = async (req, res) => {
-  res.render("negotiations/create", {});
+  const { id: offerId } = req.params;
+
+  // You may want this in the frontend, remove otherwise.
+  const offer = await Offer.findById(offerId).populate("author");
+
+  // Ensure the other party in the negotiation is another user.
+  if (username === offer.author.username) {
+    throw new ExpressError("Cannot create a negotiation with yourself", 400);
+  }
+
+  res.render("negotiations/create", { offer });
 };
 
 /**
@@ -27,7 +37,7 @@ module.exports.show = async (req, res) => {
 
   const negotiation = await ne.getNegotiation(username, negotiationId);
 
-  res.render("negotiations/show", {});
+  res.render("negotiations/show", { negotiation });
 };
 
 /**

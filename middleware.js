@@ -116,6 +116,24 @@ const validateParams = (schema, statusCode = 400) => (req, res, next) => {
 };
 
 /**
+ * Checks if `id` in parameters is a valid offer id. Throws a 404 error if not.
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+module.exports.isValidOffer = (req, res, next) => {
+  const { id } = req.params;
+
+  const exists = await Offer.exists({ _id: id });
+  if (exists) {
+    next();
+  } else {
+    throw new ExpressError("Offer not found", 404);
+  }
+};
+
+/**
  * Checks if the parameters contains an `id` field with a valid mongo id.
  */
 module.exports.validIdQuery = validateParams(IdSchema, 404);

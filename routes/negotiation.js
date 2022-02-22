@@ -7,16 +7,17 @@ const {
   validIdQuery,
   validateNegotiation,
   validatePlaceBid,
+  isValidOffer,
 } = require("../middleware");
 
 router.route("/").get(isLoggedIn, catchAsync(negotiation.list));
 
 router
   .route("/create/:id")
-  .get(isLoggedIn, validIdQuery, catchAsync(negotiation.showCreate))
+  .get(isLoggedIn, isValidOffer, catchAsync(negotiation.showCreate))
   .post(
     isLoggedIn,
-    validIdQuery,
+    isValidOffer,
     validateNegotiation,
     catchAsync(negotiation.create)
   );
