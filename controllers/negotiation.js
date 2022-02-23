@@ -13,14 +13,17 @@ module.exports.showCreate = async (req, res) => {
   const { id: offerId } = req.params;
 
   // You may want this in the frontend, remove otherwise.
-  const offer = await Offer.findById(offerId).populate("author");
+  const [offer, contracts] = await Promise.all([
+    Offer.findById(offerId).populate("author"),
+    ne.contractList(),
+  ]);
 
   // Ensure the other party in the negotiation is another user.
   if (username === offer.author.username) {
     throw new ExpressError("Cannot create a negotiation with yourself", 400);
   }
 
-  res.render("negotiations/create", { offer });
+  res.render("negotiations/create", { offer, contracts });
 };
 
 /**
