@@ -35,6 +35,10 @@ router
   .route("/profile/:username")
   .get(validateUsername, catchAsync(users.profilePage));
 
+router
+  .route("/profile/:username/offers")
+  .get(isLoggedIn, catchAsync(users.viewOffers));
+  
 router.post("/logout", users.logout);
 
 module.exports = router;
