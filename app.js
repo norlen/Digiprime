@@ -19,6 +19,7 @@ const MongoStore = require("connect-mongo");
 const offerRoutes = require("./routes/offers");
 const reviewRoutes = require("./routes/reviews");
 const userRoutes = require("./routes/users");
+const profileRoutes = require("./routes/profile");
 const auctionRoutes = require("./routes/auctions");
 const negotiationRoutes = require("./routes/negotiation");
 
@@ -156,6 +157,7 @@ app.use((req, res, next) => {
 app.use("/", userRoutes);
 app.use("/offers", offerRoutes);
 app.use("/offers/:id/reviews", reviewRoutes);
+app.use("/profile", profileRoutes);
 app.use("/auctions", auctionRoutes);
 app.use("/negotiations", negotiationRoutes);
 

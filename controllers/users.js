@@ -1,5 +1,4 @@
 const User = require("../models/user");
-const UserInformation = require("../models/userinformation");
 
 const mapboxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
 const mapboxToken = process.env.MAPBOX_TOKEN;
@@ -58,48 +57,4 @@ module.exports.logout = (req, res) => {
   req.logout();
   req.flash("success", "Success logout!");
   res.redirect("/offers");
-};
-
-module.exports.profilePage = async (req, res) => {
-  const { username } = req.params;
-
-  // Retrieves number of historic auctions and active auctions.
-  // const { historic, active } = await ne.getStats(username);
-
-  let data = await UserInformation.findOne({ username });
-  data = data ? { ...data._doc, username } : { username };
-
-  res.render("users/profile", {
-    data,
-    historic: 0,
-    active: 0,
-  });
-};
-
-module.exports.editPage = async (req, res) => {
-  const { username } = req.user;
-
-  let currentData = await UserInformation.findOne({ username });
-  currentData = currentData === undefined ? {} : currentData;
-
-  res.render("users/edit", {
-    data: currentData,
-  });
-};
-
-module.exports.createEditPage = async (req, res) => {
-  const { id, username } = req.user;
-
-  const data = {
-    ...req.body,
-    username,
-    email: req.user.email,
-  };
-  const options = {
-    new: true,
-    upsert: true,
-  };
-  await UserInformation.findOneAndUpdate({ _id: id }, data, options);
-
-  res.redirect(`/profile/${username}`);
 };
