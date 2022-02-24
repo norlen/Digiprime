@@ -3,12 +3,7 @@ const router = express.Router();
 const passport = require("passport");
 const catchAsync = require("../utils/catchAsync");
 const users = require("../controllers/users");
-const {
-  isLoggedIn,
-  validateEditProfile,
-  validateUsername,
-  validateRegister,
-} = require("../middleware");
+const { validateRegister } = require("../middleware");
 
 router
   .route("/register")
@@ -26,19 +21,6 @@ router
     users.createLogin
   );
 
-router
-  .route("/profile/edit")
-  .get(isLoggedIn, catchAsync(users.editPage))
-  .post(isLoggedIn, validateEditProfile, catchAsync(users.createEditPage));
-
-router
-  .route("/profile/:username")
-  .get(validateUsername, catchAsync(users.profilePage));
-
-router
-  .route("/profile/:username/offers")
-  .get(isLoggedIn, catchAsync(users.viewOffers));
-  
 router.post("/logout", users.logout);
 
 module.exports = router;

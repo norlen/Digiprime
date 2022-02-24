@@ -7,40 +7,42 @@
     <div class="row align-items-center flex-row-reverse">
       <div class="col-lg-6">
         <div class="about-text go-to">
-          <h3 class="dark-color"><%= data.username %></h3>
-          <h6 class="theme-color lead">Trading as: <%= data.description %></h6>
-          <p><mark><%= data.details %></mark></p>
+          <h3 class="dark-color"><%= user.username %></h3>
+          <h6 class="theme-color lead">
+            Trading as: <%= profile.description %>
+          </h6>
+          <p><mark><%= profile.details %></mark></p>
           <div class="row about-list">
             <div class="col-md-6">
               <div class="media">
                 <label>E-mail</label>
-                <p><%= data.email %></p>
+                <p><%= user.email %></p>
               </div>
               <div class="media">
                 <label>Name</label>
-                <div><%= data.firstname %> <%= data.surname %></div>
+                <div><%= profile.firstname %> <%= profile.surname %></div>
               </div>
               <div class="media">
                 <label>Residence</label>
-                <p><%= data.country %>, <%= data.area %></p>
+                <p><%= profile.country %>, <%= profile.area %></p>
               </div>
               <div class="media">
                 <label>Address</label>
-                <p><%= data.address1 %>, <%= data.country %></p>
+                <p><%= profile.address1 %>, <%= profile.country %></p>
               </div>
             </div>
             <div class="col-md-6">
               <div class="media">
                 <label>Postcode</label>
-                <p><%= data.postcode %></p>
+                <p><%= profile.postcode %></p>
               </div>
               <div class="media">
                 <label>Phone</label>
-                <p><%= data.phone %></p>
+                <p><%= profile.phone %></p>
               </div>
               <div class="media">
                 <label>Role</label>
-                <p><%= data.description %></p>
+                <p><%= profile.description %></p>
               </div>
               <div class="media">
                 <label>Company</label>
@@ -52,7 +54,11 @@
       </div>
       <div class="col-lg-6">
         <div class="about-avatar">
+          <% if (user.image && user.image.url) {%>
+          <img src="<%= user.image.url %>" title="" alt="" />
+          <% } else {%>
           <img src="/pictures/user_pic.png" title="" alt="" />
+          <% } %>
         </div>
       </div>
     </div>
@@ -68,15 +74,19 @@
         </div>-->
         <div class="col-6 col-lg-4">
           <div class="count-data text-center">
-            <h6 class="count h2" data-to="150" data-speed="150"><%= offers %></h6>
-            <a href="/profile/<%=data.username%>/offers">
+            <h6 class="count h2" data-to="150" data-speed="150">
+              <%= offers %>
+            </h6>
+            <a href="/profile/<%= user.username %>/offers">
               <p class="m-0px font-w-600">My Offers</p>
             </a>
           </div>
         </div>
         <div class="col-6 col-lg-4">
           <div class="count-data text-center">
-            <h6 class="count h2" data-to="850" data-speed="850"><%= active %></h6>
+            <h6 class="count h2" data-to="850" data-speed="850">
+              <%= active %>
+            </h6>
             <a href="#">
               <p class="m-0px font-w-600">Auctions participated in</p>
             </a>
@@ -84,7 +94,9 @@
         </div>
         <div class="col-6 col-lg-4">
           <div class="count-data text-center">
-            <h6 class="count h2" data-to="190" data-speed="190"><%= historic %></h6>
+            <h6 class="count h2" data-to="190" data-speed="190">
+              <%= historic %>
+            </h6>
             <a href="#">
               <p class="m-0px font-w-600">Auctions won</p>
             </a>
