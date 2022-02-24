@@ -13,7 +13,6 @@ module.exports.showCreate = async (req, res) => {
   const { id: offerId } = req.params;
   const { username } = req.user;
 
-  // You may want this in the frontend, remove otherwise.
   const [offer, contracts] = await Promise.all([
     Offer.findById(offerId).populate("author"),
     ne.contractList(),
@@ -72,7 +71,14 @@ module.exports.list = async (req, res) => {
  */
 module.exports.create = async (req, res) => {
   const { username } = req.user;
-  const { offerId, title, contract, quantity, intialPrice } = req.body;
+
+  const data = {
+    offerId: req.params.id,
+    title: req.body.negName,
+    contract: req.body.contract,
+    quantity: req.body.quantity,
+    initialPrice: req.body.price,
+  };
 
   const offer = await Offer.findById(offerId).populate("author");
   if (!offer) {
@@ -86,17 +92,17 @@ module.exports.create = async (req, res) => {
 
   const id = await ne.createNegotiation(
     username,
-    title,
-    intialPrice,
+    data.title,
+    data.initialPrice,
     offer.author.username,
     offer.referenceSector,
     offer.referenceType,
-    quantity,
-    offerId,
-    contract
+    data.quantity,
+    data.offerId,
+    data.contract
   );
 
-  req.flash("success", `Successfully created negotiation ${title}`);
+  req.flash("success", `Successfully created negotiation ${data.title}`);
   res.redirect(`/negotiations/${id}`);
 };
 

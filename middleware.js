@@ -53,6 +53,7 @@ module.exports.isReviewAuthor = async (req, res, next) => {
  */
 // prettier-ignore
 const validateBody = (schema, statusCode = 400) => (req, res, next) => {
+ 
   const { error } = schema.validate(req.body);
   if (error) {
     const msg = error.details.map((el) => el.message).join(",");
@@ -60,6 +61,34 @@ const validateBody = (schema, statusCode = 400) => (req, res, next) => {
   }
   next();
 };
+
+/**
+ * Validates the body against a Joi schema.
+ *
+ * @param {object} schema Joi schema to validate against.
+ * @param {number} statusCode status code to return on failure, defaults to 400.
+ * @returns
+ */
+// prettier-ignore
+const validateNeg = (schema, statusCode = 400) => (req, res, next) => {
+
+    // Future improvement can be done, removing offerID validation here.
+    const data = {
+      offerId: req.params.id,
+      title: req.body.negName,
+      contract: req.body.contract,
+      quantity: req.body.quantity,
+      initialPrice: req.body.price 
+    }
+  
+   
+    const { error } = schema.validate(data);
+    if (error) {
+      const msg = error.details.map((el) => el.message).join(",");
+      throw new ExpressError(msg, statusCode);
+    }
+    next();
+  };
 
 /**
  * Validates the query against a Joi schema.
@@ -148,4 +177,4 @@ module.exports.validateRegister = validateBody(registerSchema);
 /**
  * Validate fields when creating a negotiation.
  */
-module.exports.validateNegotiation = validateBody(validateCreateNegotiation);
+module.exports.validateNegotiation = validateNeg(validateCreateNegotiation);
