@@ -6,7 +6,7 @@ const {
   isLoggedIn,
   validateGetCreateAuction,
   validatePostCreateAuction,
-  validIdQuery,
+  isValidId,
   validatePlaceBid,
   validateSelectWinner,
 } = require("../middleware");
@@ -26,25 +26,20 @@ router
 
 router
   .route("/:id")
-  .get(isLoggedIn, validIdQuery, catchAsync(auction.show))
-  .post(
-    isLoggedIn,
-    validIdQuery,
-    validatePlaceBid,
-    catchAsync(auction.placeBid)
-  );
+  .get(isLoggedIn, isValidId, catchAsync(auction.show))
+  .post(isLoggedIn, isValidId, validatePlaceBid, catchAsync(auction.placeBid));
 
 router
   .route("/:id/end")
   .post(
     isLoggedIn,
-    validIdQuery,
+    isValidId,
     validateSelectWinner,
     catchAsync(auction.selectWinner)
   );
 
 router
   .route("/:id/bids")
-  .get(isLoggedIn, validIdQuery, catchAsync(auction.getBids));
+  .get(isLoggedIn, isValidId, catchAsync(auction.getBids));
 
 module.exports = router;

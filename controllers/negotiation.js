@@ -11,12 +11,17 @@ const ExpressError = require("../utils/ExpressError");
  */
 module.exports.showCreate = async (req, res) => {
   const { id: offerId } = req.params;
+  const { username } = req.user;
 
   // You may want this in the frontend, remove otherwise.
   const [offer, contracts] = await Promise.all([
     Offer.findById(offerId).populate("author"),
     ne.contractList(),
   ]);
+
+  if (!offer) {
+    throw new ExpressError("Offer not found", 404);
+  }
 
   // Ensure the other party in the negotiation is another user.
   if (username === offer.author.username) {
@@ -70,6 +75,9 @@ module.exports.create = async (req, res) => {
   const { offerId, title, contract, quantity, intialPrice } = req.body;
 
   const offer = await Offer.findById(offerId).populate("author");
+  if (!offer) {
+    throw new ExpressError("Offer not found", 404);
+  }
 
   // Ensure the other party in the negotiation is another user.
   if (username === offer.author.username) {

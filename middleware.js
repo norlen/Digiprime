@@ -24,16 +24,6 @@ module.exports.isLoggedIn = (req, res, next) => {
   next();
 };
 
-module.exports.validateOffer = (req, res, next) => {
-  const { error } = offerSchema.validate(req.body);
-  if (error) {
-    const msg = error.details.map((el) => el.message).join(",");
-    throw new ExpressError(msg, 400);
-  } else {
-    next();
-  }
-};
-
 module.exports.isAuthor = async (req, res, next) => {
   const { id } = req.params;
   const offer = await Offer.findById(id);
@@ -42,16 +32,6 @@ module.exports.isAuthor = async (req, res, next) => {
     return res.redirect(`/offers/${id}`);
   }
   next();
-};
-
-module.exports.validateReview = (req, res, next) => {
-  const { error } = reviewSchema.validate(req.body);
-  if (error) {
-    const msg = error.details.map((el) => el.message).join(",");
-    throw new ExpressError(msg, 400);
-  } else {
-    next();
-  }
 };
 
 module.exports.isReviewAuthor = async (req, res, next) => {
@@ -116,27 +96,19 @@ const validateParams = (schema, statusCode = 400) => (req, res, next) => {
 };
 
 /**
- * Checks if `id` in parameters is a valid offer id. Throws a 404 error if not.
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
+ * Validate body when creating a new offer.
  */
-module.exports.isValidOffer = (req, res, next) => {
-  const { id } = req.params;
+module.exports.validateOffer = validateBody(offerSchema);
 
-  const exists = await Offer.exists({ _id: id });
-  if (exists) {
-    next();
-  } else {
-    throw new ExpressError("Offer not found", 404);
-  }
-};
+/**
+ * Validate body when creating a new review.
+ */
+module.exports.validateReview = validateBody(reviewSchema);
 
 /**
  * Checks if the parameters contains an `id` field with a valid mongo id.
  */
-module.exports.validIdQuery = validateParams(IdSchema, 404);
+module.exports.isValidId = validateParams(IdSchema, 404);
 
 /**
  * Validate fields when placing a bid.

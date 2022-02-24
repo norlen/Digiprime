@@ -4,40 +4,39 @@ const catchAsync = require("../utils/catchAsync");
 const negotiation = require("../controllers/negotiation");
 const {
   isLoggedIn,
-  validIdQuery,
+  isValidId,
   validateNegotiation,
   validatePlaceBid,
-  isValidOffer,
 } = require("../middleware");
 
 router.route("/").get(isLoggedIn, catchAsync(negotiation.list));
 
 router
   .route("/create/:id")
-  .get(isLoggedIn, isValidOffer, catchAsync(negotiation.showCreate))
+  .get(isLoggedIn, isValidId, catchAsync(negotiation.showCreate))
   .post(
     isLoggedIn,
-    isValidOffer,
+    isValidId,
     validateNegotiation,
     catchAsync(negotiation.create)
   );
 
 router
   .route("/:id")
-  .get(isLoggedIn, validIdQuery, catchAsync(negotiation.show))
+  .get(isLoggedIn, isValidId, catchAsync(negotiation.show))
   .post(
     isLoggedIn,
-    validIdQuery,
+    isValidId,
     validatePlaceBid,
     catchAsync(negotiation.placeBid)
   );
 
 router
   .route("/:id/accept")
-  .post(isLoggedIn, validIdQuery, catchAsync(negotiation.accept));
+  .post(isLoggedIn, isValidId, catchAsync(negotiation.accept));
 
 router
   .route("/:id/cancel")
-  .get(isLoggedIn, validIdQuery, catchAsync(negotiation.cancel));
+  .get(isLoggedIn, isValidId, catchAsync(negotiation.cancel));
 
 module.exports = router;

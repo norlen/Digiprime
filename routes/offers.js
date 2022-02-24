@@ -2,7 +2,12 @@ const express = require("express");
 const router = express.Router();
 const catchAsync = require("../utils/catchAsync");
 const offers = require("../controllers/offers");
-const { isLoggedIn, isAuthor, validateOffer } = require("../middleware");
+const {
+  isLoggedIn,
+  isAuthor,
+  validateOffer,
+  isValidId,
+} = require("../middleware");
 const multer = require("multer");
 const { storage } = require("../cloudinary");
 const upload = multer({ storage });
@@ -23,7 +28,7 @@ router.get("/new", isLoggedIn, offers.newForm);
 
 router
   .route("/:id")
-  .get(catchAsync(offers.show))
+  .get(isValidId, catchAsync(offers.show))
   .put(
     isLoggedIn,
     isAuthor,
