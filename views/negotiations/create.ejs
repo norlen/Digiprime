@@ -46,13 +46,14 @@
           <input
             type="text"
             class="form-control"
-            id="negName"
-            aria-describedby="negName"
-            name="negName"
+            id="title"
+            aria-describedby="title"
+            name="title"
             value=""
             placeholder="name for negotiation"
+            required
           />
-          <label for="negName">Negotiation Name</label>
+          <label for="title">Negotiation Name</label>
         </div>
 
         <div class="form-floating mb-3">
@@ -68,7 +69,7 @@
         </div>
 
         <div id="price" class="form-text">
-          This bid should reflect the amount chosen.
+          Initial price to start negotiation with
         </div>
         <div class="form-floating input-group mb-3">
           <input
@@ -79,6 +80,7 @@
             name="price"
             value=""
             placeholder="Bid"
+            required
           />
           <span class="input-group-text">$</span>
           <label for="price" class="form-label"></label>
@@ -108,7 +110,7 @@
             data-bs-toggle="modal"
             data-bs-target="#contractModal"
           >
-            view details
+            View details
           </button>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>

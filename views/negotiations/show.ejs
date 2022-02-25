@@ -1,8 +1,91 @@
 <% layout('layouts/boilerplate') %>
 
-<h3> TODO </h3>
+<div class="container mt-3">
+  <div class="row justify-content-between mb-3">
+    <div class="d-flex gap-2">
+      <h1><%= negotiation.name %></h1>
+      <% if (negotiation.status === "accepted") { %>
+      <span class="badge bg-success fs-6 my-3">Accepted</span>
+      <% } else if (negotiation.status === "rejected") { %>
+      <span class="badge bg-danger fs-6 my-3">Rejected</span>
+      <% } %>
+    </div>
+  </div>
 
-<!--  -->
+  <div class="row justify-content-between mb-3">
+    <div class="col-4">
+      <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between">
+          <h6>
+            <a href="/profile/<%= negotiation.created_by %>"
+              ><%= negotiation.created_by %></a
+            >
+          </h6>
+          <span class="text-muted">Created by</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <h6>
+            <a href="/profile/<%= negotiation.seller %>"
+              ><%= negotiation.seller %></a
+            >
+          </h6>
+          <span class="text-muted">Particiant</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <h6>$<%= negotiation.current_offer %></h6>
+          <span class="text-muted">Current offer</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <h6><%= negotiation.offer_user %></h6>
+          <span class="text-muted">Offer by</span>
+        </li>
+      </ul>
 
-  
-  
+      <% if (currentUser.username !== negotiation.offer_user) { %>
+      <form
+        class="w-100 input-group mt-2"
+        method="POST"
+        action="/negotiations/<%= negotiation._id %>"
+      >
+        <!-- <input type="hidden" name="_csrf" value="" /> -->
+        <span class="input-group-text">$</span>
+        <input
+          id="bid"
+          name="bid"
+          required
+          type="text"
+          class="form-control"
+          aria-label="bid"
+          placeholder="0.00"
+        />
+        <button type="submit" class="input-group-text btn-primary">
+          Place counter offer
+        </button>
+      </form>
+
+      <div class="row d-flex flex-row">
+        <form
+          class="input-group mt-2"
+          method="POST"
+          action="/negotiations/<%= negotiation._id %>/accept"
+        >
+          <button type="submit" class="input-group-text btn-primary">
+            Accept Offer
+          </button>
+        </form>
+
+        <form
+          class="input-group mt-2"
+          method="POST"
+          action="/negotiations/<%= negotiation._id %>/cancel"
+        >
+          <button type="submit" class="input-group-text btn-danger">
+            Reject offer
+          </button>
+        </form>
+      </div>
+
+      <% } %>
+    </div>
+  </div>
+</div>

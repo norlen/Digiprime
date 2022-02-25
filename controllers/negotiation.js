@@ -2,6 +2,7 @@ const Offer = require("../models/offer");
 const ne = require("../lib/ne");
 const { paginate } = require("../lib/paginate");
 const ExpressError = require("../utils/ExpressError");
+const formatDistanceToNow = require("date-fns/formatDistanceToNow");
 
 /**
  * Shows the page for creating a negotiation.
@@ -44,7 +45,11 @@ module.exports.show = async (req, res) => {
 
   const negotiation = await ne.getNegotiation(username, negotiationId);
 
-  res.render("negotiations/show", { negotiation });
+  if (negotiation.type === "contract") {
+    res.render("negotiations/show-accepted", { negotiation });
+  } else {
+    res.render("negotiations/show", { negotiation });
+  }
 };
 
 /**
@@ -60,6 +65,7 @@ module.exports.list = async (req, res) => {
 
   res.render("negotiations/list", {
     page: paginate(negotiations, req.query.page, 10),
+    formatDistanceToNow,
   });
 };
 
@@ -71,14 +77,8 @@ module.exports.list = async (req, res) => {
  */
 module.exports.create = async (req, res) => {
   const { username } = req.user;
-
-  const data = {
-    offerId: req.params.id,
-    title: req.body.negName,
-    contract: req.body.contract,
-    quantity: req.body.quantity,
-    initialPrice: req.body.price,
-  };
+  const { id: offerId } = req.params;
+  const { title, price, quantity, contract } = req.body;
 
   const offer = await Offer.findById(offerId).populate("author");
   if (!offer) {
@@ -92,17 +92,17 @@ module.exports.create = async (req, res) => {
 
   const id = await ne.createNegotiation(
     username,
-    data.title,
-    data.initialPrice,
+    title,
+    price,
     offer.author.username,
     offer.referenceSector,
     offer.referenceType,
-    data.quantity,
-    data.offerId,
-    data.contract
+    quantity,
+    offerId,
+    contract
   );
 
-  req.flash("success", `Successfully created negotiation ${data.title}`);
+  req.flash("success", `Successfully created negotiation ${title}`);
   res.redirect(`/negotiations/${id}`);
 };
 
@@ -119,7 +119,7 @@ module.exports.placeBid = async (req, res) => {
 
   await ne.negotiationBid(username, id, bid);
 
-  req.flash("success", `Successfully placed bid ${bid}`);
+  req.flash("success", `Successfully placed counter offer ${bid}`);
   res.redirect(`/negotiations/${id}`);
 };
 
