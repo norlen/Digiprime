@@ -130,11 +130,8 @@ module.exports.usernameSchema = Joi.object({
 
 // Schema to validate against creating a negotiation.
 module.exports.validateCreateNegotiation = Joi.object({
-  offerId: Joi.string()
-    .pattern(/^[0-9a-fA-F]{24}$/)
-    .required(),
   title: Joi.string().required().escapeHTML(),
   contract: Joi.string().required().escapeHTML(),
   quantity: Joi.number().required(),
-  initialPrice: Joi.number().required(),
+  price: Joi.number().required(),
 });

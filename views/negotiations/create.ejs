@@ -1,1 +1,157 @@
 <% layout('layouts/boilerplate') %>
+
+<div class="container mt-3">
+  <div class="row">
+    <!-- Vänster kolumn - Offers -->
+
+    <div class="col-sm-6">
+      <div class="card mb-3">
+        <a href="/offers/<%= offer._id %>">
+          <% if (offer.images.length) {%>
+          <img class="img-fluid" alt="" src="<%=offer.images[0].url%> " />
+          <% }else { %>
+          <img
+            class="img-fluid"
+            alt=""
+            src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg"
+          />
+          <% } %>
+        </a>
+        <div class="d-flex flex-row">
+          <h2 class="my-3 mx-4">
+            <a href="/offers/<%= offer._id %>"><%= offer.title %></a>
+          </h2>
+          <span class="badge bg-success my-4"> <%= offer.costumer %> </span>
+        </div>
+
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><%= offer.description %></li>
+          <li class="list-group-item text-muted"><%= offer.location %></li>
+          <li class="list-group-item">$<%= offer.price %> / Piece</li>
+          <li class="list-group-item">
+            Submitted by
+            <a href="/profile/<%= offer.author.username %>"
+              ><%= offer.author.username %></a
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Höger kolumn form form för att sätta in data. -->
+
+    <div class="col-sm-4">
+      <form method="POST" action="/negotiations/create/<%=offer._id%>">
+        <div class="form-floating mb-3">
+          <input
+            type="text"
+            class="form-control"
+            id="title"
+            aria-describedby="title"
+            name="title"
+            value=""
+            placeholder="name for negotiation"
+            required
+          />
+          <label for="title">Negotiation Name</label>
+        </div>
+
+        <div class="form-floating mb-3">
+          <input
+            type="number"
+            class="form-control"
+            id="quantity"
+            name="quantity"
+            value=""
+            placeholder="Amount"
+          />
+          <label for="quantity" class="form-label">Amount</label>
+        </div>
+
+        <div id="price" class="form-text">
+          Initial price to start negotiation with
+        </div>
+        <div class="form-floating input-group mb-3">
+          <input
+            type="number"
+            class="form-control"
+            id="price"
+            aria-label="Dollar amount (with dot and two decimal places)"
+            name="price"
+            value=""
+            placeholder="Bid"
+            required
+          />
+          <span class="input-group-text">$</span>
+          <label for="price" class="form-label"></label>
+        </div>
+
+        <div class="input-group mb-3">
+          <select
+            class="form-select"
+            id="contract"
+            aria-label="select with button addon"
+            name="contract"
+            value=""
+          >
+            <option selected>Choose contract template...</option>
+            <% if (contracts.length > 0) { %> <% for (let item in contracts) {
+            %>
+            <option value="<%= contracts[item].body %>">
+              <%= contracts[item].title %>
+            </option>
+            <% } %> <% } %>
+          </select>
+
+          <button
+            class="btn btn-outline-secondary"
+            id="contractButton"
+            type="button"
+            data-bs-toggle="modal"
+            data-bs-target="#contractModal"
+          >
+            View details
+          </button>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="contractModal"
+  tabindex="-1"
+  aria-labelledby="contractModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="contractModalLabel">Contract template</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body" id="modal1234"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById("contractButton").onclick = showContract;
+
+  function showContract() {
+    let contract = document.getElementById("contract");
+    document.getElementById("modal1234").innerHTML = contract.value;
+  }
+</script>

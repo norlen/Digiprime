@@ -37,6 +37,6 @@ router
 
 router
   .route("/:id/cancel")
-  .get(isLoggedIn, isValidId, catchAsync(negotiation.cancel));
+  .post(isLoggedIn, isValidId, catchAsync(negotiation.cancel));
 
 module.exports = router;

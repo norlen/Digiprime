@@ -26,6 +26,7 @@ module.exports.createRegister = async (req, res, next) => {
     const coordinates = geoData.body.features[0].geometry.coordinates
       .map((v) => v.toString())
       .join(",");
+      
     await ne.signup(username, email, password, coordinates);
     // TEMPORARY END.
 

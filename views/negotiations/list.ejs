@@ -1,6 +1,48 @@
 <% layout('layouts/boilerplate') %>
 
-<div>
+<div class="container">
+  <div class="d-flex align-items-center justify-content-between">
+    <h2>Negotiations</h2>
+  </div>
+
+  <div class="row mt-4 d-flex flex-column gap-4">
+    <% for (let negotiation of page.data) { %>
+    <div class="d-flex flex-row gap-2">
+      <div class="d-flex flex-column">
+        <div class="d-flex flex-row gap-2 align-items-center">
+          <a
+            href="/negotiations/<%= negotiation._id %>"
+            class="h4 text-underline-hover"
+          >
+            <%= negotiation.name %>
+          </a>
+          <!-- -->
+          <% if (negotiation.created_by === currentUser.username) { %>
+          <span class="badge bg-primary fs-6 my-3">Created by me</span>
+          <% } %>
+
+          <!-- -->
+          <% if (negotiation.status === "accepted") { %>
+          <span class="badge bg-success fs-6 my-3">Accepted</span>
+          <% } %>
+
+          <!-- -->
+          <% if (negotiation.status === "rejected") { %>
+          <span class="badge bg-danger fs-6 my-3">Rejected</span>
+          <% } %>
+        </div>
+        <div class="">
+          <span class="text-muted">
+            <!-- prettier-ignore -->
+            created <%= formatDistanceToNow(new Date(negotiation.created_at)) %> ago
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <% } %>
+  </div>
+
   <!-- prettier-ignore -->
   <%- include('../partials/pagination', { page, path: "/negotiations" }) %>
 </div>
