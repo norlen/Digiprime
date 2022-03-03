@@ -9,6 +9,7 @@ const {
   validateMembers,
 } = require("../lib/auction");
 const { paginate } = require("../lib/paginate");
+const Profile = require("../models/profile");
 
 /**
  * Render auction creation page for a single offer.
@@ -307,13 +308,33 @@ module.exports.index = async (req, res) => {
  */
 module.exports.history = async (req, res) => {
   const { username } = req.user;
+  const wins = req.query.wins;
+  
+  let auctions = await ne.getAuctionHistory(username);
+  let extra = "";
+  if(wins=='true') {
+    auctions = getOnlyWins(auctions, username);
+    extra = "&wins=true"
+  }
 
-  const auctions = await ne.getAuctionHistory(username);
   res.render("auctions/history", {
     page: paginate(auctions, req.query.page, 10),
     displayDate,
+    extra,
   });
 };
+
+const getOnlyWins = (auctions, user) => {
+  let newAuc = []
+  let index = 0;
+  for(let auc of auctions) {
+    if(auc.payload.highest_bidder.val[0] == user) {
+      newAuc[index] = auc;
+      index += 1;
+    }
+  }
+  return newAuc;
+}
 
 /**
  * Place a single bid to Negotiation Engine and refresh the page to display.

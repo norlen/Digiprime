@@ -3,6 +3,7 @@ const Offer = require("../models/offer");
 const Profile = require("../models/profile");
 const ExpressError = require("../utils/ExpressError");
 const { getPage, createPagination } = require("../lib/paginate");
+const ne = require("../lib/ne");
 
 /**
  * Shows a user's profile page.
@@ -31,13 +32,26 @@ module.exports.show = async (req, res) => {
     profile = {};
   }
 
+  const auctions = await ne.getAuctionHistory(username);
+  const wins = getWins(auctions, username);
+
   res.render("profile/show", {
     user,
     profile,
-    historic: 0,
-    active: 0,
+    wins,
+    active: auctions.length,
     offers,
   });
+};
+
+const getWins = (auctions, user) => {
+  let wins = 0;
+  for (let auc of auctions) {
+    if (auc.payload.highest_bidder.val[0] == user) {
+      wins += 1;
+    }
+  }
+  return wins;
 };
 
 /**
