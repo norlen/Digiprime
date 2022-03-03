@@ -9,7 +9,6 @@ const {
   validateMembers,
 } = require("../lib/auction");
 const { paginate } = require("../lib/paginate");
-const Profile = require("../models/profile");
 
 /**
  * Render auction creation page for a single offer.
