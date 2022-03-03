@@ -7,6 +7,7 @@ const {
   isAuthor,
   validateOffer,
   isValidId,
+  sanitizeDirectoryQuery,
 } = require("../middleware");
 const multer = require("multer");
 const { storage } = require("../cloudinary");
@@ -22,7 +23,7 @@ router
     catchAsync(offers.create)
   );
 
-router.get("/directory", catchAsync(offers.directory));
+router.get("/directory", sanitizeDirectoryQuery, catchAsync(offers.directory));
 
 router.get("/new", isLoggedIn, offers.newForm);
 

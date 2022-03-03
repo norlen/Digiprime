@@ -13,6 +13,7 @@ const {
   IdSchema,
   registerSchema,
   validateCreateNegotiation,
+  directorySchema,
 } = require("./schemas.js");
 
 module.exports.isLoggedIn = (req, res, next) => {
@@ -42,6 +43,16 @@ module.exports.isReviewAuthor = async (req, res, next) => {
     return res.redirect(`/offers/${id}`);
   }
   next();
+};
+
+module.exports.sanitizeDirectoryQuery = (req, res, next) => {
+  const { error } = directorySchema.validate(req.query);
+  if (error) {
+    req.flash("error", "Invalid search query");
+    res.redirect("/offers/directory");
+  } else {
+    next();
+  }
 };
 
 /**

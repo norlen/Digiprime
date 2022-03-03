@@ -4,10 +4,25 @@ const mapboxToken = process.env.MAPBOX_TOKEN;
 const geocoder = mapboxGeocoding({ accessToken: mapboxToken });
 const { cloudinary } = require("../cloudinary");
 const formatDistanceToNow = require("date-fns/formatDistanceToNow");
+const { getPage, createPagination } = require("../lib/paginate");
+const {
+  interests: costumers,
+  referenceSectors,
+  referenceTypes,
+} = require("../utils/constants");
 
-const costumers = ["Supply", "Demand"];
-const referenceSectors = ["Composites", "Batteries"];
-const referenceTypes = ["Material", "Product"];
+const removeFalsyValues = (object) => {
+  Object.keys(object).forEach((key) => {
+    if (!object[key]) {
+      delete object[key];
+    } else {
+      object[key] =
+        object[key].charAt(0).toUpperCase() +
+        object[key].slice(1).toLowerCase();
+    }
+  });
+  return object;
+};
 
 module.exports.index = async (req, res) => {
   const offers = await Offer.find({}).populate("author");
@@ -15,9 +30,27 @@ module.exports.index = async (req, res) => {
 };
 
 module.exports.directory = async (req, res) => {
-  const offers = await Offer.find({}).populate("author");
+  const { costumer, referenceSector, referenceType } = req.query;
+  const page = getPage(req.query.page);
+  const perPage = 18;
+
+  const filter = removeFalsyValues({
+    costumer,
+    referenceSector,
+    referenceType,
+  });
+
+  const [offers, count] = await Promise.all([
+    Offer.find(filter)
+      .populate("author")
+      .sort({ _id: 1 })
+      .skip(perPage * (page - 1))
+      .limit(perPage),
+    Offer.countDocuments(filter),
+  ]);
+
   res.render("offers/directory", {
-    offers,
+    page: createPagination(offers, count, page, perPage, filter),
     costumers,
     referenceSectors,
     referenceTypes,
