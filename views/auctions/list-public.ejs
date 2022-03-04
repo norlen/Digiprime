@@ -3,7 +3,7 @@
 <div class="container">
   <div class="row">
     <div class="col">
-        <h1>Public auctions</h1>
+      <h1>Public auctions</h1>
     </div>
 
     <div class="col-6"></div>
@@ -37,22 +37,31 @@
       <th scope="col">Reference type</th>
       <th scope="col">Reference sector</th>
       <th scope="col">Quantity</th>
-      <th scope="col">Location</th>
+      <th scope="col">Closing Time</th>
     </tr>
   </thead>
   <tbody>
+    <% for (let auction of page.data) { %>
     <tr>
-      <!-- <th scope="row"></th>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td> -->
+      <th scope="row"></th>
+      <td>
+        <a href="/auctions/<%= auction._id %>"
+          ><%= auction.payload.name.val[0] %></a
+        >
+      </td>
+      <td><%= auction.payload.auction_type.val[0] %></td>
+      <td><%= auction.payload.reference_type.val[0] %></td>
+      <td><%= auction.payload.reference_sector.val[0] %></td>
+      <td><%= auction.payload.quantity.val[0] %></td>
+      <td><%= displayDate(auction.payload.closing_time.val[0]) %></td>
     </tr>
+    <% } %>
   </tbody>
 </table>
 
 <div class="card-body text-end">
-  <a class="card-link btn btn-info col-1" href="/auctions/">Back</a>
+  <a class="card-link btn btn-primary col-1" href="/auctions/">Back</a>
 </div>
+
+<!-- prettier-ignore -->
+<%- include('../partials/pagination', { page, path: "/auctions/public" }) %>

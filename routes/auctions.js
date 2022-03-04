@@ -24,6 +24,8 @@ router
     catchAsync(auction.createAuction)
   );
 
+router.route("/public").get(isLoggedIn, catchAsync(auction.listPublic));
+
 router
   .route("/:id")
   .get(isLoggedIn, isValidId, catchAsync(auction.show))
