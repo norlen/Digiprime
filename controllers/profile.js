@@ -33,7 +33,13 @@ module.exports.show = async (req, res) => {
   }
 
   const auctions = await ne.getAuctionHistory(username);
-  const wins = getWins(auctions, username);
+  const wins = auctions.reduce((acc, auction) => {
+    if (auction.payload.highest_bidder.val[0] === user) {
+      return acc + 1;
+    } else {
+      return acc;
+    }
+  }, 0);
 
   res.render("profile/show", {
     user,
@@ -42,16 +48,6 @@ module.exports.show = async (req, res) => {
     active: auctions.length,
     offers,
   });
-};
-
-const getWins = (auctions, user) => {
-  let wins = 0;
-  for (let auc of auctions) {
-    if (auc.payload.highest_bidder.val[0] == user) {
-      wins += 1;
-    }
-  }
-  return wins;
 };
 
 /**

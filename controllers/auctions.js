@@ -307,33 +307,21 @@ module.exports.index = async (req, res) => {
  */
 module.exports.history = async (req, res) => {
   const { username } = req.user;
-  const wins = req.query.wins;
-  
+  const { wins } = req.query;
+
   let auctions = await ne.getAuctionHistory(username);
-  let extra = "";
-  if(wins=='true') {
-    auctions = getOnlyWins(auctions, username);
-    extra = "&wins=true"
+  if (wins == "true") {
+    auctions = auctions.filter(
+      (auction) => auction.payload.highest_bidder.val[0] === username
+    );
   }
 
   res.render("auctions/history", {
-    page: paginate(auctions, req.query.page, 10),
+    page: paginate(auctions, req.query.page, 10, { wins }),
     displayDate,
     extra,
   });
 };
-
-const getOnlyWins = (auctions, user) => {
-  let newAuc = []
-  let index = 0;
-  for(let auc of auctions) {
-    if(auc.payload.highest_bidder.val[0] == user) {
-      newAuc[index] = auc;
-      index += 1;
-    }
-  }
-  return newAuc;
-}
 
 /**
  * Place a single bid to Negotiation Engine and refresh the page to display.
