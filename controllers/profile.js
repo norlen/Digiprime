@@ -34,7 +34,7 @@ module.exports.show = async (req, res) => {
 
   const auctions = await ne.getAuctionHistory(username);
   const wins = auctions.reduce((acc, auction) => {
-    if (auction.payload.highest_bidder.val[0] === user) {
+    if (auction.payload.highest_bidder.val[0] === username) {
       return acc + 1;
     } else {
       return acc;

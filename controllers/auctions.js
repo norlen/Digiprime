@@ -319,7 +319,6 @@ module.exports.history = async (req, res) => {
   res.render("auctions/history", {
     page: paginate(auctions, req.query.page, 10, { wins }),
     displayDate,
-    extra,
   });
 };
 
