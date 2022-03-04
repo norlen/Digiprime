@@ -18,14 +18,12 @@
   </div>
 
   <div class="row">
-    <!-- Vänster kolumn - Offers -->
-
     <div class="col-sm-6">
       <div class="card mb-3">
         <a href="/offers/<%= offer._id %>">
           <% if (offer.images.length) {%>
           <img class="img-fluid" alt="" src="<%=offer.images[0].url%> " />
-          <% }else { %>
+          <% } else { %>
           <img
             class="img-fluid"
             alt=""
@@ -66,7 +64,6 @@
       </div>
     </div>
 
-    <!-- Höger kolumn -->
     <div class="col-sm-6">
       <ul class="list-group">
         <li class="list-group-item d-flex justify-content-between">
@@ -163,7 +160,6 @@
       </div>
       <% } %>
 
-      <!-- Bud historik-->
       <h4 class="mt-4">Bid History</h4>
 
       <div class="card">

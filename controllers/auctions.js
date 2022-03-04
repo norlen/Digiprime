@@ -8,7 +8,7 @@ const {
   validateCreateFromMultipleOffers,
   validateMembers,
 } = require("../lib/auction");
-const { paginate } = require("../lib/paginate");
+const { paginate, createPagination, getPage } = require("../lib/paginate");
 
 /**
  * Render auction creation page for a single offer.
@@ -402,4 +402,23 @@ module.exports.getBids = async (req, res) => {
       throw error;
     }
   }
+};
+
+module.exports.listPublic = async (req, res) => {
+  const { username } = req.user;
+  const page = getPage(req.query.page);
+  const perPage = 20;
+
+  const [auctions, count] = await ne.listPublic(username, page, perPage);
+  console.log("auctions", auctions);
+  console.log("count", count);
+
+  res.render("auctions/list-public", {
+    page: createPagination(auctions, count, page, perPage),
+    displayDate,
+  });
+};
+
+module.exports.pub2 = async (req, res) => {
+  res.render("auctions/viewSelectedPublic");
 };
