@@ -2,7 +2,7 @@ const User = require("../models/user");
 const Offer = require("../models/offer");
 const Profile = require("../models/profile");
 const ExpressError = require("../utils/ExpressError");
-const { paginate } = require("../lib/paginate");
+const { getPage, createPagination } = require("../lib/paginate");
 
 /**
  * Shows a user's profile page.
@@ -82,12 +82,21 @@ module.exports.update = async (req, res) => {
  */
 module.exports.offers = async (req, res) => {
   const { username } = req.params;
+  const page = getPage(req.query.page);
+  const perPage = 18;
 
   const user = await User.findOne({ username });
-  const offers = await Offer.find({ author: user._id }).populate("author");
+  const [offers, count] = await Promise.all([
+    Offer.find({ author: user._id })
+      .populate("author")
+      .sort({ _id: 1 })
+      .skip(perPage * (page - 1))
+      .limit(perPage),
+    Offer.countDocuments({ author: user._id }),
+  ]);
 
   res.render("profile/offers", {
     username,
-    page: paginate(offers, req.query.page, 20),
+    page: createPagination(offers, count, page, perPage),
   });
 };

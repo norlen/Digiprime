@@ -1,4 +1,14 @@
-<% if (page.totalPages > 1) { %>
+<!-- prettier-ignore -->
+<%
+if (page.totalPages > 1) {
+  // Preserve any current query parameters except page.
+  const preservedQuery = Object.keys(page.query).reduce((curr, key) => {
+    if (page.query[key] !== undefined && key !== "page") {
+      curr += `&${key}=${page.query[key]}`;
+    }
+    return curr;
+  }, "");
+%>
 <ul class="pagination justify-content-center">
   <% if (page.currentPage == 1) { %>
   <li class="page-item disabled">
@@ -41,7 +51,7 @@
   </li>
   <% } else { %>
   <li class="page-item">
-    <a class="page-link" href="<%= path %>?page=1"
+    <a class="page-link" href="<%= path %>?page=1<%= preservedQuery %>"
       ><svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"
@@ -62,7 +72,9 @@
     </a>
   </li>
   <li class="page-item">
-    <a class="page-link" href="<%= path %>?page=<%= page.currentPage - 1 %>"
+    <a
+      class="page-link"
+      href="<%= path %>?page=<%= page.currentPage - 1 %><%= preservedQuery %>"
       ><svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"
@@ -83,15 +95,17 @@
   <%
     const pageButtons = 8;
     const halfPageButtons = pageButtons / 2;
+    const pagesRemaining = page.totalPages - page.currentPage;
+
     let startIdx, endIdx;
     if (page.currentPage <= halfPageButtons) {
       startIdx = 1;
       endIdx = Math.min(page.totalPages, startIdx + pageButtons);
-    } else if (page.totalPages - page.currentPage <= halfPageButtons) {
-      startIdx = page.totalPages - pageButtons;
+    } else if (0 <= pagesRemaining && pagesRemaining <= halfPageButtons) {
+      startIdx = Math.max(1, page.totalPages - pageButtons);
       endIdx = page.totalPages;
     } else {
-      startIdx = page.currentPage - halfPageButtons;
+      startIdx = Math.max(1, page.currentPage - halfPageButtons);
       endIdx = startIdx + pageButtons;
     }
     
@@ -99,11 +113,15 @@
   %>
   <% if (i == page.currentPage) { %>
   <li class="page-item active">
-    <a class="page-link" href="<%= path %>?page=<%= i %>"><%= i %></a>
+    <a class="page-link" href="<%= path %>?page=<%= i %><%= preservedQuery %>"
+      ><%= i %></a
+    >
   </li>
   <% } else { %>
   <li class="page-item">
-    <a class="page-link" href="<%= path %>?page=<%= i %>"><%= i %></a>
+    <a class="page-link" href="<%= path %>?page=<%= i %><%= preservedQuery %>"
+      ><%= i %></a
+    >
   </li>
   <!-- prettier-ignore -->
   <% } %>
@@ -149,7 +167,10 @@
   </li>
   <% } else { %>
   <li class="page-item">
-    <a class="page-link" href="<%= path %>?page=<%= page.currentPage + 1 %>">
+    <a
+      class="page-link"
+      href="<%= path %>?page=<%= page.currentPage + 1 %><%= preservedQuery %>"
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"
@@ -166,7 +187,10 @@
     </a>
   </li>
   <li class="page-item">
-    <a class="page-link" href="<%= path %>?page=<%= page.totalPages %>">
+    <a
+      class="page-link"
+      href="<%= path %>?page=<%= page.totalPages %><%= preservedQuery %>"
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"

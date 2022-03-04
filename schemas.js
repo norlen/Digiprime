@@ -1,5 +1,10 @@
 const BaseJoi = require("joi");
 const sanitizeHtml = require("sanitize-html");
+const {
+  referenceSectors,
+  referenceTypes,
+  interests,
+} = require("./utils/constants");
 
 const extension = (joi) => ({
   type: "string",
@@ -50,6 +55,19 @@ module.exports.registerSchema = Joi.object({
   email: Joi.string().email().required().escapeHTML(),
   location: Joi.string().required().escapeHTML(),
   password: Joi.string().required().escapeHTML(),
+});
+
+module.exports.directorySchema = Joi.object({
+  page: Joi.number(),
+  costumer: Joi.string()
+    .valid(...interests, "")
+    .insensitive(),
+  referenceSector: Joi.string()
+    .valid(...referenceSectors, "")
+    .insensitive(),
+  referenceType: Joi.string()
+    .valid(...referenceTypes, "")
+    .insensitive(),
 });
 
 module.exports.getCreateAuctionSchema = Joi.alternatives().try(
