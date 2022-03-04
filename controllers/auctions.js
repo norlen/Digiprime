@@ -307,10 +307,17 @@ module.exports.index = async (req, res) => {
  */
 module.exports.history = async (req, res) => {
   const { username } = req.user;
+  const { wins } = req.query;
 
-  const auctions = await ne.getAuctionHistory(username);
+  let auctions = await ne.getAuctionHistory(username);
+  if (wins == "true") {
+    auctions = auctions.filter(
+      (auction) => auction.payload.highest_bidder.val[0] === username
+    );
+  }
+
   res.render("auctions/history", {
-    page: paginate(auctions, req.query.page, 10),
+    page: paginate(auctions, req.query.page, 10, { wins }),
     displayDate,
   });
 };

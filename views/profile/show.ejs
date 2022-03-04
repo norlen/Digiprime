@@ -87,19 +87,25 @@
             <h6 class="count h2" data-to="850" data-speed="850">
               <%= active %>
             </h6>
-            <a href="#">
+            <% if(user.username == currentUser.username) { %>
+            <a href="/auctions/history">
               <p class="m-0px font-w-600">Auctions participated in</p>
             </a>
+            <% } else { %>
+            <p class="m-0px font-w-600">Auctions participated in</p>
+            <% } %>
           </div>
         </div>
         <div class="col-6 col-lg-4">
           <div class="count-data text-center">
-            <h6 class="count h2" data-to="190" data-speed="190">
-              <%= historic %>
-            </h6>
-            <a href="#">
+            <h6 class="count h2" data-to="190" data-speed="190"><%= wins %></h6>
+            <% if(user.username == currentUser.username) { %>
+            <a href="/auctions/history?wins=true">
               <p class="m-0px font-w-600">Auctions won</p>
             </a>
+            <% } else { %>
+            <p class="m-0px font-w-600">Auctions won</p>
+            <% } %>
           </div>
         </div>
       </div>
