@@ -49,6 +49,9 @@
               class="rounded-circle"
             />
             <% } %>
+		  <span class="position-absolute top-15 translate-middle p-1 bg-danger border border-light rounded-circle">
+		    <span class="visually-hidden">New alerts</span>
+		  </span>
           </a>
           <ul
             class="dropdown-menu dropdown-menu-end"
@@ -58,6 +61,11 @@
               <h6>Signed in as:</h6>
               <p><%= currentUser.username %></p>
               <hr />
+            </li>
+            <li>
+              <a class="dropdown-item">
+                Digi box <span class="badge bg-primary"> 4 </span> 
+              </a>
             </li>
             <li>
               <a

@@ -22,6 +22,7 @@ const userRoutes = require("./routes/users");
 const profileRoutes = require("./routes/profile");
 const auctionRoutes = require("./routes/auctions");
 const negotiationRoutes = require("./routes/negotiation");
+const messageRoutes = require("./routes/messages");
 
 // const { csrfProtection } = require("./utils/csrf");
 
@@ -148,6 +149,24 @@ app.use((req, res, next) => {
   next();
 });
 
+//const {
+//  isLoggedIn,
+//} = require("./middleware");
+//
+//app.use((req, res, next) => {
+//  let count = 0;
+//  if(isLoggedIn) {
+//   
+//    Messages.find({
+//    $or: [ { $and: [{ to: id, to_read: false}]}, { $and: [{from: id, from_read: false}]}]
+//    }).forEach( function(d) { for(f in d) {count++;}});
+//    
+//  }
+//  res.locals.unreadcount = count;
+//  next();
+//
+//});
+
 // app.use(csrfProtection);
 // app.use((req, res, next) => {
 //   res.locals._csrf = req.csrfToken();
@@ -160,6 +179,7 @@ app.use("/offers/:id/reviews", reviewRoutes);
 app.use("/profile", profileRoutes);
 app.use("/auctions", auctionRoutes);
 app.use("/negotiations", negotiationRoutes);
+app.use("/messages", messageRoutes);
 
 app.get("/", (req, res) => {
   res.render("home");
