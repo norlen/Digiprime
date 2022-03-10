@@ -76,6 +76,10 @@ Note that this removes all previously created offers, which will break the websi
 
 This project is based off [Digiprime](https://github.com/ShaiFernandez/Digiprime). The main additions we have done are auctions, negotations, messages, and miscellaneous changes around the whole project.
 
+The project uses the model-view-controller (MVC) pattern so for most of our additions, we have added functionality in all those areas. In addition, handling the routing and making everything work as a whole. The project also has a focus on security, so all our additions perform input validation and sanitization to prevent e.g. XSS attacks.
+
+We also improved security slightly with support for secure cookies in the case the project is served over HTTPS, and in our containerization we added a reverse-proxy infront to serve over HTTPS.
+
 ### Auctions
 
 For each auctions we have two main kinds. 
@@ -115,4 +119,8 @@ The offer directory, which displays and allows for filtering of offers, did the 
 
 ## Further work
 
+One major part missing from our additions is the ability for a user to act as a broker in the system. Havint the ability to act on other companies behalf when using the platform. Due to time contraints we felt this addition could not be implemented in a satisfactory way before the end of the project.
 
+With our added support for server side filtering of offers, we have laid the groundwork to implement the elastic search parameters for further filtering of offers. However, we did not have time to implement these advanced search features.
+
+Further additions in security can also be added, such as CSRF protection, we have laid the groundwork for this to work. However, due to not being familiar with all the libraries used, especially in image upload handling, we did not have time to implement it fully, so it is currently disabled.
