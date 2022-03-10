@@ -3,7 +3,7 @@ const ne = require("../lib/ne");
 const { paginate } = require("../lib/paginate");
 const ExpressError = require("../utils/ExpressError");
 const formatDistanceToNow = require("date-fns/formatDistanceToNow");
-
+ 
 /**
  * Shows the page for creating a negotiation.
  *
@@ -18,7 +18,7 @@ module.exports.showCreate = async (req, res) => {
     Offer.findById(offerId).populate("author"),
     ne.contractList(),
   ]);
-
+  
   if (!offer) {
     throw new ExpressError("Offer not found", 404);
   }
@@ -44,11 +44,17 @@ module.exports.show = async (req, res) => {
   const { username } = req.user;
 
   const negotiation = await ne.getNegotiation(username, negotiationId);
+  const offer = await Offer.findById(negotiation.articleno).populate("author");
+
+  if (!offer) {
+    throw new ExpressError("Offer not found", 404);
+  }
+
 
   if (negotiation.type === "contract") {
     res.render("negotiations/show-accepted", { negotiation });
   } else {
-    res.render("negotiations/show", { negotiation });
+    res.render("negotiations/show", { negotiation, offer });
   }
 };
 
@@ -84,7 +90,7 @@ module.exports.create = async (req, res) => {
   if (!offer) {
     throw new ExpressError("Offer not found", 404);
   }
-
+  
   // Ensure the other party in the negotiation is another user.
   if (username === offer.author.username) {
     throw new ExpressError("Cannot create a negotiation with yourself", 400);
