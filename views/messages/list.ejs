@@ -79,7 +79,7 @@
     <div class="list-group list-group-flush border-bottom scrollarea">
       <!-- prettier-ignore -->
       <%
-        for (let message of messages.reverse()) {
+        for (let message of page.data) {
           const [d,t] = displayDate(message.messages[message.messages.length-1].createdAt).split(" ")
 
           let marked = false;
@@ -164,3 +164,6 @@
     </div>
   </div>
 </div>
+
+<!-- prettier-ignore -->
+<%- include('../partials/pagination', { page, path: "/messages" }) %>

@@ -2,6 +2,7 @@ const Message = require("../models/messages");
 const User = require("../models/user");
 const ExpressError = require("../utils/ExpressError");
 const { displayDate } = require("../lib/auction");
+const { getPage, createPagination } = require("../lib/paginate");
 
 /**
  * Create and send a message to a recipient.
@@ -59,6 +60,8 @@ module.exports.create = async (req, res) => {
 module.exports.list = async (req, res) => {
   const { id } = req.user;
   const { filter } = req.query;
+  const page = getPage(req.query.page);
+  const perPage = 10;
 
   let search = undefined;
   if (filter === "unread") {
@@ -88,9 +91,21 @@ module.exports.list = async (req, res) => {
     };
   }
 
-  const messages = await Message.find(search).populate("from").populate("to");
+  const [messages, count] = await Promise.all([
+    Message.find(search)
+      .populate("from")
+      .populate("to")
+      .sort({ _id: 1 })
+      .skip(perPage * (page - 1))
+      .limit(perPage),
+    Message.countDocuments(search),
+  ]);
 
-  res.render("messages/list", { messages, displayDate, filter });
+  res.render("messages/list", {
+    page: createPagination(messages, count, page, perPage),
+    displayDate,
+    filter,
+  });
 };
 
 /**
