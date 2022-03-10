@@ -49,9 +49,11 @@
               class="rounded-circle"
             />
             <% } %>
-		  <span class="position-absolute top-15 translate-middle p-1 bg-danger border border-light rounded-circle">
-		    <span class="visually-hidden">New alerts</span>
-		  </span>
+            <!-- <span
+              class="position-absolute top-15 translate-middle p-1 bg-danger border border-light rounded-circle"
+            >
+              <span class="visually-hidden">New alerts</span>
+            </span> -->
           </a>
           <ul
             class="dropdown-menu dropdown-menu-end"
@@ -59,14 +61,16 @@
           >
             <li class="dropdown-header">
               <h6>Signed in as:</h6>
-              <p><%= currentUser.username %></p>
-              <hr />
+              <p style="margin: 0"><%= currentUser.username %></p>
             </li>
+            <hr style="margin: 0.5rem 0" />
             <li>
-              <a class="dropdown-item">
-                Digi box <span class="badge bg-primary"> 4 </span> 
+              <a class="dropdown-item" href="/messages">
+                Digibox
+                <!--  <span class="badge bg-primary">4</span> -->
               </a>
             </li>
+            <hr style="margin: 0.5rem 0" />
             <li>
               <a
                 class="dropdown-item"

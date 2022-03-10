@@ -322,10 +322,6 @@ module.exports.history = async (req, res) => {
   });
 };
 
-module.exports.temp = async (req, res) => {
-	res.render("messages/messageOverview", {});
-};
-
 /**
  * Place a single bid to Negotiation Engine and refresh the page to display.
  *

@@ -15,8 +15,6 @@ router.route("/").get(isLoggedIn, catchAsync(auction.index));
 
 router.route("/history").get(isLoggedIn, catchAsync(auction.history));
 
-router.route("/temp").get(auction.temp);
-
 router
   .route("/create")
   .get(isLoggedIn, validateGetCreateAuction, catchAsync(auction.create))
