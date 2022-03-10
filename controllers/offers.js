@@ -25,8 +25,21 @@ const removeFalsyValues = (object) => {
 };
 
 module.exports.index = async (req, res) => {
-  const offers = await Offer.find({}).populate("author");
-  res.render("offers/index", { offers });
+  const page = getPage(req.query.page);
+  const perPage = 18;
+
+  const [offers, count] = await Promise.all([
+    Offer.find({})
+      .populate("author")
+      .sort({ _id: 1 })
+      .skip(perPage * (page - 1))
+      .limit(perPage),
+    Offer.estimatedDocumentCount(),
+  ]);
+
+  res.render("offers/index", {
+    page: createPagination(offers, count, page, perPage),
+  });
 };
 
 module.exports.directory = async (req, res) => {

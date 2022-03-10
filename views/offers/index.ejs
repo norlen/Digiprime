@@ -25,15 +25,18 @@
 <div class="container">
   <div class="row row-cols-1 row-cols-md-3 g-4">
     <!-- prettier-ignore -->
-    <% for (let offer of offers) { %>
+    <% for (let offer of page.data) { %>
         <%- include('../partials/offer-default', { offer, includeSelectForAuction: false }) %>
     <% } %>
   </div>
 </div>
 
+<!-- prettier-ignore -->
+<%- include('../partials/pagination', { page, path: "/offers" }) %>
+
 <script>
   const mapToken = '<%-process.env.MAPBOX_TOKEN%>';
-  const offers = {features: <%- JSON.stringify(offers) %>};
+  const offers = {features: <%- JSON.stringify(page.data) %>};
 </script>
 <script src="/javascripts/clusterMap.js"></script>
 <script src="/javascripts/searchBar.js"></script>
