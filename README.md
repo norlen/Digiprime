@@ -1,10 +1,12 @@
 [Digiprime](https://www.digiprime.eu/) is an EU project for the circular economy. This project is part of it and acts as a offer directory, with the ability to create auctions from these offers and negotiate the price on them.
 
-This work is an addition to the work contained in [Digiprime](https://github.com/ShaiFernandez/Digiprime). Our main additions are auctions, negotations, contract selection, and messages. These new additions use the [Negotation Engine](https://github.com/norlen/NegotiationEngine) API to handle negotiation aspect and contract signing.
+This work is an addition to the work contained in [Digiprime](https://github.com/ShaiFernandez/Digiprime). Our main additions are auctions, negotations, contract selection, and messages. These new additions use the [Negotation Engine](https://github.com/norlen/NegotiationEngine) API to handle the negotiation aspect and contract signing.
 
 ## Getting started
 
-There exists a ready to use build of [Digiprime](https://hub.docker.com/repository/docker/norlen/digiprime) on Docker Hub that contains all the required projects and dependencies. See the readme there for how to use it.
+### Ready-to-use container
+
+There exists a ready to use build of [Digiprime](https://hub.docker.com/r/norlen/digiprime) on Docker Hub that contains all the required projects and dependencies. See the readme there for how to use it.
 
 To instead build it from source, see [digiprime-container](https://github.com/norlen/digiprime-container).
 
@@ -53,7 +55,7 @@ npm run dev
 
 ### Production
 
-When running in production, set up a reverse proxy with HTTPS and point it to the the app server, then run with
+When running in production, set up a reverse proxy with HTTPS and point it to the the app server, then run using
 
 ```bash
 NODE_ENV="production" USE_TLS="true" npm run start
@@ -61,7 +63,7 @@ NODE_ENV="production" USE_TLS="true" npm run start
 
 ### Seeding
 
-To seed 100 offers with varying sectors, types and prices. Run
+To seed 100 offers with varying sectors, types, and prices. Run
 
 ```bash
 npm run seed
@@ -72,13 +74,45 @@ Note that this removes all previously created offers, which will break the websi
 
 ## Additions
 
+This project is based off [Digiprime](https://github.com/ShaiFernandez/Digiprime). The main additions we have done are auctions, negotations, messages, and miscellaneous changes around the whole project.
+
 ### Auctions
+
+For each auctions we have two main kinds. 
+
+- Single offer auction: the creator of the auction also owns the offer. This allows the user to e.g. buy a product they want from the lowest bidder, or sell their product to the highest bidder. These can either be public or private, and if they are private the creator must choose the participants when creating the auction.
+- Multiple offer auction: the creator select multiple non-owned offers. So they the suppliers can bid between themselves to sell their product for the lowest price, or demanders bid the highest price to buy something.
+
+The main auction functionality can be found under `/auctions`. This allows for listing all active auctions, listing all historical auctions, listing public auctions, and showing specific auctions. For specific auctions we support bidding, joining if the auction is public, selecting the eventual winner, and an in-depth display of the bids.
+
+Creating an auction has been added to either the offer page, for offers you have created (single offer auctions). The user can also create an auction from the offer directory page, where they can select the offers they want to include in an auction (multiple offer auctions).
 
 ### Negotations
 
+Negotiations are peer-to-peer negotiations between two different parties. They allow a user to invite another user, for an offer they are interested in, to negotiate on the price.
+
+Negotations can be found at `/negotations` which lists all the negotations the user is part of. For specific negotations the user's bid back and forth, and after a user receives an offer they can either counter bid, accept the negotation, or entirely reject the negotation. The two latter choices ends the negotation altogheter. When a negotiation has been accepted, a new page is displayed which shows the final contract details.
+
+### Profiles
+
+To provide users the ability to see who they are buying from or selling to we added user profiles. This allows every user to create their own profile which contain their contact details, what they do, and if they are a company or an individual.
+
+Every user has their own profile located at `/profile/<username>`. Users can also edit their profiles, and links to the profiles have been added where usernames are displayed.
+
 ### Messages
+
+To allow the communication between users to stay on the platform, we have added support for messaging. This allows participants in either auctions or negotiations to contact the creator to further discuss details before comitting to a bid. However, it is not limited to this, and messages can be sent to anyone at any time.
+
+The messaging system supports conversations so the thread of messages are easy to follow. Every user has their own mailbox where they can view all conversations, unread conversations, read conversations, or marked conversations. Every conversation can be marked for the ability to keep track of them more easily.
+
+When viewing a message they are automatically marked as read.
 
 ### Misc
 
+By default, all pages in the original Digiprime platform displayed all data. For all of our additions, support for pagination has been added. This has been extended to the different offer pages as well.
+
+The offer directory, which displays and allows for filtering of offers, did the filtering client-side. With our support for pagination we had to move this server-side. While the response time for the filtering will be slower, it allows for more advanced filtering and searching.
 
 ## Further work
+
+
