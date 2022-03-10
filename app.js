@@ -27,6 +27,7 @@ const messageRoutes = require("./routes/messages");
 // const { csrfProtection } = require("./utils/csrf");
 
 const User = require("./models/user");
+const Message = require("./models/messages");
 
 const port = process.env.PORT || 3000;
 const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/offer-test";
@@ -149,23 +150,28 @@ app.use((req, res, next) => {
   next();
 });
 
-//const {
-//  isLoggedIn,
-//} = require("./middleware");
-//
-//app.use((req, res, next) => {
-//  let count = 0;
-//  if(isLoggedIn) {
-//   
-//    Messages.find({
-//    $or: [ { $and: [{ to: id, to_read: false}]}, { $and: [{from: id, from_read: false}]}]
-//    }).forEach( function(d) { for(f in d) {count++;}});
-//    
-//  }
-//  res.locals.unreadcount = count;
-//  next();
-//
-//});
+const setUnreadCount = (req, res, next) => {
+  const setCount = async (user) => {
+    if (!user) return;
+
+    const count = await Message.countDocuments({
+      $or: [
+        { $and: [{ to: user._id, to_read: false }] },
+        { $and: [{ from: user._id, from_read: false }] },
+      ],
+    });
+    return count;
+  };
+
+  res.locals.unreadMessages = null;
+  setCount(res.locals.currentUser)
+    .then((count) => {
+      res.locals.unreadMessages = count || null;
+      next();
+    })
+    .catch(next);
+};
+app.use(setUnreadCount);
 
 // app.use(csrfProtection);
 // app.use((req, res, next) => {

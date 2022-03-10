@@ -66,8 +66,9 @@
             <hr style="margin: 0.5rem 0" />
             <li>
               <a class="dropdown-item" href="/messages">
-                Digibox
-                <!--  <span class="badge bg-primary">4</span> -->
+                Digibox <% if (unreadMessages) { %>
+                <span class="badge bg-primary"><%= unreadMessages %></span>
+                <% } %>
               </a>
             </li>
             <hr style="margin: 0.5rem 0" />

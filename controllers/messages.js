@@ -146,7 +146,14 @@ module.exports.reply = async (req, res) => {
   if (!(message.to == userId || message.from == userId)) {
     throw new ExpressError("Cannot reply to other people's messages", 403);
   }
-  await Message.updateOne({ _id: id }, { $push: { messages: { body } } });
+
+  const update = { $push: { messages: { body } } };
+  if (message.to == userId) {
+    update.from_read = false;
+  } else {
+    update.to_read = false;
+  }
+  await Message.updateOne({ _id: id }, update);
 
   res.redirect(`/messages/${id}`);
 };
