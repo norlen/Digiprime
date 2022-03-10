@@ -73,7 +73,7 @@
         </form>
         <a
           class="card-link btn btn-primary"
-          href="/auctions/create?from=offer&offerId=<%= offer.id %>"
+          href="/auctions/create-public?offerId=<%= offer.id %>"
           >Create auction</a
         >
       </div>
@@ -83,7 +83,12 @@
         ago
       </div>
     </div>
-    <a class="btn btn-primary" href="/negotiations/create/<%= offer._id %>" role="button">Direct Negotiation</a>
+    <a
+      class="btn btn-primary"
+      href="/negotiations/create/<%= offer._id %>"
+      role="button"
+      >Direct Negotiation</a
+    >
   </div>
   <div class="col-6">
     <div class="mb-3" id="map"></div>

@@ -70,46 +70,46 @@ module.exports.directorySchema = Joi.object({
     .insensitive(),
 });
 
-module.exports.getCreateAuctionSchema = Joi.alternatives().try(
-  Joi.object({
-    from: Joi.string().valid("search").required(),
-    offerIds: Joi.array()
-      .min(2)
-      .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/, "offerId"))
-      .required(),
-  }),
-  Joi.object({
-    from: Joi.string().valid("offer").required(),
-    offerId: Joi.string()
-      .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
-      .required(),
-  })
-);
+// Schema to check the required fields necessary for create single-offer page.
+module.exports.createSingleOfferAuctionSchema = Joi.object({
+  offerId: Joi.string()
+    .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
+    .required(),
+});
 
-module.exports.createAuctionSchema = Joi.alternatives().try(
-  Joi.object({
-    auctionTitle: Joi.string().required().escapeHTML(),
-    closingTime: Joi.date().min(Date.now()).required(),
-    quantity: Joi.number().required(),
-    offerId: Joi.string()
-      .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
-      .required(),
-    members: [
-      Joi.string().required().escapeHTML(),
-      Joi.array().items(Joi.string().escapeHTML()).required(),
-    ],
-    privacy: Joi.string().valid("Private", "Public").required().escapeHTML(),
-  }),
-  Joi.object({
-    auctionTitle: Joi.string().required().escapeHTML(),
-    closingTime: Joi.date().min(Date.now()).required(),
-    quantity: Joi.number().required(),
-    offerIds: Joi.array()
-      .min(2)
-      .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/, "offerId"))
-      .required(),
-  })
-);
+// Schema to check required fields when creating multiple offer auction.
+module.exports.createAuctionSchema = Joi.object({
+  offerIds: Joi.array()
+    .min(2)
+    .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/, "offerId"))
+    .required(),
+});
+
+// Schema to validate a single-offer style auction.
+module.exports.singleOfferAuctionSchema = Joi.object({
+  auctionTitle: Joi.string().required().escapeHTML(),
+  closingTime: Joi.date().min(Date.now()).required(),
+  quantity: Joi.number().required(),
+  offerId: Joi.string()
+    .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
+    .required(),
+  members: [
+    Joi.string().required().escapeHTML(),
+    Joi.array().items(Joi.string().escapeHTML()).required(),
+  ],
+  privacy: Joi.string().valid("Private", "Public").required().escapeHTML(),
+});
+
+// Schema to validate a multiple-offer style auction.
+module.exports.auctionSchema = Joi.object({
+  auctionTitle: Joi.string().required().escapeHTML(),
+  closingTime: Joi.date().min(Date.now()).required(),
+  quantity: Joi.number().required(),
+  offerIds: Joi.array()
+    .min(2)
+    .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/, "offerId"))
+    .required(),
+});
 
 // Schema to validate inputs when placing a bid at an auction.
 module.exports.placeBidSchema = Joi.object({
@@ -121,6 +121,7 @@ module.exports.selectWinnerSchema = Joi.object({
   winner: Joi.string().required().escapeHTML(),
 });
 
+// Check for a valid mongo id.
 module.exports.IdSchema = Joi.object({
   id: Joi.string()
     .pattern(/^[0-9a-fA-F]{24}$/)
@@ -142,6 +143,7 @@ module.exports.profileSchema = Joi.object({
   details: Joi.string().allow("").escapeHTML(),
 });
 
+// Check that the username is kind of valid.
 module.exports.usernameSchema = Joi.object({
   username: Joi.string().escapeHTML(),
 });

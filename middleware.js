@@ -6,8 +6,6 @@ const {
   reviewSchema,
   profileSchema,
   usernameSchema,
-  getCreateAuctionSchema,
-  createAuctionSchema,
   placeBidSchema,
   selectWinnerSchema,
   IdSchema,
@@ -16,6 +14,10 @@ const {
   directorySchema,
   newMessageSchema,
   messageReplySchema,
+  createSingleOfferAuctionSchema,
+  createAuctionSchema,
+  singleOfferAuctionSchema,
+  auctionSchema,
 } = require("./schemas.js");
 
 module.exports.isLoggedIn = (req, res, next) => {
@@ -130,14 +132,29 @@ module.exports.isValidId = validateParams(IdSchema, 404);
 module.exports.validatePlaceBid = validateBody(placeBidSchema);
 
 /**
- * Validate query against expected fields for creating auction.
+ * Validate query params for creating a single offer auction. This is not for
+ * security, rather than not wasting the user's time if they get a weird url.
  */
-module.exports.validateGetCreateAuction = validateQuery(getCreateAuctionSchema);
+module.exports.checkParamsSingleOfferAuction = validateQuery(
+  createSingleOfferAuctionSchema
+);
 
 /**
- * Validate fields when creating an auction.
+ * Validate fields when creating a single-offer auction.
  */
-module.exports.validatePostCreateAuction = validateBody(createAuctionSchema);
+module.exports.validateCreateSingleOfferAuction = validateBody(
+  singleOfferAuctionSchema
+);
+
+/**
+ * Validate query params for creating a multiple offer auction.
+ */
+module.exports.checkParamsAuction = validateQuery(createAuctionSchema);
+
+/**
+ * Validate fields when creating a multiple-offer auction.
+ */
+module.exports.validateAuction = validateBody(auctionSchema);
 
 /**
  * Validate fields when selecting a winner in an auction.

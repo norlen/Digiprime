@@ -9,14 +9,15 @@ const {
   validateMembers,
 } = require("../lib/auction");
 const { paginate, createPagination, getPage } = require("../lib/paginate");
+const ExpressError = require("../utils/ExpressError");
 
 /**
- * Render auction creation page for a single offer.
+ * Renders the page to create a single offer auction.
  *
  * @param {*} req
  * @param {*} res
  */
-const createAuctionSingle = async (req, res) => {
+module.exports.createSingleOffer = async (req, res) => {
   const { offerId } = req.query;
   const { username } = req.user;
 
@@ -35,12 +36,12 @@ const createAuctionSingle = async (req, res) => {
 };
 
 /**
- * Render auction creation page for multiple offers.
+ * Renders the page to create auctions.
  *
  * @param {*} req
  * @param {*} res
  */
-const createAuctionMultiple = async (req, res) => {
+module.exports.create = async (req, res) => {
   const { offerIds } = req.query;
   const { username } = req.user;
 
@@ -55,22 +56,6 @@ const createAuctionMultiple = async (req, res) => {
     info: { ...rest },
     offerIds: offerIds.join(","),
   });
-};
-
-/**
- * Renders the page to create auctions.
- *
- * @param {*} req
- * @param {*} res
- */
-module.exports.create = async (req, res) => {
-  if (req.query.from === "search") {
-    // Check if we should render the template for that contains multiple non-owned offers.
-    await createAuctionMultiple(req, res);
-  } else {
-    // Otherwise it's from a single owned offer.
-    await createAuctionSingle(req, res);
-  }
 };
 
 /**
@@ -101,7 +86,6 @@ const postCreateAuctionSingle = async (username, data) => {
     privacy: data.privacy,
   };
 };
-
 /**
  * Creates data required for NE call when creating auction for a multiple offer auction.
  *
@@ -128,22 +112,42 @@ const postCreateAuctionMultiple = async (username, data) => {
 };
 
 /**
- * Calls NegotationEngine to actually create the auction.
+ * Create a multiple-offer auction.
  *
  * @param {*} req
  * @param {*} res
  */
 module.exports.createAuction = async (req, res) => {
-  const fromSearch = req.body.members === undefined;
   const { username } = req.user;
 
   try {
-    let data;
-    if (fromSearch) {
-      data = await postCreateAuctionMultiple(username, req.body);
+    const data = await postCreateAuctionMultiple(username, req.body);
+    const auctionId = await ne.createAuction(username, data);
+
+    req.flash("success", "Successfully created auction");
+    res.redirect(`/auctions/${auctionId}`);
+  } catch (error) {
+    if (error.isAxiosError) {
+      console.error(error.response.data);
     } else {
-      data = await postCreateAuctionSingle(username, req.body);
+      console.error(error);
     }
+
+    req.flash("error", "Failed to create auction");
+    res.redirect("/auctions");
+  }
+};
+
+/**
+ * Creates a single-offer auction.
+ * @param {*} req
+ * @param {*} res
+ */
+module.exports.createSingleOfferAuction = async (req, res) => {
+  const { username } = req.user;
+
+  try {
+    const data = await postCreateAuctionSingle(username, req.body);
     const auctionId = await ne.createAuction(username, data);
 
     req.flash("success", "Successfully created auction");
@@ -163,11 +167,20 @@ module.exports.createAuction = async (req, res) => {
 const showSingleAuction = async (req, res, auction, articleNumber) => {
   const offer = await Offer.findById(articleNumber);
 
+  let userParticipates = false;
+  for (let member of auction.members) {
+    if (member._id.username === req.user.username) {
+      userParticipates = true;
+      break;
+    }
+  }
+
   res.render("auctions/show", {
     auction,
     offer,
     formatDistanceToNow,
     displayDate,
+    userParticipates,
   });
 };
 
@@ -410,8 +423,6 @@ module.exports.listPublic = async (req, res) => {
   const perPage = 20;
 
   const [auctions, count] = await ne.listPublic(username, page, perPage);
-  console.log("auctions", auctions);
-  console.log("count", count);
 
   res.render("auctions/list-public", {
     page: createPagination(auctions, count, page, perPage),
@@ -419,6 +430,36 @@ module.exports.listPublic = async (req, res) => {
   });
 };
 
-module.exports.pub2 = async (req, res) => {
-  res.render("auctions/viewSelectedPublic");
+/**
+ * Join a public auction.
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+module.exports.join = async (req, res) => {
+  const { id: auctionId } = req.params;
+  const { username } = req.user;
+
+  // Check that we can join the auction.
+  const auction = await ne.getAuction(username, auctionId);
+  if (auction.privacy !== "Public") {
+    throw new ExpressError("Cannot join private auction", 403);
+  }
+  for (let member of auction.members) {
+    if (member._id.username === username) {
+      throw new ExpressError(
+        `Already a member of auction ${auction.payload.name.val[0]}`,
+        400
+      );
+    }
+  }
+
+  // Join the auction.
+  await ne.joinAuction(username, auctionId);
+
+  req.flash(
+    "success",
+    `Successfully joined auction ${auction.payload.name.val[0]}`
+  );
+  res.redirect(`/auctions/${auctionId}`);
 };

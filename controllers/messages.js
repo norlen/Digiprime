@@ -89,7 +89,6 @@ module.exports.list = async (req, res) => {
   }
 
   const messages = await Message.find(search).populate("from").populate("to");
-  console.log(messages);
 
   res.render("messages/list", { messages, displayDate, filter });
 };

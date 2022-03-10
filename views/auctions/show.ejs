@@ -117,7 +117,9 @@
         </ul>
       </div>
 
+      <!-- prettier-ignore -->
       <% if (!isCreator && !auction.closed) { %>
+      <% if (userParticipates) { %>
       <form
         class="w-100 input-group mt-2"
         method="POST"
@@ -138,6 +140,19 @@
           Place bid
         </button>
       </form>
+      <% } else { %>
+      <form
+        class="w-100 input-group mt-2"
+        method="POST"
+        action="/auctions/<%= auction._id %>/join"
+      >
+        <!-- <input type="hidden" name="_csrf" value="" /> -->
+        <button type="submit" class="input-group-text btn-primary">
+          Join Auction
+        </button>
+      </form>
+      <!-- prettier-ignore -->
+      <% } %>
       <% } else if (isCreator && auction.closed) { %>
       <div class="mt-2">
         <% if (auction.bids.length == 0) { %>
