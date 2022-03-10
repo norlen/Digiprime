@@ -14,6 +14,8 @@ const {
   registerSchema,
   validateCreateNegotiation,
   directorySchema,
+  newMessageSchema,
+  messageReplySchema,
 } = require("./schemas.js");
 
 module.exports.isLoggedIn = (req, res, next) => {
@@ -161,3 +163,13 @@ module.exports.validateRegister = validateBody(registerSchema);
  * Validate fields when creating a negotiation.
  */
 module.exports.validateNegotiation = validateBody(validateCreateNegotiation);
+
+/**
+ * Validate fields when creating a new message.
+ */
+module.exports.validateNewMessage = validateBody(newMessageSchema);
+
+/**
+ * Validate fields when replying to a message in a conversation.
+ */
+module.exports.validateMessageReply = validateBody(messageReplySchema);

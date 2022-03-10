@@ -1,0 +1,43 @@
+<% layout('layouts/boilerplate') %>
+
+<div class="card">
+  <div class="input-group mb-3">
+    <button type="button" class="btn" id="button-addon1">
+      <a href="/messages">Back</a>
+    </button>
+    <lable
+      class="form-control"
+      style="
+        border-top: 0px;
+        border-right: 0px;
+        border-bottom-right-radius: 0px;
+      "
+    >
+      <%= message.title %> <%= currentUser.username %>
+    </lable>
+  </div>
+
+  <div class="card-body">
+    <% for (let messages of message.messages) {%>
+    <p class="lh-sm"><%= messages.body%></p>
+
+    <% } %>
+
+    <form
+      action=""
+      method="post"
+      style="margin: 0px !important"
+      class="input-group mb-3"
+    >
+      <input
+        style="float: left"
+        class="form-control form-control-lg"
+        type="text"
+        name="body"
+      />
+      <button class="btn btn-primary btn-lg" type="submit" id="button-addon2">
+        Send
+      </button>
+    </form>
+  </div>
+</div>

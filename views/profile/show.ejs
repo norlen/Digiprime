@@ -7,7 +7,25 @@
     <div class="row align-items-center flex-row-reverse">
       <div class="col-lg-6">
         <div class="about-text go-to">
-          <h3 class="dark-color"><%= user.username %></h3>
+          <div class="d-flex flex-row">
+            <h3 class="dark-color"><%= user.username %></h3>
+
+            <% if (user.username !== currentUser.username) { %>
+            <button
+              type="button"
+              class="card-link btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#newMsg"
+              style="height: 2.4rem; margin: 0.8rem 0 0 1rem"
+            >
+              Message
+            </button>
+
+            <!-- prettier-ignore -->
+            <%- include('../partials/send-message-modal', { to: user.username, modalId: "newMsg", defaultTitle: "" }) %>
+            <% } %>
+          </div>
+
           <h6 class="theme-color lead">
             Trading as: <%= profile.description %>
           </h6>
