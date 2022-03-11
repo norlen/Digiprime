@@ -27,11 +27,13 @@ module.exports.createSingleOffer = async (req, res) => {
     offerId
   );
   const users = await User.find({ username: { $nin: [username] } }).exec();
+  const contracts = await ne.contractList();
 
   res.render("auctions/create-single", {
     offer,
     auctionType,
     users,
+    contracts,
   });
 };
 
@@ -50,11 +52,13 @@ module.exports.create = async (req, res) => {
     username,
     offerIds
   );
+  const contracts = await ne.contractList();
 
   res.render("auctions/create-multiple-offers", {
     offers,
     info: { ...rest },
     offerIds: offerIds.join(","),
+    contracts,
   });
 };
 

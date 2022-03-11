@@ -98,6 +98,7 @@ module.exports.singleOfferAuctionSchema = Joi.object({
     Joi.array().items(Joi.string().escapeHTML()).required(),
   ],
   privacy: Joi.string().valid("Private", "Public").required().escapeHTML(),
+  contract: Joi.string().required().escapeHTML(),
 });
 
 // Schema to validate a multiple-offer style auction.
@@ -109,6 +110,7 @@ module.exports.auctionSchema = Joi.object({
     .min(2)
     .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/, "offerId"))
     .required(),
+  contract: Joi.string().required().escapeHTML(),
 });
 
 // Schema to validate inputs when placing a bid at an auction.

@@ -82,20 +82,10 @@
     </div>
   </div>
 
-  <div class="form-floating mb-3">
-    <input
-      type="text"
-      class="form-control"
-      id="contractTemplate"
-      name="contractTemplate"
-      placeholder="Contract Template"
-      value="article"
-      disabled
-      required
-    />
-    <label for="contractTemplate">Contract Template</label>
+  <div class="mb-3">
+    <%- include('../partials/contract-select', { contracts }) %>
     <div id="contractHelpBlock" class="form-text px-1">
-      Contract for the auction. Currently only a single contract is supported
+      Contract for the auction.
     </div>
   </div>
 
