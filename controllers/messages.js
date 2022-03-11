@@ -95,7 +95,7 @@ module.exports.list = async (req, res) => {
     Message.find(search)
       .populate("from")
       .populate("to")
-      .sort({ _id: 1 })
+      .sort({ updatedAt: -1 })
       .skip(perPage * (page - 1))
       .limit(perPage),
     Message.countDocuments(search),
