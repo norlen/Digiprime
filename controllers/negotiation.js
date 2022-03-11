@@ -48,7 +48,14 @@ module.exports.show = async (req, res) => {
   if (negotiation.type === "contract") {
     res.render("negotiations/show-accepted", { negotiation });
   } else {
-    res.render("negotiations/show", { negotiation });
+    const offer = await Offer.findById(negotiation.articleno).populate(
+      "author"
+    );
+    if (!offer) {
+      throw new ExpressError("Offer not found", 400);
+    }
+
+    res.render("negotiations/show", { negotiation, offer });
   }
 };
 
@@ -82,7 +89,7 @@ module.exports.create = async (req, res) => {
 
   const offer = await Offer.findById(offerId).populate("author");
   if (!offer) {
-    throw new ExpressError("Offer not found", 404);
+    throw new ExpressError("Offer not found", 400);
   }
 
   // Ensure the other party in the negotiation is another user.
