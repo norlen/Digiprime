@@ -49,11 +49,13 @@
               class="rounded-circle"
             />
             <% } %>
-            <!-- <span
+            <% if (unreadMessages) { %>
+             <span
               class="position-absolute top-15 translate-middle p-1 bg-danger border border-light rounded-circle"
             >
               <span class="visually-hidden">New alerts</span>
-            </span> -->
+            </span> 
+            <% } %>
           </a>
           <ul
             class="dropdown-menu dropdown-menu-end"
