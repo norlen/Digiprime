@@ -11,7 +11,7 @@
       <% } %>
     </div>
 
-    <div class="row">
+    <div class="row gap-2">
       <div class="col-sm-6">
         <div class="card mb-5">
           <a href="/offers/<%= offer._id %>">
@@ -192,14 +192,23 @@
               <span class="text-muted">Creator</span>
             </li>
             <li class="list-group-item d-flex justify-content-between">
-              <h6><strong>$<%= negotiation.contract.seller %></strong></h6>
-              <span class="text-muted">Seller</span>
+              <h6><strong><%= negotiation.contract.buyer %></strong></h6>
+              <span class="text-muted">Participant</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <h6><a href="/offers/<%= offer._id %>"><%= offer.title %></a></strong></h6>
+              <span class="text-muted">Offer</span>
             </li>
           </ul>
-          <div class=""><%= negotiation.contract.body %></div>
         </div>
         <% } %>
       </div>
     </div>
   </div>
+
+  <% if (negotiation.contract) { %>
+    <div class="row mx-auto card p-4">
+      <%= negotiation.contract.body %>
+    </div>
+  <% } %>
 </div>

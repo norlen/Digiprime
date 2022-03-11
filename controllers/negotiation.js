@@ -44,14 +44,9 @@ module.exports.show = async (req, res) => {
   const { username } = req.user;
 
   const negotiation = await ne.getNegotiation(username, negotiationId);
-  console.log(negotiation);
   const offer = await Offer.findById(negotiation.articleno).populate("author");
 
-  if (negotiation.status === "accepted") {
-    res.render("negotiations/show-accepted", { negotiation, offer });
-  } else {
-    res.render("negotiations/show", { negotiation, offer });
-  }
+  res.render("negotiations/show", { negotiation, offer });
 };
 
 /**
