@@ -34,7 +34,7 @@ const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/offer-test";
 const cloudinaryHostUrl = process.env.CLOUDINARY_HOST_URL || "";
 const secret = process.env.SECRET || "thisshouldbeabettersecret!";
 const secrets = secret.split(",");
-const useTls = process.env.USE_TLS || false;
+const useTls = process.env.USE_TLS === "true";
 
 mongoose.connect(dbUrl, {
   useNewUrlParser: true,
