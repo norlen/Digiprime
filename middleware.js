@@ -9,7 +9,6 @@ const {
   placeBidSchema,
   selectWinnerSchema,
   IdSchema,
-  registerSchema,
   validateCreateNegotiation,
   directorySchema,
   newMessageSchema,
@@ -24,7 +23,7 @@ module.exports.isLoggedIn = (req, res, next) => {
   if (!req.isAuthenticated()) {
     req.session.returnTo = req.originalUrl;
     req.flash("error", "You must be signed in first");
-    return res.redirect("/login");
+    return res.redirect("/auth/login");
   }
   next();
 };
@@ -170,11 +169,6 @@ module.exports.validateUsername = validateParams(usernameSchema, 404);
  * Validate fields when editing user profile.
  */
 module.exports.validateEditProfile = validateBody(profileSchema);
-
-/**
- * Valide fields on signup.
- */
-module.exports.validateRegister = validateBody(registerSchema);
 
 /**
  * Validate fields when creating a negotiation.

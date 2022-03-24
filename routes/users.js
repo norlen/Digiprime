@@ -1,25 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const catchAsync = require("../utils/catchAsync");
 const users = require("../controllers/users");
-const { validateRegister } = require("../middleware");
 
-router
-  .route("/register")
-  .get(users.register)
-  .post(validateRegister, catchAsync(users.createRegister));
+router.get("/login", passport.authenticate("keycloak"));
 
-router
-  .route("/login")
-  .get(users.login)
-  .post(
-    passport.authenticate("local", {
-      failureFlash: true,
-      failureRedirect: "/login",
-    }),
-    users.createLogin
-  );
+router.get(
+  "/callback",
+  passport.authenticate("keycloak", { failureRedirect: "/auth/login" }),
+  users.onAuthCallback
+);
 
 router.post("/logout", users.logout);
 

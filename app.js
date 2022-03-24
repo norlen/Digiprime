@@ -11,10 +11,10 @@ const flash = require("connect-flash");
 const ExpressError = require("./utils/ExpressError");
 const methodOverride = require("method-override");
 const passport = require("passport");
-const LocalStrategy = require("passport-local");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const MongoStore = require("connect-mongo");
+const KeyCloakStrategy = require("passport-keycloak-oauth2-oidc").Strategy;
 
 const offerRoutes = require("./routes/offers");
 const reviewRoutes = require("./routes/reviews");
@@ -28,6 +28,7 @@ const messageRoutes = require("./routes/messages");
 
 const User = require("./models/user");
 const Message = require("./models/messages");
+const userController = require("./controllers/users");
 
 const port = process.env.PORT || 3000;
 const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/offer-test";
@@ -108,6 +109,7 @@ const connectSrcUrls = [
   "https://a.tiles.mapbox.com/",
   "https://b.tiles.mapbox.com/",
   "https://events.mapbox.com/",
+  "http://localhost:5000/", // TODO: What are these URLs for?
 ];
 const fontSrcUrls = [];
 app.use(
@@ -138,10 +140,32 @@ app.use(flash());
 
 app.use(passport.initialize());
 app.use(passport.session());
-passport.use(new LocalStrategy(User.authenticate()));
 
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+passport.use(
+  new KeyCloakStrategy(
+    {
+      clientID: process.env.KEYCLOAK_CLIENT_ID,
+      realm: process.env.KEYCLOAK_REALM,
+      publicClient: "false",
+      clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
+      sslRequired: "external",
+      //authServerURL: process.env.AUTH_KEYCLOAK,
+      authServerURL: "http://localhost:8080",
+      callbackURL: process.env.SITE_URL,
+    },
+    userController.saveUser
+  )
+);
+
+// Used to stuff a piece of information into a cookie
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+// Used to decode the received cookie and persist session
+passport.deserializeUser((user, done) => {
+  done(null, user);
+});
 
 app.use((req, res, next) => {
   res.locals.currentUser = req.user;
@@ -179,7 +203,7 @@ app.use(setUnreadCount);
 //   next();
 // });
 
-app.use("/", userRoutes);
+app.use("/auth", userRoutes);
 app.use("/offers", offerRoutes);
 app.use("/offers/:id/reviews", reviewRoutes);
 app.use("/profile", profileRoutes);

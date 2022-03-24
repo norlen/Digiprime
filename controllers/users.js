@@ -5,49 +5,55 @@ const mapboxToken = process.env.MAPBOX_TOKEN;
 const geocoder = mapboxGeocoding({ accessToken: mapboxToken });
 const ne = require("../lib/ne");
 
-module.exports.register = (req, res) => {
-  res.render("users/register");
-};
+module.exports.saveUser = (accessToken, refreshToken, profile, done) => {
+  const inner = async () => {
+    let user = await User.findOne({ userId: profile.id });
 
-module.exports.createRegister = async (req, res, next) => {
-  try {
-    const { email, username, password, location } = req.body;
+    if (!user) {
+      // No user was found. Create a new user.
+      user = new User({
+        username: profile.name || profile.username,
+        email: profile.email,
+        userId: profile.id,
+        user: profile._json,
+      });
 
-    // TEMPORARY START: Create a user on Negotation Engine as well.
-    const geoData = await geocoder
-      .forwardGeocode({
-        query: location,
-        limit: 1,
-      })
-      .send();
-    if (geoData.body.features.length == 0) {
-      throw new Error("Invalid location");
+      // This is pretty bad, since we're doing a dual write here. But as it is
+      // we pretty much have no choice. Further work should be in checking how
+      // NE handles multiple users with the same name, if its fine and we can
+      // consider it idempotent or if it breaks, in which case it's pretty bad.
+      //
+      // And with the new keycloak stuff, we can't even pick our locations.
+      // TODO: Should make changes in NE to handle this?
+      const location = "Sweden";
+      const geoData = await geocoder
+        .forwardGeocode({
+          query: location,
+          limit: 1,
+        })
+        .send();
+      if (geoData.body.features.length == 0) {
+        throw new Error("Invalid location");
+      }
+      const coordinates = geoData.body.features[0].geometry.coordinates
+        .map((v) => v.toString())
+        .join(",");
+      await ne.signup(user.username, user.email, "dontcare", coordinates);
+
+      // We save the user here, since it's more likely that the call to NE
+      // fails, rather than this call.
+      await user.save();
     }
-    const coordinates = geoData.body.features[0].geometry.coordinates
-      .map((v) => v.toString())
-      .join(",");
-      
-    await ne.signup(username, email, password, coordinates);
-    // TEMPORARY END.
 
-    const user = new User({ email, username });
-    const registeredUser = await User.register(user, password);
-    req.login(registeredUser, (err) => {
-      if (err) return next(err);
-      req.flash("success", "Welcome to Digiprime!");
-      res.redirect("/offers");
-    });
-  } catch (e) {
-    req.flash("error", e.message);
-    res.redirect("/register");
-  }
+    return user;
+  };
+
+  inner()
+    .then((user) => done(undefined, user))
+    .catch((err) => done(err, undefined));
 };
 
-module.exports.login = (req, res) => {
-  res.render("users/login");
-};
-
-module.exports.createLogin = (req, res) => {
+module.exports.onAuthCallback = (req, res) => {
   req.flash("success", "Welcome back!");
   const redirectUrl = req.session.returnTo || "/offers";
   delete req.session.returnTo;
@@ -55,7 +61,10 @@ module.exports.createLogin = (req, res) => {
 };
 
 module.exports.logout = (req, res) => {
+  const logoutKey =
+    "http://localhost:8080/realms/digiPrime/protocol/openid-connect/logout?redirect_uri=http://localhost:3000";
+
   req.logout();
   req.flash("success", "Success logout!");
-  res.redirect("/offers");
+  res.redirect(logoutKey);
 };

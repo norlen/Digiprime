@@ -1,6 +1,6 @@
 <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">Digiprime</a>
+    <a class="navbar-brand" href="/">Digiprime</a>
     <button
       class="navbar-toggler"
       type="button"
@@ -12,7 +12,7 @@
     >
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-link" href="/">Home</a>
         <a class="nav-link" href="/offers">Offers</a>
@@ -48,13 +48,12 @@
               height="30"
               class="rounded-circle"
             />
-            <% } %>
-            <% if (unreadMessages) { %>
-             <span
+            <% } %> <% if (unreadMessages) { %>
+            <span
               class="position-absolute top-15 translate-middle p-1 bg-danger border border-light rounded-circle"
             >
               <span class="visually-hidden">New alerts</span>
-            </span> 
+            </span>
             <% } %>
           </a>
           <ul
@@ -86,7 +85,7 @@
               <a class="dropdown-item" href="/profile/edit">Edit Profile</a>
             </li>
             <li>
-              <form action="/logout" method="POST">
+              <form action="/auth/logout" method="POST">
                 <!-- <input type="hidden" name="_csrf" value="" /> -->
                 <button type="submit" class="btn btn-link dropdown-item">
                   Log out
@@ -98,8 +97,7 @@
       </ul>
       <% } else {%>
       <div class="navbar-nav ms-auto">
-        <a class="nav-link" href="/login">Log In</a>
-        <a class="nav-link" href="/register">Register</a>
+        <a class="nav-link" href="/auth/login">Log In</a>
       </div>
       <% } %>
     </div>

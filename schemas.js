@@ -50,13 +50,6 @@ module.exports.reviewSchema = Joi.object({
   }).required(),
 });
 
-module.exports.registerSchema = Joi.object({
-  username: Joi.string().required().escapeHTML(),
-  email: Joi.string().email().required().escapeHTML(),
-  location: Joi.string().required().escapeHTML(),
-  password: Joi.string().required().escapeHTML(),
-});
-
 module.exports.directorySchema = Joi.object({
   page: Joi.number(),
   costumer: Joi.string()
