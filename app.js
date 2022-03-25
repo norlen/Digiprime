@@ -1,6 +1,7 @@
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
+
 const express = require("express");
 const app = express();
 const path = require("path");
@@ -26,13 +27,11 @@ const messageRoutes = require("./routes/messages");
 
 // const { csrfProtection } = require("./utils/csrf");
 
-const User = require("./models/user");
 const Message = require("./models/messages");
 const userController = require("./controllers/users");
 
 const port = process.env.PORT || 3000;
 const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/offer-test";
-const cloudinaryHostUrl = process.env.CLOUDINARY_HOST_URL || "";
 const secret = process.env.SECRET || "thisshouldbeabettersecret!";
 const secrets = secret.split(",");
 const useTls = process.env.USE_TLS === "true";
@@ -95,7 +94,7 @@ const scriptSrcUrls = [
   "https://cdnjs.cloudflare.com/",
   "https://cdn.jsdelivr.net",
 ];
-//This is the array that needs added to
+
 const styleSrcUrls = [
   "https://kit-free.fontawesome.com/",
   "https://api.mapbox.com/",
@@ -104,13 +103,26 @@ const styleSrcUrls = [
   "https://use.fontawesome.com/",
   "https://cdn.jsdelivr.net",
 ];
+
 const connectSrcUrls = [
   "https://api.mapbox.com/",
   "https://a.tiles.mapbox.com/",
   "https://b.tiles.mapbox.com/",
   "https://events.mapbox.com/",
-  "http://localhost:5000/", // TODO: What are these URLs for?
 ];
+
+let imgSrcUrls = [
+  "https://res.cloudinary.com/diq0t2bqj/",
+  "https://images.unsplash.com",
+];
+
+if (!!process.env.CLOUDINARY_CLOUD_NAME) {
+  imgSrcUrls = [
+    ...imgSrcUrls,
+    `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/`,
+  ];
+}
+
 const fontSrcUrls = [];
 app.use(
   helmet.contentSecurityPolicy({
@@ -122,14 +134,7 @@ app.use(
       workerSrc: ["'self'", "blob:"],
       childSrc: ["blob:"],
       objectSrc: [],
-      imgSrc: [
-        "'self'",
-        "blob:",
-        "data:",
-        "https://res.cloudinary.com/diq0t2bqj/",
-        "https://images.unsplash.com",
-        cloudinaryHostUrl,
-      ],
+      imgSrc: ["'self'", "blob:", "data:", ...imgSrcUrls],
       fontSrc: ["'self'", ...fontSrcUrls],
     },
   })
@@ -149,9 +154,8 @@ passport.use(
       publicClient: "false",
       clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
       sslRequired: "external",
-      //authServerURL: process.env.AUTH_KEYCLOAK,
-      authServerURL: "http://localhost:8080",
-      callbackURL: process.env.SITE_URL,
+      authServerURL: process.env.KEYCLOAK_AUTH_SERVER_URL,
+      callbackURL: process.env.KEYCLOAK_CALLBACK_URL,
     },
     userController.saveUser
   )

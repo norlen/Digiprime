@@ -14,7 +14,8 @@ To instead build it from source, see [digiprime-container](https://github.com/no
 
 This project cannot be run entirely by itself. Required dependencies include
 
-- [MongoDB](https://www.mongodb.com/) must be installed on the system.
+- [MongoDB](https://www.mongodb.com/) must be available.
+- [Keycloak](https://www.keycloak.org/) must be available.
 - [Negotiation Engine](https://github.com/norlen/NegotiationEngine) must be running on the system.
 
 ### Setup
@@ -39,8 +40,12 @@ Environment variables with defaults are
 
 And the other environment variables have no defaults and are **required**
 
+- `KEYCLOAK_REALM`: Keycloak realm to use.
+- `KEYCLOAK_CLIENT_ID`: Keycloak realm client to use.
+- `KEYCLOAK_CLIENT_SECRET`: Keycloak realm client secret.
+- `KEYCLOAK_AUTH_SERVER_URL`: Keycloak server URL.
+- `KEYCLOAK_CALLBACK_URL`: Keycloak login callback handler, is available as `/auth/callback`.
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_KEY`, `CLOUDINARY_HOST_URL`: Secrets required for image uploading, see [Cloudinary](https://cloudinary.com/) for more information.
-- `CLOUDINARY_HOST_URL`: Base URL to where the uploaded images are retrieved, e.g. `https://res.cloudinary.com/<your-value>/`.
 - `MAPBOX_TOKEN`: API key from [Mapbox](https://www.mapbox.com/).
 
 Debug stack traces become disabled if `NODE_ENV` is not set to `development`.
