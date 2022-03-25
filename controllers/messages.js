@@ -20,7 +20,7 @@ const { getPage, createPagination } = require("../lib/paginate");
  * @param {*} res
  */
 module.exports.create = async (req, res) => {
-  const { id: from } = req.user;
+  const { _id: from } = req.user;
   const { username: toUsername, title, body } = req.body;
 
   const toUser = await User.findOne({ username: toUsername });
@@ -58,7 +58,7 @@ module.exports.create = async (req, res) => {
  * @param {*} res
  */
 module.exports.list = async (req, res) => {
-  const { id } = req.user;
+  const { _id } = req.user;
   const { filter } = req.query;
   const page = getPage(req.query.page);
   const perPage = 10;
@@ -67,27 +67,27 @@ module.exports.list = async (req, res) => {
   if (filter === "unread") {
     search = {
       $or: [
-        { $and: [{ to: id, to_read: false }] },
-        { $and: [{ from: id, from_read: false }] },
+        { $and: [{ to: _id, to_read: false }] },
+        { $and: [{ from: _id, from_read: false }] },
       ],
     };
   } else if (filter === "read") {
     search = {
       $or: [
-        { $and: [{ to: id, to_read: true }] },
-        { $and: [{ from: id, from_read: true }] },
+        { $and: [{ to: _id, to_read: true }] },
+        { $and: [{ from: _id, from_read: true }] },
       ],
     };
   } else if (filter === "marked") {
     search = {
       $or: [
-        { $and: [{ to: id, to_marked: true }] },
-        { $and: [{ from: id, from_marked: true }] },
+        { $and: [{ to: _id, to_marked: true }] },
+        { $and: [{ from: _id, from_marked: true }] },
       ],
     };
   } else {
     search = {
-      $or: [{ to: id }, { from: id }],
+      $or: [{ to: _id }, { from: _id }],
     };
   }
 
@@ -140,7 +140,7 @@ module.exports.show = async (req, res) => {
 module.exports.reply = async (req, res) => {
   const { id } = req.params;
   const { body } = req.body;
-  const { id: userId } = req.user;
+  const { _id: userId } = req.user;
 
   const message = await Message.findById(id).exec();
   if (!(message.to == userId || message.from == userId)) {
@@ -166,7 +166,7 @@ module.exports.reply = async (req, res) => {
  */
 module.exports.mark = async (req, res) => {
   const { id } = req.params;
-  const { id: userId } = req.user;
+  const { _id: userId } = req.user;
 
   const message = await Message.findById(id).exec();
   if (!(message.to == userId || message.from == userId)) {

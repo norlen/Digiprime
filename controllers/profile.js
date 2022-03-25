@@ -57,9 +57,9 @@ module.exports.show = async (req, res) => {
  * @param {*} res
  */
 module.exports.edit = async (req, res) => {
-  const { id } = req.user;
+  const { _id } = req.user;
 
-  let profile = await Profile.findOne({ user: id });
+  let profile = await Profile.findOne({ user: _id });
   if (!profile) {
     profile = {};
   }
@@ -76,9 +76,9 @@ module.exports.edit = async (req, res) => {
  * @param {*} res
  */
 module.exports.update = async (req, res) => {
-  const { id, username } = req.user;
+  const { _id, username } = req.user;
 
-  await Profile.findOneAndUpdate({ user: id }, req.body, { upsert: true });
+  await Profile.findOneAndUpdate({ user: _id }, req.body, { upsert: true });
 
   req.flash("success", "Successfully updated profile");
   res.redirect(`/profile/${username}`);

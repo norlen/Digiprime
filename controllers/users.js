@@ -61,7 +61,7 @@ module.exports.onAuthCallback = (req, res) => {
 };
 
 module.exports.logout = (req, res) => {
-  const logoutKey = `http://${process.env.KEYCLOAK_AUTH_SERVER_URL}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/logout?redirect_uri=${process.env.DIGIPRIME_BASE_URL}`;
+  const logoutKey = `${process.env.KEYCLOAK_AUTH_SERVER_URL}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/logout?redirect_uri=${process.env.DIGIPRIME_BASE_URL}`;
 
   req.logout();
   req.flash("success", "Success logout!");
