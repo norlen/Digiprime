@@ -1,0 +1,15 @@
+<% layout('layouts/boilerplate') %>
+
+<h1>Created</h1>
+<ul>
+  <% for (let agreement of agreementsCreated) { %>
+  <li><%= agreement.subject.username %></li>
+  <% } %>
+</ul>
+
+<h1>Accepted</h1>
+<ul>
+  <% for (let agreement of agreements) { %>
+  <li><%= agreement.agent.username %></li>
+  <% } %>
+</ul>

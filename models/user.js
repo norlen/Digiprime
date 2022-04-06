@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+// Add role here?
+
 const UserSchema = new Schema({
   email: {
     type: String,

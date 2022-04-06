@@ -27,6 +27,7 @@ const messageRoutes = require("./routes/messages");
 
 // const { csrfProtection } = require("./utils/csrf");
 
+const { fetchPendingAgreementsCount } = require("./controllers/profile");
 const Message = require("./models/messages");
 const userController = require("./controllers/users");
 
@@ -177,6 +178,22 @@ app.use((req, res, next) => {
   res.locals.error = req.flash("error");
   next();
 });
+
+const fetchPendingAgreementsCountMiddleware = (req, res, next) => {
+  const fetchCount = async (user) => {
+    if (!user) return;
+    return fetchPendingAgreementsCount(user._id);
+  };
+
+  res.locals.pendingAgreementsCount = 0;
+  fetchCount(res.locals.currentUser)
+    .then((count) => {
+      res.locals.unreadMessages = count || 0;
+      next();
+    })
+    .catch(next);
+};
+app.use(fetchPendingAgreementsCountMiddleware);
 
 const setUnreadCount = (req, res, next) => {
   const setCount = async (user) => {

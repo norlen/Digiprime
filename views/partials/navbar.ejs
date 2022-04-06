@@ -22,7 +22,19 @@
         <a class="nav-link" href="/negotiations">Negotiations</a>
       </div>
 
-      <% if (currentUser) { %>
+      <% if (currentUser) { %> <% if (pendingAgreementsCount > 0 || true) { %>
+      <div class="navbar-nav">
+        <a class="nav-link" href="/profile/<%= currentUser.username %>/active">
+          Pending Agreements
+        </a>
+      </div>
+      <div class="navbar-nav">
+        <a class="nav-link" href="/profile/<%= currentUser.username %>/all">
+          Agreements
+        </a>
+      </div>
+      <% } %>
+
       <ul class="navbar-nav ms-auto">
         <li class="nav-item dropdown mx-4">
           <a

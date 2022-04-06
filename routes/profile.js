@@ -19,4 +19,22 @@ router
   .route("/:username/offers")
   .get(validateUsername, catchAsync(profile.offers));
 
+router
+  .route("/:username/represent")
+  .get(validateUsername, catchAsync(profile.represent))
+  .post(validateUsername, catchAsync(profile.requestRepresentation));
+
+router
+  .route("/:username/active")
+  .get(validateUsername, catchAsync(profile.representationPendingAgreements));
+
+router
+  .route("/:username/all")
+  .get(validateUsername, catchAsync(profile.representationAllAgreements));
+
+// TODO: MW to check params.
+router
+  .route("/:username/:agreementId/accept")
+  .post(catchAsync(profile.acceptAgreement));
+
 module.exports = router;
