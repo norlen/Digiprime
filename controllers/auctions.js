@@ -10,6 +10,7 @@ const {
 } = require("../lib/auction");
 const { paginate, createPagination, getPage } = require("../lib/paginate");
 const ExpressError = require("../utils/ExpressError");
+const { getLongLat } = require("../lib/location");
 
 /**
  * Renders the page to create a single offer auction.
@@ -90,6 +91,7 @@ const postCreateAuctionSingle = async (username, data) => {
     privacy: data.privacy,
   };
 };
+
 /**
  * Creates data required for NE call when creating auction for a multiple offer auction.
  *
@@ -100,6 +102,7 @@ const postCreateAuctionMultiple = async (username, data) => {
   const { offers, sector, type, auctionType } =
     await validateCreateFromMultipleOffers(username, data.offerIds);
   const members = offers.map((offer) => offer.author.username);
+  const longLat = await getLongLat(data.location);
 
   return {
     room_name: data.auctionTitle,
@@ -110,6 +113,7 @@ const postCreateAuctionMultiple = async (username, data) => {
     reference_sector: sector,
     reference_type: type,
     auction_type: auctionType,
+    location: longLat,
     members,
     privacy: "Private",
   };
@@ -126,7 +130,8 @@ module.exports.createAuction = async (req, res) => {
 
   try {
     const data = await postCreateAuctionMultiple(username, req.body);
-    const auctionId = await ne.createAuction(username, data);
+    console.log("data", data);
+    // const auctionId = await ne.createAuction(username, data);
 
     req.flash("success", "Successfully created auction");
     res.redirect(`/auctions/${auctionId}`);

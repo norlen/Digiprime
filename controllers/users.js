@@ -1,8 +1,4 @@
 const User = require("../models/user");
-
-const mapboxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
-const mapboxToken = process.env.MAPBOX_TOKEN;
-const geocoder = mapboxGeocoding({ accessToken: mapboxToken });
 const ne = require("../lib/ne");
 
 module.exports.saveUser = (accessToken, refreshToken, profile, done) => {
@@ -25,20 +21,7 @@ module.exports.saveUser = (accessToken, refreshToken, profile, done) => {
       //
       // And with the new keycloak stuff, we can't even pick our locations.
       // TODO: Should make changes in NE to handle this?
-      const location = "Sweden";
-      const geoData = await geocoder
-        .forwardGeocode({
-          query: location,
-          limit: 1,
-        })
-        .send();
-      if (geoData.body.features.length == 0) {
-        throw new Error("Invalid location");
-      }
-      const coordinates = geoData.body.features[0].geometry.coordinates
-        .map((v) => v.toString())
-        .join(",");
-      await ne.signup(user.username, user.email, "dontcare", coordinates);
+      await ne.signup(user.username, "dontcare");
 
       // We save the user here, since it's more likely that the call to NE
       // fails, rather than this call.

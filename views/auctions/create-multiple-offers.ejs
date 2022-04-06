@@ -57,16 +57,38 @@
     </div>
   </div>
 
-  <div class="mb-3">
-    <%- include('../partials/contract-select', { contracts }) %>
-    <div id="contractHelpBlock" class="form-text px-1">
-      Contract for the auction.
+  <div class="row">
+    <div class="col">
+      <div class="form-floating mb-3">
+        <input
+          type="text"
+          class="form-control"
+          id="location"
+          name="location"
+          placeholder="Location"
+          required
+        />
+        <label for="location">Location</label>
+        <div id="locationHelpBlock" class="form-text px-1">
+          Source location for the auction, such as delivery location
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="form-floating mb-3">
+        <%- include('../partials/contract-select', { contracts }) %>
+        <div id="contractHelpBlock" class="form-text px-1">
+          Contract for the auction.
+        </div>
+      </div>
     </div>
   </div>
 
+  <div class="mb-3"></div>
+
   <div class="mb-3" id="cluster-map"></div>
 
-  <h3>Invited offers</h3>
+  <h3>Offers</h3>
   <div class="row row-cols-md-4 g-4">
     <% for (let offer of offers) { %>
     <!-- prevent-formatting -->

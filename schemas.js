@@ -99,6 +99,7 @@ module.exports.auctionSchema = Joi.object({
   auctionTitle: Joi.string().required().escapeHTML(),
   closingTime: Joi.date().min(Date.now()).required(),
   quantity: Joi.number().required(),
+  location: Joi.string().required().escapeHTML(),
   offerIds: Joi.array()
     .min(2)
     .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/, "offerId"))
