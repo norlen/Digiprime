@@ -2,10 +2,12 @@ const express = require("express");
 const router = express.Router();
 const catchAsync = require("../utils/catchAsync");
 const profile = require("../controllers/profile");
+const agreements = require("../controllers/agreements");
 const {
   isLoggedIn,
   validateEditProfile,
   validateUsername,
+  isBroker,
 } = require("../middleware");
 
 router
@@ -20,21 +22,13 @@ router
   .get(validateUsername, catchAsync(profile.offers));
 
 router
-  .route("/:username/represent")
-  .get(validateUsername, catchAsync(profile.represent))
-  .post(validateUsername, catchAsync(profile.requestRepresentation));
-
-router
-  .route("/:username/active")
-  .get(validateUsername, catchAsync(profile.representationPendingAgreements));
-
-router
-  .route("/:username/all")
-  .get(validateUsername, catchAsync(profile.representationAllAgreements));
-
-// TODO: MW to check params.
-router
-  .route("/:username/:agreementId/accept")
-  .post(catchAsync(profile.acceptAgreement));
+  .route("/:username/agreement")
+  .get(
+    isLoggedIn,
+    validateUsername,
+    isBroker,
+    catchAsync(agreements.createPage)
+  )
+  .post(isLoggedIn, validateUsername, isBroker, catchAsync(agreements.create));
 
 module.exports = router;

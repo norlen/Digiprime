@@ -12,6 +12,7 @@ const BrokerAgreementSchema = new Schema(
       ref: "User",
     },
     accepted: Boolean,
+    canceled: Boolean,
   },
   {
     timestamps: true,

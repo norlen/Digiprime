@@ -22,19 +22,7 @@
         <a class="nav-link" href="/negotiations">Negotiations</a>
       </div>
 
-      <% if (currentUser) { %> <% if (pendingAgreementsCount > 0 || true) { %>
-      <div class="navbar-nav">
-        <a class="nav-link" href="/profile/<%= currentUser.username %>/active">
-          Pending Agreements
-        </a>
-      </div>
-      <div class="navbar-nav">
-        <a class="nav-link" href="/profile/<%= currentUser.username %>/all">
-          Agreements
-        </a>
-      </div>
-      <% } %>
-
+      <% if (currentUser) { %>
       <ul class="navbar-nav ms-auto">
         <li class="nav-item dropdown mx-4">
           <a
@@ -75,6 +63,23 @@
             <li class="dropdown-header">
               <h6>Signed in as:</h6>
               <p style="margin: 0"><%= currentUser.username %></p>
+            </li>
+            <hr style="margin: 0.5rem 0" />
+            <li class="dropdown-header">
+              <h6>Agreements</h6>
+            </li>
+            <% if (pendingAgreementsCount > 0) { %>
+            <li>
+              <a class="dropdown-item" href="/agreements/pending">
+                Pending
+                <span class="badge bg-primary"
+                  ><%= pendingAgreementsCount %></span
+                >
+              </a>
+            </li>
+            <% } %>
+            <li>
+              <a class="dropdown-item" href="/agreements">Agreements</a>
             </li>
             <hr style="margin: 0.5rem 0" />
             <li>

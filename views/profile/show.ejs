@@ -82,18 +82,20 @@
       </div>
     </div>
 
+    <% if (agreementCount > 0) { %>
     <div>
-      <% if (agreement) { %>
-      <h1>Broker agreement in place</h1>
-      <% } else { %>
+      <h3>Agreement exists (pending or active)</h3>
+    </div>
+    <% } else if (currentUser.role === "broker" && user.role !== "broker") { %>
+    <div>
       <a
-        href="/profile/<%= user.username %>/represent"
+        href="/profile/<%= user.username %>/agreement"
         class="btn btn-primary mt-5"
       >
         Request broker agreement
       </a>
-      <% } %>
     </div>
+    <% } %>
 
     <div class="counter mt-4">
       <div class="row">

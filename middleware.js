@@ -18,6 +18,7 @@ const {
   singleOfferAuctionSchema,
   auctionSchema,
 } = require("./schemas.js");
+const { fetchPendingAgreementsCount } = require("./controllers/agreements");
 
 module.exports.isLoggedIn = (req, res, next) => {
   if (!req.isAuthenticated()) {
@@ -56,6 +57,48 @@ module.exports.sanitizeDirectoryQuery = (req, res, next) => {
   } else {
     next();
   }
+};
+
+/**
+ * Middleware to check if the current user is a broker. If not it will redirect
+ * to the homepage.
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+module.exports.isBroker = (req, res, next) => {
+  if (!req.isAuthenticated() || req.user.role !== "broker") {
+    req.flash("error", "You must be a broker to perform this action");
+    return res.redirect("/");
+  }
+  next();
+};
+
+/**
+ * Middleware to fetch the current number of pending agreements between a broker
+ * and a user.
+ *
+ * Fetches and sets the `pendingAgreementsCount` variable to the number. If no
+ * agreements exist the number is set to zero.
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+module.exports.fetchPendingAgreements = (req, res, next) => {
+  const fetchCount = async (user) => {
+    if (!user) return;
+    return fetchPendingAgreementsCount(user._id);
+  };
+
+  res.locals.pendingAgreementsCount = 0;
+  fetchCount(res.locals.currentUser)
+    .then((count) => {
+      res.locals.pendingAgreementsCount = count || 0;
+      next();
+    })
+    .catch(next);
 };
 
 /**

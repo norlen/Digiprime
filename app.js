@@ -24,10 +24,12 @@ const profileRoutes = require("./routes/profile");
 const auctionRoutes = require("./routes/auctions");
 const negotiationRoutes = require("./routes/negotiation");
 const messageRoutes = require("./routes/messages");
+const agreementRoutes = require("./routes/agreements");
 
 // const { csrfProtection } = require("./utils/csrf");
 
-const { fetchPendingAgreementsCount } = require("./controllers/profile");
+const { fetchPendingAgreements } = require("./middleware");
+
 const Message = require("./models/messages");
 const userController = require("./controllers/users");
 
@@ -179,21 +181,7 @@ app.use((req, res, next) => {
   next();
 });
 
-const fetchPendingAgreementsCountMiddleware = (req, res, next) => {
-  const fetchCount = async (user) => {
-    if (!user) return;
-    return fetchPendingAgreementsCount(user._id);
-  };
-
-  res.locals.pendingAgreementsCount = 0;
-  fetchCount(res.locals.currentUser)
-    .then((count) => {
-      res.locals.unreadMessages = count || 0;
-      next();
-    })
-    .catch(next);
-};
-app.use(fetchPendingAgreementsCountMiddleware);
+app.use(fetchPendingAgreements);
 
 const setUnreadCount = (req, res, next) => {
   const setCount = async (user) => {
@@ -231,6 +219,7 @@ app.use("/profile", profileRoutes);
 app.use("/auctions", auctionRoutes);
 app.use("/negotiations", negotiationRoutes);
 app.use("/messages", messageRoutes);
+app.use("/agreements", agreementRoutes);
 
 app.get("/", (req, res) => {
   res.render("home");

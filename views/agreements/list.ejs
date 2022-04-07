@@ -1,0 +1,28 @@
+<% layout('layouts/boilerplate') %>
+
+<!-- -->
+<% if (currentUser.role === "broker") { %>
+<h1>Created</h1>
+<ul>
+  <% for (let agreement of agreements) { %>
+  <li>
+    <%= agreement.subject.username %>
+    <form method="POST" action="/agreements/<%= agreement._id %>/cancel">
+      <button type="submit" class="btn btn-primary">Cancel</button>
+    </form>
+  </li>
+  <% } %>
+</ul>
+<% } else { %>
+<h1>Accepted</h1>
+<ul>
+  <% for (let agreement of agreements) { %>
+  <li>
+    <%= agreement.agent.username %>
+    <form method="POST" action="/agreements/<%= agreement._id %>/cancel">
+      <button type="submit" class="btn btn-primary">Cancel</button>
+    </form>
+  </li>
+  <% } %>
+</ul>
+<% } %>

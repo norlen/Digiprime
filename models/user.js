@@ -1,8 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-// Add role here?
-
 const UserSchema = new Schema({
   email: {
     type: String,
@@ -19,6 +17,7 @@ const UserSchema = new Schema({
     require: true,
     unique: true,
   },
+  role: String, // "broker" | "user"
 });
 
 module.exports = mongoose.model("User", UserSchema);
