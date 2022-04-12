@@ -81,7 +81,7 @@ module.exports.update = async (req, res) => {
   await Profile.findOneAndUpdate({ user: _id }, req.body, { upsert: true });
 
   req.flash("success", "Successfully updated profile");
-  res.redirect(`/profile/${username}`);
+  res.redirect(`${req.app.locals.baseUrl}/profile/${username}`);
 };
 
 /**

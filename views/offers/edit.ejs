@@ -7,7 +7,7 @@
 
   <div class="col-md-6 offset-md-3 col-lg-4 offset-lg-4">
     <form
-      action="/offers/<%= offer._id %>?_method=PUT"
+      action="<%= baseUrl %>/offers/<%= offer._id %>?_method=PUT"
       method="POST"
       novalidate
       class="validated-form"
@@ -160,7 +160,9 @@
 
       <div class="card-body text-center">
         <button class="btn btn-success">Update Offer</button>
-        <a class="card-link btn btn-info col-5" href="/offers/<%= offer._id %>"
+        <a
+          class="card-link btn btn-info col-5"
+          href="<%= baseUrl %>/offers/<%= offer._id %>"
           >Return</a
         >
       </div>

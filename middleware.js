@@ -23,7 +23,7 @@ module.exports.isLoggedIn = (req, res, next) => {
   if (!req.isAuthenticated()) {
     req.session.returnTo = req.originalUrl;
     req.flash("error", "You must be signed in first");
-    return res.redirect("/auth/login");
+    return res.redirect(`${req.app.locals.baseUrl}/auth/login`);
   }
   next();
 };
@@ -33,7 +33,7 @@ module.exports.isAuthor = async (req, res, next) => {
   const offer = await Offer.findById(id);
   if (!offer.author.equals(req.user._id)) {
     req.flash("error", "You do not have permission to do that!");
-    return res.redirect(`/offers/${id}`);
+    return res.redirect(`${req.app.locals.baseUrl}/offers/${id}`);
   }
   next();
 };
@@ -43,7 +43,7 @@ module.exports.isReviewAuthor = async (req, res, next) => {
   const review = await Review.findById(reviewId);
   if (!review.author.equals(req.user._id)) {
     req.flash("error", "You do not have permission to do that!");
-    return res.redirect(`/offers/${id}`);
+    return res.redirect(`${req.app.locals.baseUrl}/offers/${id}`);
   }
   next();
 };
@@ -52,7 +52,7 @@ module.exports.sanitizeDirectoryQuery = (req, res, next) => {
   const { error } = directorySchema.validate(req.query);
   if (error) {
     req.flash("error", "Invalid search query");
-    res.redirect("/offers/directory");
+    res.redirect(`${req.app.locals.baseUrl}/offers/directory`);
   } else {
     next();
   }

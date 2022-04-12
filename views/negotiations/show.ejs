@@ -14,7 +14,7 @@
     <div class="row gap-2">
       <div class="col-sm-6">
         <div class="card mb-5">
-          <a href="/offers/<%= offer._id %>">
+          <a href="<%= baseUrl %>/offers/<%= offer._id %>">
             <% if (offer.images.length) {%>
             <img class="img-fluid" alt="" src="<%=offer.images[0].url%> " />
             <% }else { %>
@@ -27,7 +27,7 @@
           </a>
           <div class="d-flex flex-row">
             <h2 class="my-3 mx-4">
-              <a href="/offers/<%= offer._id %>"><%= offer.title %></a>
+              <a href="<%= baseUrl %>/offers/<%= offer._id %>"><%= offer.title %></a>
             </h2>
             <span class="badge bg-success my-4"> <%= offer.costumer %> </span>
           </div>
@@ -37,7 +37,7 @@
             <li class="list-group-item">$<%= offer.price %> / Piece</li>
             <li class="list-group-item">
               Submitted by
-              <a href="/profile/<%= offer.author.username %>"
+              <a href="<%= baseUrl %>/profile/<%= offer.author.username %>"
                 ><%= offer.author.username %></a
               >
             </li>
@@ -51,7 +51,7 @@
             <li class="list-group-item d-flex justify-content-between">
               <h6>
                 <strong>
-                  <a href="/profile/<%= negotiation.created_by %>"
+                  <a href="<%= baseUrl %>/profile/<%= negotiation.created_by %>"
                     ><%= negotiation.created_by %></a
                   >
                 </strong>
@@ -71,7 +71,7 @@
             <li class="list-group-item d-flex justify-content-between">
               <h6>
                 <strong>
-                  <a href="/profile/<%= negotiation.seller %>"
+                  <a href="<%= baseUrl %>/profile/<%= negotiation.seller %>"
                     ><%= negotiation.seller %></a
                   >
                 </strong>
@@ -120,7 +120,7 @@
           <form
             class="input-group mt-1"
             method="POST"
-            action="/negotiations/<%= negotiation._id %>"
+            action="<%= baseUrl %>/negotiations/<%= negotiation._id %>"
             style="padding: 0"
           >
             <!-- <input type="hidden" name="_csrf" value="" /> -->
@@ -143,7 +143,7 @@
             <form
               class="input-group mt-2"
               method="POST"
-              action="/negotiations/<%= negotiation._id %>/accept"
+              action="<%= baseUrl %>/negotiations/<%= negotiation._id %>/accept"
               style="display: inline; width: auto; padding: 0"
             >
               <button type="submit" class="input-group-text btn-primary">
@@ -154,7 +154,7 @@
             <form
               class="input-group mt-2"
               method="POST"
-              action="/negotiations/<%= negotiation._id %>/cancel"
+              action="<%= baseUrl %>/negotiations/<%= negotiation._id %>/cancel"
               style="display: inline; width: auto; padding: 0"
             >
               <button type="submit" class="input-group-text btn-danger">
@@ -169,11 +169,11 @@
               <strong
                 >You have made the latest offer. Waiting for a decision from <%
                 if (negotiation.created_by === negotiation.offer_user) { %>
-                <a href="/profile/<%= negotiation.seller %>">
+                <a href="<%= baseUrl %>/profile/<%= negotiation.seller %>">
                   <%= negotiation.seller %></a
                 >
                 <% }else { %>
-                <a href="/profile/<%= negotiation.created_by %>"
+                <a href="<%= baseUrl %>/profile/<%= negotiation.created_by %>"
                   ><%= negotiation.created_by %></a
                 >
                 <% } %>
@@ -196,7 +196,7 @@
               <span class="text-muted">Participant</span>
             </li>
             <li class="list-group-item d-flex justify-content-between">
-              <h6><a href="/offers/<%= offer._id %>"><%= offer.title %></a></strong></h6>
+              <h6><a href="<%= baseUrl %>/offers/<%= offer._id %>"><%= offer.title %></a></strong></h6>
               <span class="text-muted">Offer</span>
             </li>
           </ul>

@@ -48,7 +48,7 @@ module.exports.create = async (req, res) => {
   await message.save();
 
   req.flash("success", `Successfully sen message to ${toUsername}`);
-  res.redirect(`/messages/${message.id}`);
+  res.redirect(`${req.app.locals.baseUrl}/messages/${message.id}`);
 };
 
 /**
@@ -155,7 +155,7 @@ module.exports.reply = async (req, res) => {
   }
   await Message.updateOne({ _id: id }, update);
 
-  res.redirect(`/messages/${id}`);
+  res.redirect(`${req.app.locals.baseUrl}/messages/${id}`);
 };
 
 /**
@@ -180,5 +180,5 @@ module.exports.mark = async (req, res) => {
   }
   await message.save();
 
-  res.redirect(`/messages`);
+  res.redirect(`${req.app.locals.baseUrl}/messages`);
 };

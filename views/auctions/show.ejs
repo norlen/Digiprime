@@ -20,7 +20,7 @@
   <div class="row">
     <div class="col-sm-6">
       <div class="card mb-3">
-        <a href="/offers/<%= offer._id %>">
+        <a href="<%= baseUrl %>/offers/<%= offer._id %>">
           <% if (offer.images.length) {%>
           <img class="img-fluid" alt="" src="<%=offer.images[0].url%> " />
           <% } else { %>
@@ -33,7 +33,9 @@
         </a>
         <div class="d-flex flex-row">
           <h2 class="my-3 mx-4">
-            <a href="/offers/<%= offer._id %>"><%= offer.title %></a>
+            <a href="<%= baseUrl %>/offers/<%= offer._id %>"
+              ><%= offer.title %></a
+            >
           </h2>
           <span class="badge bg-success my-4"> <%= offer.costumer %> </span>
         </div>
@@ -45,7 +47,7 @@
       </div>
 
       <div class="mb-5">
-        <a class="card-link btn btn-primary" href="/auctions">
+        <a class="card-link btn btn-primary" href="<%= baseUrl %>/auctions">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -68,7 +70,8 @@
       <ul class="list-group">
         <li class="list-group-item d-flex justify-content-between">
           <h6>
-            <a href="/profile/<%= auction.payload.created_by.val[0] %>"
+            <a
+              href="<%= baseUrl %>/profile/<%= auction.payload.created_by.val[0] %>"
               ><%= auction.payload.created_by.val[0] %></a
             >
           </h6>
@@ -123,7 +126,7 @@
       <form
         class="w-100 input-group mt-2"
         method="POST"
-        action="/auctions/<%= auction._id %>"
+        action="<%= baseUrl %>/auctions/<%= auction._id %>"
       >
         <!-- <input type="hidden" name="_csrf" value="" /> -->
         <span class="input-group-text">$</span>
@@ -144,7 +147,7 @@
       <form
         class="w-100 input-group mt-2"
         method="POST"
-        action="/auctions/<%= auction._id %>/join"
+        action="<%= baseUrl %>/auctions/<%= auction._id %>/join"
       >
         <!-- <input type="hidden" name="_csrf" value="" /> -->
         <button type="submit" class="input-group-text btn-primary">
@@ -189,7 +192,10 @@
           <% } %>
         </table>
 
-        <a class="btn btn-primary" href="/auctions/<%= auction._id %>/bids">
+        <a
+          class="btn btn-primary"
+          href="<%= baseUrl %>/auctions/<%= auction._id %>/bids"
+        >
           View all bids</a
         >
       </div>
@@ -204,7 +210,11 @@
     aria-hidden="true"
   >
     <div class="modal-dialog modal-lg">
-      <form class="" method="POST" action="/auctions/<%= auction._id %>/end">
+      <form
+        class=""
+        method="POST"
+        action="<%= baseUrl %>/auctions/<%= auction._id %>/end"
+      >
         <!-- <input type="hidden" name="_csrf" value="" /> -->
         <div class="modal-content">
           <div class="modal-header">

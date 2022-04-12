@@ -61,7 +61,9 @@ const OfferSchema = new Schema(
 );
 
 OfferSchema.virtual("properties.popUpMarkup").get(function () {
-  return `<strong><a href="/offers/${this._id}">${this.title}</a></strong>
+  return `<strong><a href="<%= baseUrl %>/offers/${
+    this._id
+  }">${this.title}</a></strong>
     <p>${this.description.substring(0, 20)}...</p>`;
 });
 

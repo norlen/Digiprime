@@ -1,6 +1,6 @@
 <% layout('layouts/boilerplate') %>
-<link rel="stylesheet" href="/stylesheets/profile.css" />
-<link rel="stylesheet" href="/stylesheets/edit.css" />
+<link rel="stylesheet" href="<%= baseUrl %>/stylesheets/profile.css" />
+<link rel="stylesheet" href="<%= baseUrl %>/stylesheets/edit.css" />
 
 <section class="section about-section gray-bg" id="about">
   <div class="container">
@@ -75,7 +75,7 @@
           <% if (user.image && user.image.url) {%>
           <img src="<%= user.image.url %>" title="" alt="" />
           <% } else {%>
-          <img src="/pictures/user_pic.png" title="" alt="" />
+          <img src="<%= baseUrl %>/pictures/user_pic.png" title="" alt="" />
           <% } %>
         </div>
       </div>
@@ -85,7 +85,7 @@
         <!--<div class="col-6 col-lg-3">
           <div class="count-data text-center">
             <h6 class="count h2" data-to="500" data-speed="500">N/A</h6>
-            <a href="/auctions">
+            <a href="<%= baseUrl %>/auctions">
               <p class="m-0px font-w-600">Active auctions</p>
             </a>
           </div>
@@ -95,7 +95,7 @@
             <h6 class="count h2" data-to="150" data-speed="150">
               <%= offers %>
             </h6>
-            <a href="/profile/<%= user.username %>/offers">
+            <a href="<%= baseUrl %>/profile/<%= user.username %>/offers">
               <p class="m-0px font-w-600">My Offers</p>
             </a>
           </div>
@@ -106,7 +106,7 @@
               <%= active %>
             </h6>
             <% if(user.username == currentUser.username) { %>
-            <a href="/auctions/history">
+            <a href="<%= baseUrl %>/auctions/history">
               <p class="m-0px font-w-600">Auctions participated in</p>
             </a>
             <% } else { %>
@@ -118,7 +118,7 @@
           <div class="count-data text-center">
             <h6 class="count h2" data-to="190" data-speed="190"><%= wins %></h6>
             <% if(user.username == currentUser.username) { %>
-            <a href="/auctions/history?wins=true">
+            <a href="<%= baseUrl %>/auctions/history?wins=true">
               <p class="m-0px font-w-600">Auctions won</p>
             </a>
             <% } else { %>

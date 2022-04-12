@@ -1,6 +1,6 @@
 <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
-    <a class="navbar-brand" href="/">Digiprime</a>
+    <a class="navbar-brand" href="<%= baseUrl %>/">Digiprime</a>
     <button
       class="navbar-toggler"
       type="button"
@@ -14,12 +14,14 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
-        <a class="nav-link" href="/">Home</a>
-        <a class="nav-link" href="/offers">Offers</a>
-        <a class="nav-link" href="/offers/new">New Offers</a>
-        <a class="nav-link" href="/offers/directory">Offers Directory</a>
-        <a class="nav-link" href="/auctions">Current Auctions</a>
-        <a class="nav-link" href="/negotiations">Negotiations</a>
+        <a class="nav-link" href="<%= baseUrl %>/">Home</a>
+        <a class="nav-link" href="<%= baseUrl %>/offers">Offers</a>
+        <a class="nav-link" href="<%= baseUrl %>/offers/new">New Offers</a>
+        <a class="nav-link" href="<%= baseUrl %>/offers/directory"
+          >Offers Directory</a
+        >
+        <a class="nav-link" href="<%= baseUrl %>/auctions">Current Auctions</a>
+        <a class="nav-link" href="<%= baseUrl %>/negotiations">Negotiations</a>
       </div>
 
       <% if (currentUser) { %>
@@ -43,7 +45,7 @@
             />
             <% } else { %>
             <img
-              src="/pictures/user_pic.png"
+              src="<%= baseUrl %>/pictures/user_pic.png"
               width="30"
               height="30"
               class="rounded-circle"
@@ -66,7 +68,7 @@
             </li>
             <hr style="margin: 0.5rem 0" />
             <li>
-              <a class="dropdown-item" href="/messages">
+              <a class="dropdown-item" href="<%= baseUrl %>/messages">
                 Digibox <% if (unreadMessages) { %>
                 <span class="badge bg-primary"><%= unreadMessages %></span>
                 <% } %>
@@ -76,16 +78,18 @@
             <li>
               <a
                 class="dropdown-item"
-                href="/profile/<%= currentUser.username %>"
+                href="<%= baseUrl %>/profile/<%= currentUser.username %>"
               >
                 Profile page
               </a>
             </li>
             <li>
-              <a class="dropdown-item" href="/profile/edit">Edit Profile</a>
+              <a class="dropdown-item" href="<%= baseUrl %>/profile/edit"
+                >Edit Profile</a
+              >
             </li>
             <li>
-              <form action="/auth/logout" method="POST">
+              <form action="<%= baseUrl %>/auth/logout" method="POST">
                 <!-- <input type="hidden" name="_csrf" value="" /> -->
                 <button type="submit" class="btn btn-link dropdown-item">
                   Log out
@@ -97,7 +101,7 @@
       </ul>
       <% } else {%>
       <div class="navbar-nav ms-auto">
-        <a class="nav-link" href="/auth/login">Log In</a>
+        <a class="nav-link" href="<%= baseUrl %>/auth/login">Log In</a>
       </div>
       <% } %>
     </div>

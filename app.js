@@ -30,6 +30,7 @@ const messageRoutes = require("./routes/messages");
 const Message = require("./models/messages");
 const userController = require("./controllers/users");
 
+const BASE_URL = process.env.BASE_URL || "";
 const port = process.env.PORT || 3000;
 const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/offer-test";
 const secret = process.env.SECRET || "thisshouldbeabettersecret!";
@@ -123,7 +124,8 @@ if (!!process.env.CLOUDINARY_CLOUD_NAME) {
   ];
 }
 
-const fontSrcUrls = [];
+const fontSrcUrls = ["https://cdn.jsdelivr.net"];
+
 app.use(
   helmet.contentSecurityPolicy({
     directives: {
@@ -139,6 +141,9 @@ app.use(
     },
   })
 );
+
+// Set the base URL so application can redirect and show links properly.
+app.locals.baseUrl = BASE_URL;
 
 app.use(session(sessionConfig));
 app.use(flash());

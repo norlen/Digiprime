@@ -9,7 +9,7 @@
   </span>
 </h1>
 
-<form method="POST" action="/auctions/create" class="mb-5">
+<form method="POST" action="<%= baseUrl %>/auctions/create" class="mb-5">
   <!-- <input type="hidden" name="_csrf" value="" /> -->
   <div class="form-floating mb-3">
     <input
@@ -94,4 +94,4 @@
   const mapToken = '<%-process.env.MAPBOX_TOKEN%>';
   const offers = {features: <%- JSON.stringify(offers) %>};
 </script>
-<script src="/javascripts/clusterMap.js"></script>
+<script src="<%= baseUrl %>/javascripts/clusterMap.js"></script>

@@ -45,7 +45,7 @@
     <tr>
       <th scope="row"></th>
       <td>
-        <a href="/auctions/<%= auction._id %>"
+        <a href="<%= baseUrl %>/auctions/<%= auction._id %>"
           ><%= auction.payload.name.val[0] %></a
         >
       </td>
@@ -60,7 +60,9 @@
 </table>
 
 <div class="card-body text-end">
-  <a class="card-link btn btn-primary col-1" href="/auctions/">Back</a>
+  <a class="card-link btn btn-primary col-1" href="<%= baseUrl %>/auctions/"
+    >Back</a
+  >
 </div>
 
 <!-- prettier-ignore -->

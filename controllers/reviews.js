@@ -13,7 +13,7 @@ module.exports.createReview = async (req, res) => {
   await offer.save();
 
   req.flash("success", "Created new review!");
-  res.redirect(`/offers/${offer._id}`);
+  res.redirect(`${req.app.locals.baseUrl}/offers/${offer._id}`);
 };
 
 module.exports.deleteReview = async (req, res) => {
@@ -23,5 +23,5 @@ module.exports.deleteReview = async (req, res) => {
   await Review.findByIdAndDelete(reviewId);
 
   req.flash("success", "Successfully deleted review!");
-  res.redirect(`/offers/${id}`);
+  res.redirect(`${req.app.locals.baseUrl}/offers/${id}`);
 };

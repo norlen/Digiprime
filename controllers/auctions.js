@@ -129,7 +129,7 @@ module.exports.createAuction = async (req, res) => {
     const auctionId = await ne.createAuction(username, data);
 
     req.flash("success", "Successfully created auction");
-    res.redirect(`/auctions/${auctionId}`);
+    res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
   } catch (error) {
     if (error.isAxiosError) {
       console.error(error.response.data);
@@ -138,7 +138,7 @@ module.exports.createAuction = async (req, res) => {
     }
 
     req.flash("error", "Failed to create auction");
-    res.redirect("/auctions");
+    res.redirect(`${req.app.locals.baseUrl}/auctions`);
   }
 };
 
@@ -155,7 +155,7 @@ module.exports.createSingleOfferAuction = async (req, res) => {
     const auctionId = await ne.createAuction(username, data);
 
     req.flash("success", "Successfully created auction");
-    res.redirect(`/auctions/${auctionId}`);
+    res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
   } catch (error) {
     if (error.isAxiosError) {
       console.error(error.response.data);
@@ -164,7 +164,7 @@ module.exports.createSingleOfferAuction = async (req, res) => {
     }
 
     req.flash("error", "Failed to create auction");
-    res.redirect("/auctions");
+    res.redirect(`${req.app.locals.baseUrl}/auctions`);
   }
 };
 
@@ -354,14 +354,14 @@ module.exports.placeBid = async (req, res) => {
     await ne.placeBid(username, auctionId, bid);
 
     req.flash("success", `Successfully placed bid: ${bid}`);
-    res.redirect(`/auctions/${auctionId}`);
+    res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
   } catch (error) {
     if (error.isAxiosError) {
       req.flash("error", error.response.data.message);
     } else {
       req.flash("error", "Failed to place bid.");
     }
-    res.redirect(`/auctions/${auctionId}`);
+    res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
   }
 };
 
@@ -380,7 +380,7 @@ module.exports.selectWinner = async (req, res) => {
     await ne.selectWinner(username, auctionId, winner);
 
     req.flash("success", `${winner} has been selected as the winner`);
-    res.redirect(`/auctions/${auctionId}`);
+    res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
   } catch (error) {
     // Failure cases:
     // 1. Selected winner does not participate in auction.
@@ -395,7 +395,7 @@ module.exports.selectWinner = async (req, res) => {
       req.flash("error", error.message);
     }
 
-    res.redirect(`/auctions/${auctionId}`);
+    res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
   }
 };
 
@@ -414,7 +414,7 @@ module.exports.getBids = async (req, res) => {
   } catch (error) {
     if (error.isAxiosError && error.response.status === 404) {
       req.flash("error", error.response.data);
-      res.redirect("/auctions");
+      res.redirect(`${req.app.locals.baseUrl}/auctions`);
     } else {
       throw error;
     }
@@ -465,5 +465,5 @@ module.exports.join = async (req, res) => {
     "success",
     `Successfully joined auction ${auction.payload.name.val[0]}`
   );
-  res.redirect(`/auctions/${auctionId}`);
+  res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
 };

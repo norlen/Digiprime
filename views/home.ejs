@@ -12,7 +12,11 @@
       integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="/stylesheets/home.css" />
+    <link
+      rel="stylesheet"
+      href="<%= baseUrl %>/stylesheets/home.css"
+      type="text/css"
+    />
   </head>
 
   <body class="d-flex text-center text-white bg-dark">
@@ -21,12 +25,17 @@
         <div>
           <h3 class="float-md-start mb-0">Digiprime</h3>
           <nav class="nav nav-masthead justify-content-center float-md-end">
-            <a href="/" class="nav-link active" aria-current="page">Home</a>
-            <a href="/offers" class="nav-link">Offer</a>
+            <a
+              href="<%= baseUrl %>/"
+              class="nav-link active"
+              aria-current="page"
+              >Home</a
+            >
+            <a href="<%= baseUrl %>/offers" class="nav-link">Offer</a>
             <% if (!currentUser) { %>
-            <a class="nav-link" href="/auth/login">Log In</a>
+            <a class="nav-link" href="<%= baseUrl %>/auth/login">Log In</a>
             <% } else { %>
-            <form action="/auth/logout" method="POST">
+            <form action="<%= baseUrl %>/auth/logout" method="POST">
               <button type="submit" class="btn btn-link nav-link">
                 Log out
               </button>
@@ -43,7 +52,7 @@
           Explore our many offers. <br />
         </p>
         <a
-          href="/offers"
+          href="<%= baseUrl %>/offers"
           class="btn btn-lg btn-secondary font-weight-bold border-white bg-white"
           >View Offers</a
         >

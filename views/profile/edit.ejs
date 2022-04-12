@@ -1,9 +1,9 @@
 <% layout('layouts/boilerplate') %>
 
-<link rel="stylesheet" href="/stylesheets/profile.css">
-<link rel="stylesheet" href="/stylesheets/edit.css">
+<link rel="stylesheet" href="<%= baseUrl %>/stylesheets/profile.css">
+<link rel="stylesheet" href="<%= baseUrl %>/stylesheets/edit.css">
 
-<form method="POST" action="/profile/edit">
+<form method="POST" action="<%= baseUrl %>/profile/edit">
   <!-- <input type="hidden" name="_csrf" value="" /> -->
   
   <div class="container rounded bg-white mt-1 mb-5">
@@ -20,7 +20,7 @@
             <img
               class="rounded-circle mt-5"
               width="150px"
-              src="/pictures/user_pic.png"
+              src="<%= baseUrl %>/pictures/user_pic.png"
             />
           <% } %>
           <span class="font-weight-bold"><%= currentUser.username %></span>

@@ -4,7 +4,7 @@
   <div class="row">
     <div class="col-sm-6">
       <div class="card mb-3">
-        <a href="/offers/<%= offer._id %>">
+        <a href="<%= baseUrl %>/offers/<%= offer._id %>">
           <% if (offer.images.length) {%>
           <img class="img-fluid" alt="" src="<%=offer.images[0].url%> " />
           <% }else { %>
@@ -17,7 +17,9 @@
         </a>
         <div class="d-flex flex-row">
           <h2 class="my-3 mx-4">
-            <a href="/offers/<%= offer._id %>"><%= offer.title %></a>
+            <a href="<%= baseUrl %>/offers/<%= offer._id %>"
+              ><%= offer.title %></a
+            >
           </h2>
           <span class="badge bg-success my-4"> <%= offer.costumer %> </span>
         </div>
@@ -28,7 +30,7 @@
           <li class="list-group-item">$<%= offer.price %> / Piece</li>
           <li class="list-group-item">
             Submitted by
-            <a href="/profile/<%= offer.author.username %>"
+            <a href="<%= baseUrl %>/profile/<%= offer.author.username %>"
               ><%= offer.author.username %></a
             >
           </li>
@@ -37,7 +39,10 @@
     </div>
 
     <div class="col-sm-4">
-      <form method="POST" action="/negotiations/create/<%=offer._id%>">
+      <form
+        method="POST"
+        action="<%= baseUrl %>/negotiations/create/<%=offer._id%>"
+      >
         <div class="form-floating mb-3">
           <input
             type="text"

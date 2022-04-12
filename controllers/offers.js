@@ -91,7 +91,7 @@ module.exports.create = async (req, res, next) => {
   offer.author = req.user._id;
   await offer.save();
   req.flash("success", "Successfully made a new offer!");
-  res.redirect(`/offers/${offer._id}`);
+  res.redirect(`${req.app.locals.baseUrl}/offers/${offer._id}`);
 };
 
 module.exports.show = async (req, res) => {
@@ -105,7 +105,7 @@ module.exports.show = async (req, res) => {
     .populate("author");
   if (!offer) {
     req.flash("error", "Cannot find that offer!");
-    return res.redirect("/offers");
+    return res.redirect(`${req.app.locals.baseUrl}/offers`);
   }
   res.render("offers/show", {
     offer,
@@ -118,7 +118,7 @@ module.exports.editForm = async (req, res) => {
   const offer = await Offer.findById(id);
   if (!offer) {
     req.flash("error", "Cannot find that offer!");
-    return res.redirect("/offers");
+    return res.redirect(`${req.app.locals.baseUrl}/offers`);
   }
   res.render("offers/edit", {
     offer,
@@ -143,12 +143,12 @@ module.exports.updateForm = async (req, res) => {
     });
   }
   req.flash("success", "Successfully updated offer!");
-  res.redirect(`/offers/${offer._id}`);
+  res.redirect(`${req.app.locals.baseUrl}/offers/${offer._id}`);
 };
 
 module.exports.delete = async (req, res) => {
   const { id } = req.params;
   await Offer.findByIdAndDelete(id);
   req.flash("success", "Successfully deleted offer!");
-  res.redirect("/offers");
+  res.redirect(`${req.app.locals.baseUrl}/offers`);
 };

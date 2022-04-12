@@ -4,8 +4,12 @@
   <div class="d-flex align-items-center justify-content-between">
     <h2>Active Auctions</h2>
     <div>
-      <a class="card-link btn btn-primary" href="/auctions/public">Public</a>
-      <a class="card-link btn btn-secondary" href="/auctions/history"
+      <a class="card-link btn btn-primary" href="<%= baseUrl %>/auctions/public"
+        >Public</a
+      >
+      <a
+        class="card-link btn btn-secondary"
+        href="<%= baseUrl %>/auctions/history"
         >History</a
       >
     </div>
@@ -17,7 +21,7 @@
       <div class="d-flex flex-column">
         <div class="d-flex flex-row gap-2 align-items-center">
           <a
-            href="/auctions/<%= auction._id %>"
+            href="<%= baseUrl %>/auctions/<%= auction._id %>"
             class="h4 text-underline-hover"
           >
             <%= auction.payload.name.val[0] %>

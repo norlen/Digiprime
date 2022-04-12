@@ -38,5 +38,5 @@
   const mapToken = '<%-process.env.MAPBOX_TOKEN%>';
   const offers = {features: <%- JSON.stringify(page.data) %>};
 </script>
-<script src="/javascripts/clusterMap.js"></script>
-<script src="/javascripts/searchBar.js"></script>
+<script src="<%= baseUrl %>/javascripts/clusterMap.js"></script>
+<script src="<%= baseUrl %>/javascripts/searchBar.js"></script>

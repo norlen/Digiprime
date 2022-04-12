@@ -12,24 +12,33 @@
     <ul class="nav nav-pills flex-column mb-auto">
       <li class="nav-item">
         <% if (!filter) { %>
-        <a href="/messages" class="nav-link active" aria-current="page">
+        <a
+          href="<%= baseUrl %>/messages"
+          class="nav-link active"
+          aria-current="page"
+        >
           All messages
         </a>
         <% } else { %>
-        <a href="/messages" class="nav-link link-dark">All messages</a>
+        <a href="<%= baseUrl %>/messages" class="nav-link link-dark"
+          >All messages</a
+        >
         <% } %>
       </li>
       <li>
         <% if (filter === "unread") { %>
         <a
-          href="/messages?filter=unread"
+          href="<%= baseUrl %>/messages?filter=unread"
           class="nav-link active"
           aria-current="page"
         >
           Unread messages
         </a>
         <% } else { %>
-        <a href="/messages?filter=unread" class="nav-link link-dark">
+        <a
+          href="<%= baseUrl %>/messages?filter=unread"
+          class="nav-link link-dark"
+        >
           Unread messages
         </a>
         <% } %>
@@ -37,14 +46,17 @@
       <li>
         <% if (filter === "read") { %>
         <a
-          href="/messages?filter=read"
+          href="<%= baseUrl %>/messages?filter=read"
           class="nav-link active"
           aria-current="page"
         >
           Read messages
         </a>
         <% } else { %>
-        <a href="/messages?filter=read" class="nav-link link-dark">
+        <a
+          href="<%= baseUrl %>/messages?filter=read"
+          class="nav-link link-dark"
+        >
           Read messages
         </a>
         <% } %>
@@ -52,14 +64,17 @@
       <li>
         <% if (filter === "marked") { %>
         <a
-          href="/messages?filter=marked"
+          href="<%= baseUrl %>/messages?filter=marked"
           class="nav-link active"
           aria-current="page"
         >
           Marked messages
         </a>
         <% } else { %>
-        <a href="/messages?filter=marked" class="nav-link link-dark">
+        <a
+          href="<%= baseUrl %>/messages?filter=marked"
+          class="nav-link link-dark"
+        >
           Marked messages
         </a>
         <% } %>
@@ -91,13 +106,16 @@
           const participant = currentUser.username === message.from.username ? message.to.username : message.from.username;
         %>
       <a
-        href="/messages/<%= message._id%>"
+        href="<%= baseUrl %>/messages/<%= message._id%>"
         class="list-group-item list-group-item-action py-3 lh-tight"
       >
         <div class="d-flex w-100 align-items-center justify-content-between">
           <div class="d-flex flex-row align-items-center">
             <strong class=""><%= message.title %></strong>
-            <form method="POST" action="/messages/<%= message._id %>/mark">
+            <form
+              method="POST"
+              action="<%= baseUrl %>/messages/<%= message._id %>/mark"
+            >
               <% if (marked) { %>
               <button
                 type="submit"

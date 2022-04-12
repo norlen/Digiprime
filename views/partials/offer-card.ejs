@@ -4,7 +4,7 @@
       <span class="position-absolute badge bg-primary m-2" id="itemCostumer"
         ><%= offer.costumer %></span
       >
-      <a href="/offers/<%= offer._id %>">
+      <a href="<%= baseUrl %>/offers/<%= offer._id %>">
         <% if (offer.images.length) {%>
         <img class="img-fluid" alt="" src="<%=offer.images[0].url%> " />
         <% } else { %>
@@ -22,7 +22,7 @@
     <ul class="list-group list-group-flush">
       <li class="list-group-item">
         <small class="text-muted"
-          ><a href="/profile/<%= offer.author.username %>"
+          ><a href="<%= baseUrl %>/profile/<%= offer.author.username %>"
             ><%= offer.author.username %></a
           ></small
         >

@@ -2,7 +2,7 @@
 
 <form
   id="search-directory"
-  action="/offers/directory"
+  action="<%= baseUrl %>/offers/directory"
   method="GET"
   class="mb-5"
 >
@@ -84,7 +84,7 @@
 </form>
 
 <div class="container">
-  <form method="GET" action="/auctions/create">
+  <form method="GET" action="<%= baseUrl %>/auctions/create">
     <button
       id="createAuctionBtn"
       type="submit"

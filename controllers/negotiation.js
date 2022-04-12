@@ -100,7 +100,7 @@ module.exports.create = async (req, res) => {
   );
 
   req.flash("success", `Successfully created negotiation ${title}`);
-  res.redirect(`/negotiations/${id}`);
+  res.redirect(`${req.app.locals.baseUrl}/negotiations/${id}`);
 };
 
 /**
@@ -117,7 +117,7 @@ module.exports.placeBid = async (req, res) => {
   await ne.negotiationBid(username, id, bid);
 
   req.flash("success", `Successfully placed counter offer ${bid}`);
-  res.redirect(`/negotiations/${id}`);
+  res.redirect(`${req.app.locals.baseUrl}/negotiations/${id}`);
 };
 
 /**
@@ -133,7 +133,7 @@ module.exports.accept = async (req, res) => {
   await ne.negotiationAccept(username, id);
 
   req.flash("success", "Successfully accepted negotiation");
-  res.redirect(`/negotiations/${id}`);
+  res.redirect(`${req.app.locals.baseUrl}/negotiations/${id}`);
 };
 
 /**
@@ -149,5 +149,5 @@ module.exports.cancel = async (req, res) => {
   await ne.negotiationCancel(username, id);
 
   req.flash("success", "Successfully cancelled negotiation");
-  res.redirect(`/negotiations/${id}`);
+  res.redirect(`${req.app.locals.baseUrl}/negotiations/${id}`);
 };
