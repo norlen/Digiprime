@@ -56,7 +56,6 @@ app.set("views", path.join(__dirname, "views"));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
-app.use(express.static(path.join(__dirname, "public")));
 app.use(mongoSanitize());
 app.use(helmet());
 // app.use(helmet({contentSecurityPolicy:false})); to avoid the use of all the urls for contentsecurity
@@ -212,17 +211,23 @@ app.use(setUnreadCount);
 //   next();
 // });
 
-app.use("/auth", userRoutes);
-app.use("/offers", offerRoutes);
-app.use("/offers/:id/reviews", reviewRoutes);
-app.use("/profile", profileRoutes);
-app.use("/auctions", auctionRoutes);
-app.use("/negotiations", negotiationRoutes);
-app.use("/messages", messageRoutes);
+const router = express.Router();
+router.use(express.static(path.join(__dirname, "public")));
 
-app.get("/", (req, res) => {
+router.use("/auth", userRoutes);
+router.use("/offers", offerRoutes);
+router.use("/offers/:id/reviews", reviewRoutes);
+router.use("/profile", profileRoutes);
+router.use("/auctions", auctionRoutes);
+router.use("/negotiations", negotiationRoutes);
+router.use("/messages", messageRoutes);
+
+router.get("/", (req, res) => {
+  console.log(req.baseUrl);
   res.render("home");
 });
+
+app.use(BASE_URL, router);
 
 app.all("*", (req, res, next) => {
   next(new ExpressError("Page Not Found", 404));
