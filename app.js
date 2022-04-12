@@ -223,7 +223,6 @@ router.use("/negotiations", negotiationRoutes);
 router.use("/messages", messageRoutes);
 
 router.get("/", (req, res) => {
-  console.log(req.baseUrl);
   res.render("home");
 });
 
