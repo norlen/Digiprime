@@ -3,13 +3,16 @@ const router = express.Router();
 const passport = require("passport");
 const users = require("../controllers/users");
 
-router.get("/login", passport.authenticate("keycloak"));
-
-router.get(
-  "/callback",
-  passport.authenticate("keycloak", { failureRedirect: "/auth/login" }),
-  users.onAuthCallback
-);
+router
+  .route("/login")
+  .get(users.login)
+  .post(
+    passport.authenticate("local", {
+      failureFlash: true,
+      failureRedirect: "/login",
+    }),
+    users.onLogin
+  );
 
 router.post("/logout", users.logout);
 

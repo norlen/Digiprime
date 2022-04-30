@@ -15,7 +15,7 @@ const passport = require("passport");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const MongoStore = require("connect-mongo");
-const KeyCloakStrategy = require("passport-keycloak-oauth2-oidc").Strategy;
+const LocalStrategy = require("passport-local");
 
 const offerRoutes = require("./routes/offers");
 const reviewRoutes = require("./routes/reviews");
@@ -80,7 +80,6 @@ const sessionConfig = {
   saveUninitialized: true,
   cookie: {
     httpOnly: true,
-    expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
     maxAge: 1000 * 60 * 60 * 24 * 7,
     secure: useTls,
   },
@@ -143,26 +142,25 @@ app.use(
 
 // Set the base URL so application can redirect and show links properly.
 app.locals.baseUrl = BASE_URL;
+app.use(BASE_URL, express.static(path.join(__dirname, "public")));
 
 app.use(session(sessionConfig));
 app.use(flash());
 
+const strategyOpts = {
+  usernameField: "username",
+  passwordField: "password",
+};
+
 app.use(passport.initialize());
 app.use(passport.session());
-
 passport.use(
-  new KeyCloakStrategy(
-    {
-      clientID: process.env.KEYCLOAK_CLIENT_ID,
-      realm: process.env.KEYCLOAK_REALM,
-      publicClient: "false",
-      clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
-      sslRequired: "external",
-      authServerURL: process.env.KEYCLOAK_AUTH_SERVER_URL,
-      callbackURL: process.env.KEYCLOAK_CALLBACK_URL,
-    },
-    userController.saveUser
-  )
+  new LocalStrategy(strategyOpts, (username, password, done) => {
+    userController
+      .authenticate(username, password)
+      .then((user) => done(null, user))
+      .catch((err) => done(err, false));
+  })
 );
 
 // Used to stuff a piece of information into a cookie
@@ -211,22 +209,17 @@ app.use(setUnreadCount);
 //   next();
 // });
 
-const router = express.Router();
-router.use(express.static(path.join(__dirname, "public")));
+app.use(`${BASE_URL}/auth`, userRoutes);
+app.use(`${BASE_URL}/offers`, offerRoutes);
+app.use(`${BASE_URL}/offers/:id/reviews`, reviewRoutes);
+app.use(`${BASE_URL}/profile`, profileRoutes);
+app.use(`${BASE_URL}/auctions`, auctionRoutes);
+app.use(`${BASE_URL}/negotiations`, negotiationRoutes);
+app.use(`${BASE_URL}/messages`, messageRoutes);
 
-router.use("/auth", userRoutes);
-router.use("/offers", offerRoutes);
-router.use("/offers/:id/reviews", reviewRoutes);
-router.use("/profile", profileRoutes);
-router.use("/auctions", auctionRoutes);
-router.use("/negotiations", negotiationRoutes);
-router.use("/messages", messageRoutes);
-
-router.get("/", (req, res) => {
+app.get(`${BASE_URL}/`, (req, res) => {
   res.render("home");
 });
-
-app.use(BASE_URL, router);
 
 app.all("*", (req, res, next) => {
   next(new ExpressError("Page Not Found", 404));
