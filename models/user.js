@@ -17,6 +17,10 @@ const UserSchema = new Schema({
     require: true,
     unique: true,
   },
+  role: {
+    type: String, // "user" | "broker"
+    require: true,
+  },
 });
 
 module.exports = mongoose.model("User", UserSchema);

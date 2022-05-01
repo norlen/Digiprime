@@ -67,6 +67,16 @@
               <p style="margin: 0"><%= currentUser.username %></p>
             </li>
             <hr style="margin: 0.5rem 0" />
+            <li class="dropdown-header">
+              <h6>Broker agreements</h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/broker">All agreements</a>
+            </li>
+            <hr style="margin: 0.5rem 0" />
+            <li class="dropdown-header">
+              <h6>Messages</h6>
+            </li>
             <li>
               <a class="dropdown-item" href="<%= baseUrl %>/messages">
                 Digibox <% if (unreadMessages) { %>
@@ -75,6 +85,9 @@
               </a>
             </li>
             <hr style="margin: 0.5rem 0" />
+            <li class="dropdown-header">
+              <h6>Profile</h6>
+            </li>
             <li>
               <a
                 class="dropdown-item"
@@ -88,6 +101,7 @@
                 >Edit Profile</a
               >
             </li>
+            <hr style="margin: 0.5rem 0" />
             <li>
               <form action="<%= baseUrl %>/auth/logout" method="POST">
                 <!-- <input type="hidden" name="_csrf" value="" /> -->

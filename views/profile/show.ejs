@@ -7,28 +7,28 @@
     <div class="row align-items-center flex-row-reverse">
       <div class="col-lg-6">
         <div class="about-text go-to">
-          <div class="d-flex flex-row">
+          <div class="d-flex flex-row gap-3">
             <h3 class="dark-color"><%= user.username %></h3>
-
-            <% if (user.username !== currentUser.username) { %>
-            <button
-              type="button"
-              class="card-link btn btn-primary"
-              data-bs-toggle="modal"
-              data-bs-target="#newMsg"
-              style="height: 2.4rem; margin: 0.8rem 0 0 1rem"
-            >
-              Message
-            </button>
-
-            <!-- prettier-ignore -->
-            <%- include('../partials/send-message-modal', { to: user.username, modalId: "newMsg", defaultTitle: "" }) %>
-            <% } %>
+            <span class="badge bg-primary fs-6 ml-3 my-3">
+              <%= user.role %>
+            </span>
           </div>
 
-          <h6 class="theme-color lead">
-            Trading as: <%= profile.description %>
-          </h6>
+          <% if (user.username !== currentUser.username) { %>
+          <button
+            type="button"
+            class="card-link btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#newMsg"
+            style="height: 2.4rem; margin: 0.8rem 0 0 0"
+          >
+            Message
+          </button>
+
+          <!-- prettier-ignore -->
+          <%- include('../partials/send-message-modal', { to: user.username, modalId: "newMsg", defaultTitle: "" }) %>
+          <% } %>
+
           <p><mark><%= profile.details %></mark></p>
           <div class="row about-list">
             <div class="col-md-6">
@@ -46,7 +46,7 @@
               </div>
               <div class="media">
                 <label>Address</label>
-                <p><%= profile.address1 %>, <%= profile.country %></p>
+                <p><%= profile.address %>, <%= profile.country %></p>
               </div>
             </div>
             <div class="col-md-6">
@@ -64,7 +64,7 @@
               </div>
               <div class="media">
                 <label>Company</label>
-                <p>This field is not available for now</p>
+                <p><%= profile.company %></p>
               </div>
             </div>
           </div>
@@ -80,6 +80,28 @@
         </div>
       </div>
     </div>
+
+    <% if (broker.canHaveAgreement) { %>
+    <div>
+      <% if (broker.agreementCount > 0) { %>
+      <p>
+        You have <%= broker.agreementCount %> active or pending broker
+        agreements with this user
+      </p>
+      <% } else { %>
+      <p>No active or pending broker agreements exist with this user user</p>
+      <% } %>
+      <div>
+        <a
+          href="/profile/<%= user.username %>/agreement"
+          class="btn btn-primary"
+        >
+          Request broker agreement
+        </a>
+      </div>
+    </div>
+    <% } %>
+
     <div class="counter mt-4">
       <div class="row">
         <!--<div class="col-6 col-lg-3">

@@ -40,7 +40,7 @@
                 name="firstname"
                 type="text"
                 class="form-control"
-                placeholder="first name"
+                placeholder="First name"
                 value="<%= profile.firstname %>"
               />
             </div>
@@ -52,7 +52,7 @@
                 type="text"
                 class="form-control"
                 value="<%= profile.surname %>"
-                placeholder="surname"
+                placeholder="Surname"
               />
             </div>
           </div>
@@ -64,30 +64,19 @@
                 name="phone"
                 type="text"
                 class="form-control"
-                placeholder="enter phone number"
+                placeholder="Phone number"
                 value="<%= profile.phone %>"
               />
             </div>
             <div class="col-md-12">
-              <label class="labels">Address Line 1</label>
+              <label class="labels">Address Line</label>
               <input
-                id="address1"
-                name="address1"
+                id="address"
+                name="address"
                 type="text"
                 class="form-control"
-                placeholder="enter address line 1"
-                value="<%= profile.address1 %>"
-              />
-            </div>
-            <div class="col-md-12">
-              <label class="labels">Address Line 2</label>
-              <input
-                id="address2"
-                name="address2"
-                type="text"
-                class="form-control"
-                placeholder="enter address line 2"
-                value="<%= profile.address2 %>"
+                placeholder="Address line"
+                value="<%= profile.address %>"
               />
             </div>
             <div class="col-md-12">
@@ -97,7 +86,7 @@
                 name="postcode"
                 type="text"
                 class="form-control"
-                placeholder="enter postcode"
+                placeholder="Postal code"
                 value="<%= profile.postcode %>"
               />
             </div>
@@ -108,7 +97,7 @@
                 name="area"
                 type="text"
                 class="form-control"
-                placeholder="enter Area"
+                placeholder="Area"
                 value="<%= profile.area %>"
               />
             </div>
@@ -121,7 +110,7 @@
                 name="country"
                 type="text"
                 class="form-control"
-                placeholder="country"
+                placeholder="Country"
                 value="<%= profile.country %>"
               />
             </div>
@@ -133,7 +122,7 @@
                 type="text"
                 class="form-control"
                 value="<%= profile.state %>"
-                placeholder="state"
+                placeholder="State/Region"
               />
             </div>
           </div>
@@ -150,14 +139,13 @@
             <select
               class="form-select"
               aria-label="Default select example"
-              id="description"
-              name="description"
-              value="<%= profile.description %>"
+              id="role"
+              name="role"
+              value="<%= currentUser.role %>"
               required
             >
-              <option value="private" <%= profile.description === "private" ? "selected" : "" %>>Private person</option>
-              <option value="company" <%= profile.description === "company" ? "selected" : "" %>>Company</option>
-              <option value="middleman" <%= profile.description === "middleman" ? "selected" : "" %>>Broker</option>
+              <option value="user" <%= currentUser.role === "user" ? "selected" : "" %>>User</option>
+              <option value="broker" <%= currentUser.role === "broker" ? "selected" : "" %>>Broker</option>
             </select>
 
           </div>
@@ -171,9 +159,8 @@
               name="company"
               type="text"
               class="form-control"
-              value=""
-              placeholder="enter company name"
-              disabled
+              value="<%= profile.company %>"
+              placeholder="Company Name"
             />
           </div>
 
@@ -181,12 +168,12 @@
 
           <div class="col-md-12">
             <div class="form-group">
-              <label for="details">Representative description</label>
+              <label for="details">Description</label>
               <textarea
                 class="form-control"
-                id="details"
-                name="details"
-                value="<%= profile.details %>"
+                id="description"
+                name="description"
+                value="<%= profile.description %>"
                 rows="3"
               ></textarea>
             </div>

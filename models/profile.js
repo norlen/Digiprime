@@ -9,14 +9,13 @@ const ProfileSchema = new Schema({
   firstname: { type: String },
   surname: { type: String },
   phone: { type: String },
-  address1: { type: String },
-  address2: { type: String },
+  address: { type: String },
   postcode: { type: String },
   area: { type: String },
   country: { type: String },
   state: { type: String },
   description: { type: String },
-  details: { type: String },
+  company: { type: String },
 });
 
 module.exports = mongoose.model("Profile", ProfileSchema);

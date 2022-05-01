@@ -14,16 +14,19 @@ const ne = require("../lib/ne");
  * @param {*} res
  */
 module.exports.show = async (req, res) => {
-  const { username } = req.params;
+  const { role, username } = req.user;
+  const { username: otherUsername } = req.params;
+  console.log("otherUsername", otherUsername);
 
-  const user = await User.findOne({ username });
+  const user = await User.findOne({ username: otherUsername });
+  console.log("user", user);
   if (!user) {
     throw new ExpressError("User not found", 404);
   }
 
   let [profile, offers] = await Promise.all([
     Profile.findOne({ user: user._id }),
-    Offer.find({ author: user._id }).populate("author").countDocuments(),
+    Offer.find({ author: user._id }).countDocuments(),
   ]);
 
   // Profiles are lazily created, so if it cannot be found for a valid user,
@@ -32,21 +35,39 @@ module.exports.show = async (req, res) => {
     profile = {};
   }
 
-  const auctions = await ne.getAuctionHistory(username);
-  const wins = auctions.reduce((acc, auction) => {
-    if (auction.payload.highest_bidder.val[0] === username) {
-      return acc + 1;
-    } else {
-      return acc;
-    }
-  }, 0);
+  const active = 0;
+  const wins = 0;
+  // const auctions = await ne.getAuctionHistory(otherUsername);
+  // const wins = auctions.reduce((acc, auction) => {
+  //   if (auction.payload.highest_bidder.val[0] === otherUsername) {
+  //     return acc + 1;
+  //   } else {
+  //     return acc;
+  //   }
+  // }, 0);
+
+  const broker = {
+    canHaveAgreement: false,
+    agreementCount: 0,
+  };
+  if (username != otherUsername && role != user.role) {
+    broker.canHaveAgreement = true;
+    const agreements = await ne.brokerGetAgreementsBetween(
+      username,
+      otherUsername
+    );
+    console.log(agreements);
+    broker.agreementCount = agreements.length;
+  }
+  console.log(broker);
 
   res.render("profile/show", {
     user,
     profile,
     wins,
-    active: auctions.length,
+    active,
     offers,
+    broker,
   });
 };
 
@@ -76,9 +97,41 @@ module.exports.edit = async (req, res) => {
  * @param {*} res
  */
 module.exports.update = async (req, res) => {
-  const { _id, username } = req.user;
+  const { _id, username, role } = req.user;
+  const data = {
+    firstname: req.body.firstname,
+    surname: req.body.surname,
+    phone: req.body.phone,
+    address: req.body.address,
+    postcode: req.body.postcode,
+    area: req.body.area,
+    country: req.body.country,
+    state: req.body.state,
+    description: req.body.description,
+    company: req.body.company,
+  };
 
-  await Profile.findOneAndUpdate({ user: _id }, req.body, { upsert: true });
+  // Check if user updates their role.
+  if (role != req.body.role) {
+    const [active, pending] = await Promise.all([
+      ne.brokerGetActiveAgreements(username, 0, 1),
+      ne.brokerGetPendingAgreements(username, 0, 1),
+    ]);
+    if (active.total > 0 || pending.total > 0) {
+      throw new ExpressError(
+        "Cannot change role with pendign or active broker agreements",
+        400
+      );
+    }
+    // Update user model.
+    await User.findOneAndUpdate({ _id }, { role: req.body.role });
+
+    // Update session data.
+    req.session.passport.user.role = req.body.role;
+    req.session.save();
+  }
+
+  await Profile.findOneAndUpdate({ user: _id }, data, { upsert: true });
 
   req.flash("success", "Successfully updated profile");
   res.redirect(`${req.app.locals.baseUrl}/profile/${username}`);

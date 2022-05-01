@@ -24,6 +24,7 @@ const profileRoutes = require("./routes/profile");
 const auctionRoutes = require("./routes/auctions");
 const negotiationRoutes = require("./routes/negotiation");
 const messageRoutes = require("./routes/messages");
+const brokerRoutes = require("./routes/broker");
 
 // const { csrfProtection } = require("./utils/csrf");
 
@@ -216,6 +217,7 @@ app.use(`${BASE_URL}/profile`, profileRoutes);
 app.use(`${BASE_URL}/auctions`, auctionRoutes);
 app.use(`${BASE_URL}/negotiations`, negotiationRoutes);
 app.use(`${BASE_URL}/messages`, messageRoutes);
+app.use(`${BASE_URL}/broker`, brokerRoutes);
 
 app.get(`${BASE_URL}/`, (req, res) => {
   res.render("home");

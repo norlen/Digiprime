@@ -128,14 +128,14 @@ module.exports.profileSchema = Joi.object({
   firstname: Joi.string().allow("").escapeHTML(),
   surname: Joi.string().allow("").escapeHTML(),
   phone: Joi.string().allow("").escapeHTML(),
-  address1: Joi.string().allow("").escapeHTML(),
-  address2: Joi.string().allow("").escapeHTML(),
+  address: Joi.string().allow("").escapeHTML(),
   postcode: Joi.string().allow("").escapeHTML(),
   area: Joi.string().allow("").escapeHTML(),
   country: Joi.string().allow("").escapeHTML(),
   state: Joi.string().allow("").escapeHTML(),
   description: Joi.string().allow("").escapeHTML(),
-  details: Joi.string().allow("").escapeHTML(),
+  company: Joi.string().allow("").escapeHTML(),
+  role: Joi.string().valid("user", "broker").escapeHTML(),
 });
 
 // Check that the username is kind of valid.
@@ -159,4 +159,11 @@ module.exports.newMessageSchema = Joi.object({
 
 module.exports.messageReplySchema = Joi.object({
   body: Joi.string().required().escapeHTML(),
+});
+
+module.exports.brokerAgreementSchema = Joi.object({
+  endDate: Joi.date().required(),
+  contract: Joi.string()
+    .pattern(/^[0-9a-fA-F]{24}$/)
+    .required(),
 });
