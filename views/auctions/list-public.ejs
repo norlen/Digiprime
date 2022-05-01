@@ -46,14 +46,14 @@
       <th scope="row"></th>
       <td>
         <a href="<%= baseUrl %>/auctions/<%= auction._id %>"
-          ><%= auction.payload.name.val[0] %></a
+          ><%= auction.name %></a
         >
       </td>
-      <td><%= auction.payload.auction_type.val[0] %></td>
-      <td><%= auction.payload.reference_type.val[0] %></td>
-      <td><%= auction.payload.reference_sector.val[0] %></td>
-      <td><%= auction.payload.quantity.val[0] %></td>
-      <td><%= displayDate(auction.payload.closing_time.val[0]) %></td>
+      <td><%= auction.auction_type %></td>
+      <td><%= auction.reference_type %></td>
+      <td><%= auction.reference_sector %></td>
+      <td><%= auction.quantity %></td>
+      <td><%= displayDate(auction.closing_time) %></td>
     </tr>
     <% } %>
   </tbody>

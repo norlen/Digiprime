@@ -86,12 +86,9 @@ module.exports.singleOfferAuctionSchema = Joi.object({
   offerId: Joi.string()
     .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
     .required(),
-  members: [
-    Joi.string().required().escapeHTML(),
-    Joi.array().items(Joi.string().escapeHTML()).required(),
-  ],
-  privacy: Joi.string().valid("Private", "Public").required().escapeHTML(),
-  contract: Joi.string().required().escapeHTML(),
+  contract: Joi.string()
+    .pattern(/^[0-9a-fA-F]{24}$/)
+    .required(),
 });
 
 // Schema to validate a multiple-offer style auction.
@@ -99,11 +96,17 @@ module.exports.auctionSchema = Joi.object({
   auctionTitle: Joi.string().required().escapeHTML(),
   closingTime: Joi.date().min(Date.now()).required(),
   quantity: Joi.number().required(),
+  location: Joi.string().required().escapeHTML(),
   offerIds: Joi.array()
     .min(2)
     .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/, "offerId"))
     .required(),
-  contract: Joi.string().required().escapeHTML(),
+  contract: Joi.string()
+    .pattern(/^[0-9a-fA-F]{24}$/)
+    .required(),
+  brokerId: Joi.string()
+    .pattern(/^[0-9a-fA-F]{24}$/)
+    .required(),
 });
 
 // Schema to validate inputs when placing a bid at an auction.
@@ -162,7 +165,7 @@ module.exports.messageReplySchema = Joi.object({
 });
 
 module.exports.brokerAgreementSchema = Joi.object({
-  endDate: Joi.date().required(),
+  endDate: Joi.date().min(Date.now()).required(),
   contract: Joi.string()
     .pattern(/^[0-9a-fA-F]{24}$/)
     .required(),

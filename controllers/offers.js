@@ -10,6 +10,7 @@ const {
   referenceSectors,
   referenceTypes,
 } = require("../utils/constants");
+const { getBrokerAgreement } = require("../lib/broker");
 
 const removeFalsyValues = (object) => {
   Object.keys(object).forEach((key) => {
@@ -103,13 +104,20 @@ module.exports.show = async (req, res) => {
       },
     })
     .populate("author");
+
   if (!offer) {
     req.flash("error", "Cannot find that offer!");
     return res.redirect(`${req.app.locals.baseUrl}/offers`);
   }
+
+  const hasBrokerAgreement = await getBrokerAgreement(
+    req.user,
+    offer.author.username
+  );
   res.render("offers/show", {
     offer,
     formatDistanceToNow,
+    hasBrokerAgreement,
   });
 };
 

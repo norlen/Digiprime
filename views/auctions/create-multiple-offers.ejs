@@ -11,6 +11,7 @@
 
 <form method="POST" action="<%= baseUrl %>/auctions/create" class="mb-5">
   <!-- <input type="hidden" name="_csrf" value="" /> -->
+
   <div class="form-floating mb-3">
     <input
       type="text"
@@ -22,6 +23,19 @@
     />
     <label for="auctionTitle">Auction Title</label>
     <div id="auctionTitleHelpBlock" class="form-text px-1"></div>
+  </div>
+
+  <div class="form-floating mb-3">
+    <input
+      type="text"
+      class="form-control"
+      id="location"
+      name="location"
+      placeholder="Location"
+      required
+    />
+    <label for="location">Location</label>
+    <div id="locationHelpBlock" class="form-text px-1"></div>
   </div>
 
   <div class="row">
@@ -58,11 +72,48 @@
   </div>
 
   <div class="mb-3">
-    <%- include('../partials/contract-select', { contracts }) %>
+    <%- include('../partials/contract-select-id', { contracts }) %>
     <div id="contractHelpBlock" class="form-text px-1">
       Contract for the auction.
     </div>
   </div>
+
+  <% if (currentUser.role == "broker") { %>
+  <div class="mb-3">
+    <div class="input-group">
+      <% if (agreements.length === 0) { %>
+      <select
+        id="brokerId"
+        class="form-select"
+        aria-label="select with button addon"
+        name="brokerId"
+        value=""
+        disabled
+      >
+        <option value="">No representations available</option>
+      </select>
+      <% } else { %>
+      <select
+        id="brokerId"
+        class="form-select"
+        aria-label="select with button addon"
+        name="brokerId"
+        value=""
+        required
+      >
+        <% for (let agreement of agreements) { %>
+        <option value="<%= agreement._id %>">
+          <%= agreement.represented %>
+        </option>
+        <% } %>
+      </select>
+      <% } %>
+    </div>
+    <div id="representHelpBlock" class="form-text px-1">
+      User to represent in the auction
+    </div>
+  </div>
+  <% } %>
 
   <div class="mb-3" id="cluster-map"></div>
 

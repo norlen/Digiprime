@@ -1,13 +1,11 @@
-<!-- prettier-ignore -->
 <% layout('layouts/boilerplate') %>
-<% const isCreator = auction.payload.created_by.val[0] === currentUser.username %>
 
 <div class="container mt-3">
   <div class="row justify-content-between mb-3">
     <div class="d-flex gap-2">
-      <h1><%= auction.payload.name.val[0] %></h1>
+      <h1><%= auction.name %></h1>
       <span class="badge bg-primary fs-6 my-3">
-        <%= auction.payload.auction_type.val[0] %>
+        <%= auction.auction_type %>
       </span>
       <% if (auction.closed) { %>
       <span class="badge bg-danger fs-6 my-3">CLOSED</span>
@@ -22,27 +20,36 @@
       <ul class="list-group">
         <li class="list-group-item d-flex justify-content-between">
           <h6>
-            <a
-              href="<%= baseUrl %>/profile/<%= auction.payload.created_by.val[0] %>"
-              ><%= auction.payload.created_by.val[0] %></a
+            <a href="<%= baseUrl %>/profile/<%= auction.created_by %>"
+              ><%= auction.created_by %></a
             >
           </h6>
           <span class="text-muted">Created by</span>
         </li>
         <li class="list-group-item d-flex justify-content-between">
-          <h6><%= auction.payload.reference_sector.val[0] %></h6>
+          <h6><%= auction.reference_sector %></h6>
           <span class="text-muted">Reference sector</span>
         </li>
         <li class="list-group-item d-flex justify-content-between">
-          <h6><%= auction.payload.reference_type.val[0] %></h6>
+          <h6><%= auction.reference_type %></h6>
           <span class="text-muted">Reference type</span>
         </li>
         <li class="list-group-item d-flex justify-content-between">
-          <h6><%= auction.payload.quantity.val[0] %></h6>
+          <h6><%= auction.quantity %></h6>
           <span class="text-muted">Quantity</span>
         </li>
+        <% if (auction.highest_bid) { %>
+        <li class="list-group-item d-flex justify-content-between">
+          <h6><%= auction.highest_bid %></h6>
+          <span class="text-muted">Winning bid</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <h6><%= auction.highest_bidder %></h6>
+          <span class="text-muted">Winner</span>
+        </li>
+        <% } %>
       </ul>
-      <% if (!isCreator && !auction.closed) { %>
+      <% if (!isCreator && auction.status == "active") { %>
       <form
         class="w-100 input-group mt-2"
         method="POST"
@@ -63,7 +70,8 @@
           Place bid
         </button>
       </form>
-      <% } else if (isCreator && auction.closed) { %>
+      <% } else if (isCreator && auction.status == "active" && auction.closed) {
+      %>
       <div class="mt-2">
         <% if (auction.bids.length == 0) { %>
         <button type="button" class="card-link btn btn-danger" disabled>
@@ -88,7 +96,7 @@
     <div class="col-4">
       <ul class="list-group">
         <li class="list-group-item d-flex justify-content-between">
-          <h6><%= displayDate(auction.payload.closing_time.val[0]) %></h6>
+          <h6><%= displayDate(auction.closing_time) %></h6>
           <span class="text-muted">Closing time</span>
         </li>
         <li class="list-group-item">
@@ -120,19 +128,25 @@
   <div class="row row-cols-md-5 g-1 mb-3">
     <!-- prettier-ignore -->
     <%
-      for (let offer of offers) {
-        const pillStyle = offer.costumer === "Supply" ? "bg-primary" : "bg-secondary";
+      for (let member of members) {
+        if (member.is_room_admin) continue;
+
+        const pillStyle = member.offer.costumer === "Supply" ? "bg-primary" : "bg-secondary";
     %>
 
     <div class="col" id="" style="display: block">
       <div class="card mb-1" id="offerCards">
         <div class="position-relative">
           <span class="position-absolute badge bg-primary m-2" id="itemCostumer"
-            ><%= offer.costumer %></span
+            ><%= member.offer.costumer %></span
           >
-          <a href="<%= baseUrl %>/offers/<%= offer._id %>">
-            <% if (offer.images.length) {%>
-            <img class="img-fluid" alt="" src="<%=offer.images[0].url%> " />
+          <a href="<%= baseUrl %>/offers/<%= member.offer._id %>">
+            <% if (member.offer.images.length) {%>
+            <img
+              class="img-fluid"
+              alt=""
+              src="<%= member.offer.images[0].url%> "
+            />
             <% } else { %>
             <img
               class="img-fluid"
@@ -146,8 +160,8 @@
         <div class="py-2 px-3">
           <div class="d-flex justify-content-between">
             <div class="d-flex align-items-center gap-2">
-              <a href="<%= baseUrl %>/offers/<%= offer._id %>"
-                ><h4 id="searchTitle"><%= offer.title %></h4></a
+              <a href="<%= baseUrl %>/offers/<%= member.offer._id %>"
+                ><h4 id="searchTitle"><%= member.offer.title %></h4></a
               >
             </div>
           </div>
@@ -155,16 +169,16 @@
 
         <ul class="list-group list-group-flush text-muted">
           <li class="list-group-item d-flex justify-content-between">
-            <small class=""><a href="#"><%= offer.author.username %></a></small>
-            <small class="text-muted"><%= offer.location %></small>
+            <small class=""><a href="#"><%= member.username %></a></small>
+            <small class="text-muted"><%= member.offer.location %></small>
           </li>
-          <% if (offer.bid !== undefined) { %>
+          <% if (member.bid !== undefined) { %>
           <li class="list-group-item">
-            <small>Best bid: <%= offer.bid.text %></small>
+            <small>Best bid: <%= member.bid.text %></small>
           </li>
           <li class="list-group-item">
             <small
-              ><%= formatDistanceToNow(new Date(offer.bid.created_at)) %>
+              ><%= formatDistanceToNow(new Date(member.bid.created_at)) %>
               ago</small
             >
           </li>
@@ -193,12 +207,6 @@
         />
       </svg>
       <span>All auctions</span>
-    </a>
-    <a
-      href="<%= baseUrl %>/auctions/<%= auction._id %>/bids"
-      class="btn btn-primary"
-    >
-      View all bids
     </a>
   </div>
 

@@ -1,40 +1,239 @@
 const Offer = require("../models/offer");
-const User = require("../models/user");
 const formatDistanceToNow = require("date-fns/formatDistanceToNow");
 const ne = require("../lib/ne");
 const {
   displayDate,
-  validateCreateFromSingleOffer,
+  validateCreatePublicAuction,
   validateCreateFromMultipleOffers,
-  validateMembers,
 } = require("../lib/auction");
-const { paginate, createPagination, getPage } = require("../lib/paginate");
+const { paginate2, getPaginationParams } = require("../lib/paginate");
+const { getCoordinatesFromLocation } = require("../lib/location");
 const ExpressError = require("../utils/ExpressError");
 
 /**
- * Renders the page to create a single offer auction.
+ * Display a single auction.
  *
  * @param {*} req
  * @param {*} res
  */
-module.exports.createSingleOffer = async (req, res) => {
-  const { offerId } = req.query;
+module.exports.show = async (req, res) => {
+  const { id: auctionId } = req.params;
   const { username } = req.user;
 
-  // Otherwise it's from a single owned offer.
-  const { offer, auctionType } = await validateCreateFromSingleOffer(
-    username,
-    offerId
-  );
-  const users = await User.find({ username: { $nin: [username] } }).exec();
-  const contracts = await ne.contractList();
+  // Fetch auction information.
+  const auction = await ne.getAuction(username, auctionId);
+  console.log("auction", auction);
 
-  res.render("auctions/create-single", {
+  let adminMember;
+  const offerIds = [];
+  for (const member of auction.members) {
+    if (member.offer_id) {
+      offerIds.push(member.offer_id);
+    }
+    if (member.is_room_admin) {
+      adminMember = member;
+    }
+  }
+
+  const isCreator =
+    username == adminMember.username || username == adminMember.represented_by;
+
+  if (auction.privacy == "private") {
+    const offers = await Offer.find({ _id: { $in: offerIds } }).exec();
+
+    const bidByUsername = {};
+    auction.bids.forEach((bid) => (bidByUsername[bid.sender] = bid));
+
+    const offerById = {};
+    offers.forEach((offer) => (offerById[offer._id] = offer));
+
+    const membersWithOffers = auction.members.map((member) => ({
+      ...member,
+      offer: offerById[member.offer_id],
+      bid: bidByUsername[member.username],
+    }));
+    //console.log(membersWithOffers);
+
+    res.render("auctions/show-multiple-offers", {
+      auction,
+      offers,
+      members: membersWithOffers,
+      formatDistanceToNow,
+      displayDate,
+      isCreator,
+    });
+  } else {
+    // Public auction with a single offer.
+    const offer = await Offer.findById(auction.articleno);
+
+    let userParticipates = false;
+    for (let member of auction.members) {
+      if (member.username === req.user.username) {
+        userParticipates = true;
+        break;
+      }
+    }
+
+    res.render("auctions/show-public", {
+      auction,
+      offer,
+      formatDistanceToNow,
+      displayDate,
+      userParticipates,
+      isCreator,
+    });
+  }
+};
+
+/**
+ * Fetch auctions that are active, that you created or participate in
+ * indexpage.
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+module.exports.index = async (req, res) => {
+  const { username, role } = req.user;
+  const [skip, limit] = getPaginationParams(req.query.page, 20);
+
+  let agreements = [];
+  if (role == "broker") {
+    agreements = await ne.getRepresenting(username);
+  }
+
+  let auctions, total;
+  if (role === "broker" && req.query.user) {
+    const user = req.query.user;
+    const representing = agreements.map((agreement) => agreement.represented);
+
+    if (representing.includes(user)) {
+      [auctions, total] = await ne.getActiveAuctions(user, skip, limit);
+    } else {
+      throw new ExpressError(
+        "Cannot view a user you are not representing",
+        403
+      );
+    }
+  } else {
+    [auctions, total] = await ne.getActiveAuctions(
+      username,
+      skip,
+      limit,
+      role == "broker"
+    );
+  }
+
+  res.render("auctions/list", {
+    page: paginate2(auctions, total, skip, limit, req.query),
+    formatDistanceToNow,
+    agreements,
+  });
+};
+
+/**
+ * Fetch list of all completed auctions and render template.
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+module.exports.history = async (req, res) => {
+  const { username } = req.user;
+  const [skip, limit] = getPaginationParams(req.query.page, 20);
+  const [auctions, total] = await ne.getAuctionHistory(username, skip, limit);
+
+  res.render("auctions/history", {
+    page: paginate2(auctions, total, skip, limit, req.query),
+    displayDate,
+  });
+};
+
+/**
+ * Show a list of public auctions.
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+module.exports.listPublic = async (req, res) => {
+  const { username } = req.user;
+  const [skip, limit] = getPaginationParams(req.query.page, 20);
+  const [auctions, total] = await ne.getPublicAuctions(username, skip, limit);
+
+  res.render("auctions/list-public", {
+    page: paginate2(auctions, total, skip, limit, req.query),
+    displayDate,
+  });
+};
+
+/**
+ * Renders the page to create a public auction from one of the user's offers.
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+module.exports.renderCreatePublicAuction = async (req, res) => {
+  const { offerId } = req.query;
+
+  // Otherwise it's from a single owned offer.
+  const { offer, auctionType, brokerAgreement } =
+    await validateCreatePublicAuction(req.user, offerId);
+  const contracts = await ne.contractList("auction");
+
+  res.render("auctions/create-public", {
     offer,
     auctionType,
-    users,
     contracts,
+    brokerAgreement,
   });
+};
+
+/**
+ * Creates a public auction.
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+module.exports.createPublicAuction = async (req, res) => {
+  const { username } = req.user;
+
+  try {
+    const offerId = req.body.offerId;
+
+    // Have to ensure the offer exists.
+    const { offer, auctionType, brokerAgreement } =
+      await validateCreatePublicAuction(req.user, offerId);
+    let brokerAgreementId = "";
+    if (brokerAgreement) {
+      brokerAgreementId = brokerAgreement._id;
+    }
+
+    const data = {
+      room_name: req.body.auctionTitle,
+      privacy: "public",
+      auction_type: auctionType,
+      closing_time: new Date(req.body.closingTime).toISOString(),
+      reference_sector: offer.referenceSector,
+      reference_type: offer.referenceType,
+      quantity: parseInt(req.body.quantity),
+      offer_id: offerId,
+      templatetype: req.body.contract,
+      location: offer.geometry.coordinates,
+      members: [],
+      broker_id: brokerAgreementId,
+    };
+    const auctionId = await ne.createAuction(username, data);
+
+    req.flash("success", "Successfully created auction");
+    res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
+  } catch (error) {
+    if (error.isAxiosError) {
+      console.error(error.response.data);
+    } else {
+      console.error(error);
+    }
+
+    req.flash("error", "Failed to create auction");
+    res.redirect(`${req.app.locals.baseUrl}/auctions`);
+  }
 };
 
 /**
@@ -43,76 +242,29 @@ module.exports.createSingleOffer = async (req, res) => {
  * @param {*} req
  * @param {*} res
  */
-module.exports.create = async (req, res) => {
+module.exports.renderCreateAuction = async (req, res) => {
   const { offerIds } = req.query;
-  const { username } = req.user;
+  const { username, role } = req.user;
 
   // Check if we should render the template for that contains multiple non-owned offers.
   const { offers, ...rest } = await validateCreateFromMultipleOffers(
     username,
     offerIds
   );
-  const contracts = await ne.contractList();
+  const contracts = await ne.contractList("auction");
+
+  let agreements = [];
+  if (role == "broker") {
+    agreements = await ne.getRepresenting(username);
+  }
 
   res.render("auctions/create-multiple-offers", {
     offers,
     info: { ...rest },
     offerIds: offerIds.join(","),
     contracts,
+    agreements,
   });
-};
-
-/**
- * Creates data required for NE call when creating auction for a single offer auction.
- *
- * @param {string} username
- * @param {object} data
- */
-const postCreateAuctionSingle = async (username, data) => {
-  // Auction created from a single owned offer.
-  // Validate that all offers exists, and that all members exist.
-  const { offer, auctionType } = await validateCreateFromSingleOffer(
-    username,
-    data.offerId
-  );
-  const members = await validateMembers(username, data.members);
-
-  return {
-    room_name: data.auctionTitle,
-    quantity: data.quantity,
-    closing_time: new Date(data.closingTime).toISOString(),
-    templatetype: "article",
-    articleno: data.offerId,
-    reference_sector: offer.referenceSector,
-    reference_type: offer.referenceType,
-    auction_type: auctionType,
-    members,
-    privacy: data.privacy,
-  };
-};
-/**
- * Creates data required for NE call when creating auction for a multiple offer auction.
- *
- * @param {string} username
- * @param {object} data
- */
-const postCreateAuctionMultiple = async (username, data) => {
-  const { offers, sector, type, auctionType } =
-    await validateCreateFromMultipleOffers(username, data.offerIds);
-  const members = offers.map((offer) => offer.author.username);
-
-  return {
-    room_name: data.auctionTitle,
-    quantity: data.quantity,
-    closing_time: new Date(data.closingTime).toISOString(),
-    templatetype: "article",
-    articleno: data.offerIds.join(","),
-    reference_sector: sector,
-    reference_type: type,
-    auction_type: auctionType,
-    members,
-    privacy: "Private",
-  };
 };
 
 /**
@@ -125,7 +277,40 @@ module.exports.createAuction = async (req, res) => {
   const { username } = req.user;
 
   try {
-    const data = await postCreateAuctionMultiple(username, req.body);
+    const { offers, sector, type, auctionType } =
+      await validateCreateFromMultipleOffers(username, req.body.offerIds);
+
+    const members = offers.map((offer) => ({
+      username: offer.author.username,
+      location: offer.geometry.coordinates,
+      offer_id: offer._id,
+    }));
+
+    const {
+      auctionTitle,
+      closingTime,
+      quantity,
+      location,
+      contract,
+      brokerId,
+    } = req.body;
+    const coordinates = await getCoordinatesFromLocation(location);
+    console.log("Coordinates", coordinates);
+
+    const data = {
+      room_name: auctionTitle,
+      privacy: "private",
+      auction_type: auctionType,
+      closing_time: new Date(closingTime).toISOString(),
+      reference_sector: sector,
+      reference_type: type,
+      quantity: parseInt(quantity),
+      offer_id: "",
+      templatetype: contract,
+      location: coordinates,
+      members: members,
+      broker_id: brokerId,
+    };
     const auctionId = await ne.createAuction(username, data);
 
     req.flash("success", "Successfully created auction");
@@ -140,76 +325,6 @@ module.exports.createAuction = async (req, res) => {
     req.flash("error", "Failed to create auction");
     res.redirect(`${req.app.locals.baseUrl}/auctions`);
   }
-};
-
-/**
- * Creates a single-offer auction.
- * @param {*} req
- * @param {*} res
- */
-module.exports.createSingleOfferAuction = async (req, res) => {
-  const { username } = req.user;
-
-  try {
-    const data = await postCreateAuctionSingle(username, req.body);
-    const auctionId = await ne.createAuction(username, data);
-
-    req.flash("success", "Successfully created auction");
-    res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
-  } catch (error) {
-    if (error.isAxiosError) {
-      console.error(error.response.data);
-    } else {
-      console.error(error);
-    }
-
-    req.flash("error", "Failed to create auction");
-    res.redirect(`${req.app.locals.baseUrl}/auctions`);
-  }
-};
-
-const showSingleAuction = async (req, res, auction, articleNumber) => {
-  const offer = await Offer.findById(articleNumber);
-
-  let userParticipates = false;
-  for (let member of auction.members) {
-    if (member._id.username === req.user.username) {
-      userParticipates = true;
-      break;
-    }
-  }
-
-  res.render("auctions/show", {
-    auction,
-    offer,
-    formatDistanceToNow,
-    displayDate,
-    userParticipates,
-  });
-};
-
-const showMultipleAuction = async (req, res, auction, articleNumbers) => {
-  let offers = await Offer.find({ _id: { $in: articleNumbers } })
-    .populate("author")
-    .exec();
-
-  // Map bids to offers.
-  let member_to_bid = {};
-  for (let bid of auction.bids) {
-    member_to_bid[bid.sender] = bid;
-  }
-
-  const offersWithBids = offers.map((offer) => ({
-    ...offer._doc,
-    bid: member_to_bid[offer.author.username],
-  }));
-
-  res.render("auctions/show-multiple-offers", {
-    auction,
-    offers: offersWithBids,
-    formatDistanceToNow,
-    displayDate,
-  });
 };
 
 const showAuctionEnded = async (
@@ -258,88 +373,6 @@ const showAuctionEnded = async (
 };
 
 /**
- * Display a single auction.
- *
- * @param {*} req
- * @param {*} res
- */
-module.exports.show = async (req, res) => {
-  const { id: auctionId } = req.params;
-  const { username } = req.user;
-
-  // Fetch auction information.
-  const auction = await ne.getAuction(username, auctionId);
-  const articleNumbers = auction.payload.articleno.val[0].split(",");
-
-  // Check if the user is a winner or creator of auction.
-  let isWinnerOrCreator = false;
-  if (auction.ended) {
-    if (username === auction.payload.created_by.val[0]) {
-      isWinnerOrCreator = true;
-    }
-    if (username === auction.payload.highest_bidder.val[0]) {
-      isWinnerOrCreator = true;
-    }
-  }
-
-  // Render relevant page.
-  if (auction.ended && isWinnerOrCreator && auction.highest_bidder !== "") {
-    await showAuctionEnded(
-      req,
-      res,
-      username,
-      auctionId,
-      auction,
-      articleNumbers
-    );
-  } else if (articleNumbers.length > 1) {
-    await showMultipleAuction(req, res, auction, articleNumbers);
-  } else {
-    await showSingleAuction(req, res, auction, articleNumbers[0]);
-  }
-};
-
-/**
- * Fetch auctions that are active, that you created or participate in
- * indexpage.
- *
- * @param {*} req
- * @param {*} res
- */
-module.exports.index = async (req, res) => {
-  const { username } = req.user;
-
-  const auctions = await ne.getActiveAuctions(username);
-  res.render("auctions/index", {
-    page: paginate(auctions, req.query.page, 5),
-    formatDistanceToNow,
-  });
-};
-
-/**
- * Fetch list of all completed auctions and render template.
- *
- * @param {*} req
- * @param {*} res
- */
-module.exports.history = async (req, res) => {
-  const { username } = req.user;
-  const { wins } = req.query;
-
-  let auctions = await ne.getAuctionHistory(username);
-  if (wins == "true") {
-    auctions = auctions.filter(
-      (auction) => auction.payload.highest_bidder.val[0] === username
-    );
-  }
-
-  res.render("auctions/history", {
-    page: paginate(auctions, req.query.page, 10, { wins }),
-    displayDate,
-  });
-};
-
-/**
  * Place a single bid to Negotiation Engine and refresh the page to display.
  *
  * @param {*} req
@@ -382,6 +415,7 @@ module.exports.selectWinner = async (req, res) => {
     req.flash("success", `${winner} has been selected as the winner`);
     res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
   } catch (error) {
+    console.log(error);
     // Failure cases:
     // 1. Selected winner does not participate in auction.
     // 2. Not room admin.
@@ -397,41 +431,6 @@ module.exports.selectWinner = async (req, res) => {
 
     res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
   }
-};
-
-module.exports.getBids = async (req, res) => {
-  const { id: auctionId } = req.params;
-  const { username } = req.user;
-
-  try {
-    const bids = await ne.getBids(username, auctionId);
-
-    res.render("auctions/show-bids", {
-      auctionId,
-      page: paginate(bids, req.query.page, 10),
-      displayDate,
-    });
-  } catch (error) {
-    if (error.isAxiosError && error.response.status === 404) {
-      req.flash("error", error.response.data);
-      res.redirect(`${req.app.locals.baseUrl}/auctions`);
-    } else {
-      throw error;
-    }
-  }
-};
-
-module.exports.listPublic = async (req, res) => {
-  const { username } = req.user;
-  const page = getPage(req.query.page);
-  const perPage = 20;
-
-  const [auctions, count] = await ne.listPublic(username, page, perPage);
-
-  res.render("auctions/list-public", {
-    page: createPagination(auctions, count, page, perPage),
-    displayDate,
-  });
 };
 
 /**

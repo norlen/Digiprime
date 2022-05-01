@@ -1,13 +1,11 @@
-<!-- prettier-ignore -->
 <% layout('layouts/boilerplate') %>
-<% const isCreator = auction.payload.created_by.val[0] === currentUser.username %>
 
 <div class="container mt-3">
   <div class="row justify-content-between mb-3">
     <div class="d-flex gap-2">
-      <h1><%= auction.payload.name.val[0] %></h1>
+      <h1><%= auction.name %></h1>
       <span class="badge bg-primary fs-6 my-3">
-        <%= auction.payload.auction_type.val[0] %>
+        <%= auction.auction_type %>
       </span>
       <% if (auction.closed) { %>
       <span class="badge bg-danger fs-6 my-3">CLOSED</span>
@@ -22,7 +20,7 @@
       <div class="card mb-3">
         <a href="<%= baseUrl %>/offers/<%= offer._id %>">
           <% if (offer.images.length) {%>
-          <img class="img-fluid" alt="" src="<%=offer.images[0].url%> " />
+          <img class="img-fluid" alt="" src="<%= offer.images[0].url %> " />
           <% } else { %>
           <img
             class="img-fluid"
@@ -70,23 +68,22 @@
       <ul class="list-group">
         <li class="list-group-item d-flex justify-content-between">
           <h6>
-            <a
-              href="<%= baseUrl %>/profile/<%= auction.payload.created_by.val[0] %>"
-              ><%= auction.payload.created_by.val[0] %></a
+            <a href="<%= baseUrl %>/profile/<%= auction.created_by %>"
+              ><%= auction.created_by %></a
             >
           </h6>
           <span class="text-muted">Created by</span>
         </li>
         <li class="list-group-item d-flex justify-content-between">
-          <h6><%= auction.payload.reference_sector.val[0] %></h6>
+          <h6><%= auction.reference_sector %></h6>
           <span class="text-muted">Reference sector</span>
         </li>
         <li class="list-group-item d-flex justify-content-between">
-          <h6><%= auction.payload.reference_type.val[0] %></h6>
+          <h6><%= auction.reference_type %></h6>
           <span class="text-muted">Reference type</span>
         </li>
         <li class="list-group-item d-flex justify-content-between">
-          <h6><%= auction.payload.quantity.val[0] %></h6>
+          <h6><%= auction.quantity %></h6>
           <span class="text-muted">Quantity</span>
         </li>
       </ul>
@@ -94,7 +91,7 @@
       <div class="mt-1">
         <ul class="list-group">
           <li class="list-group-item d-flex justify-content-between">
-            <h6><%= displayDate(auction.payload.closing_time.val[0]) %></h6>
+            <h6><%= displayDate(auction.closing_time) %></h6>
             <span class="text-muted">Closing time</span>
           </li>
           <li class="list-group-item">
@@ -181,6 +178,10 @@
       <h4 class="mt-4">Bid History</h4>
 
       <div class="card">
+        <% if (auctions.bids.length == 0) { %>
+        <p>No bids have been placed yet</p>
+        <% } else { %>
+
         <table class="table">
           <% for (let bid of auction.bids) { %>
           <tbody>
@@ -191,13 +192,7 @@
 
           <% } %>
         </table>
-
-        <a
-          class="btn btn-primary"
-          href="<%= baseUrl %>/auctions/<%= auction._id %>/bids"
-        >
-          View all bids</a
-        >
+        <% } %>
       </div>
     </div>
   </div>

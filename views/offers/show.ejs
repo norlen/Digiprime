@@ -56,7 +56,8 @@
         <!-- <li class="list-group-item">$<%= offer.price %> / Piece</li> -->
       </ul>
 
-      <% if (currentUser && offer.author.equals(currentUser._id)) { %>
+      <% if (currentUser && offer.author.equals(currentUser._id) ||
+      hasBrokerAgreement) { %>
       <div class="card-body text-center d-flex gap-2 justify-content-between">
         <a
           class="card-link btn btn-primary col-3"

@@ -19,7 +19,7 @@ router.route("/history").get(isLoggedIn, catchAsync(auction.history));
 
 router
   .route("/create")
-  .get(isLoggedIn, checkParamsAuction, catchAsync(auction.create))
+  .get(isLoggedIn, checkParamsAuction, catchAsync(auction.renderCreateAuction))
   .post(isLoggedIn, validateAuction, catchAsync(auction.createAuction));
 
 router
@@ -27,12 +27,12 @@ router
   .get(
     isLoggedIn,
     checkParamsSingleOfferAuction,
-    catchAsync(auction.createSingleOffer)
+    catchAsync(auction.renderCreatePublicAuction)
   )
   .post(
     isLoggedIn,
     validateCreateSingleOfferAuction,
-    catchAsync(auction.createSingleOfferAuction)
+    catchAsync(auction.createPublicAuction)
   );
 
 router.route("/public").get(isLoggedIn, catchAsync(auction.listPublic));
@@ -50,10 +50,6 @@ router
     validateSelectWinner,
     catchAsync(auction.selectWinner)
   );
-
-router
-  .route("/:id/bids")
-  .get(isLoggedIn, isValidId, catchAsync(auction.getBids));
 
 router.route("/:id/join").post(isLoggedIn, isValidId, catchAsync(auction.join));
 

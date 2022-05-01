@@ -15,6 +15,35 @@
     </div>
   </div>
 
+  <% if (currentUser && currentUser.role == "broker") { %>
+  <form id="act-as" action="<%= baseUrl %>/auctions" method="GET" class="col-3">
+    <div class="filters input-group">
+      <select
+        class="form-select rounded-start border border-secondary"
+        id="user"
+        name="user"
+        aria-label=".form-select-sm example"
+        value="<%= page.query.user %>"
+      >
+        <option value=""><%= currentUser.username %></option>
+        <% for (let agreement of agreements) { if (page.query.user ===
+        agreement.represented) { %>
+        <option value="<%= agreement.represented %>" selected>
+          <%= agreement.represented %>
+        </option>
+        <% } else { %>
+        <option value="<%= agreement.represented %>">
+          <%= agreement.represented %>
+        </option>
+        <% }} %>
+      </select>
+      <button class="rounded-end search-btn btn btn-primary" type="submit">
+        View as
+      </button>
+    </div>
+  </form>
+  <% } %>
+
   <div class="row mt-4 d-flex flex-column gap-4">
     <% for (let auction of page.data) { %>
     <div class="d-flex flex-row gap-2">
@@ -24,20 +53,22 @@
             href="<%= baseUrl %>/auctions/<%= auction._id %>"
             class="h4 text-underline-hover"
           >
-            <%= auction.payload.name.val[0] %>
+            <%= auction.name %>
           </a>
-          <% if (auction.payload.created_by.val[0] === currentUser.username) {
-          %>
+          <% if (auction.created_by === currentUser.username) { %>
           <span class="badge bg-primary fs-6 my-3">Created by me</span>
           <% } %>
+          <span class="badge bg-primary fs-6 my-3">
+            <%= auction.privacy %>
+          </span>
           <span class="badge bg-primary fs-6 my-3"
-            ><%= auction.payload.auction_type.val[0] %></span
+            ><%= auction.auction_type %></span
           >
           <span class="badge bg-success fs-6 my-3"
-            ><%= auction.payload.reference_sector.val[0] %></span
+            ><%= auction.reference_sector %></span
           >
           <span class="badge bg-success fs-6 my-3"
-            ><%= auction.payload.reference_type.val[0] %></span
+            ><%= auction.reference_type %></span
           >
           <% if (auction.closed) { %>
           <span class="badge bg-danger fs-6 my-3">CLOSED</span>
@@ -47,9 +78,9 @@
           <span class="text-muted">
             <!-- prettier-ignore -->
             <% if (auction.closingTime < Date.now()) { %>
-              ended <%= formatDistanceToNow(new Date(auction.payload.closing_time.val[0])) %> ago
+              ended <%= formatDistanceToNow(new Date(auction.closing_time)) %> ago
             <% } else { %>
-              ends in <%= formatDistanceToNow(new Date(auction.payload.closing_time.val[0])) %>
+              ends in <%= formatDistanceToNow(new Date(auction.closing_time)) %>
             <% } %>
           </span>
         </div>

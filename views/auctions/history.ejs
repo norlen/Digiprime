@@ -43,12 +43,12 @@
       <tr>
         <td>
           <a href="<%= baseUrl %>/auctions/<%= auction._id %>">
-            <%= auction.payload.name.val[0] %>
+            <%= auction.name %>
           </a>
         </td>
-        <td><%= auction.payload.articleno.val[0] %></td>
-        <td><%= displayDate(auction.payload.closing_time.val[0]) %></td>
-        <td><%= auction.payload.highest_bidder.val[0] %></td>
+        <td><%= auction.articleno %></td>
+        <td><%= displayDate(auction.closing_time) %></td>
+        <td><%= auction.highest_bidder %></td>
       </tr>
       <% } %>
     </tbody>

@@ -2,6 +2,8 @@ const User = require("../models/user");
 const ne = require("../lib/ne");
 const auth = require("../lib/auth");
 
+const crypto = require("crypto");
+
 module.exports.login = (_req, res) => {
   res.render("users/login");
 };
@@ -16,19 +18,22 @@ module.exports.onLogin = (req, res) => {
 module.exports.logout = (req, res) => {
   req.logout();
   req.flash("success", "Success logout!");
-  res.redirect("/offers");
+  res.redirect(`${req.app.locals.baseUrl}/offers`);
 };
 
 module.exports.authenticate = async (username, password) => {
   try {
-    const token = await auth.login(username, password);
-    const { email, uuid: userId } = token.user;
+    // const token = await auth.login(username, password);
+    // const { email, uuid: userId } = token.user;
 
-    let user = await User.findOne({ userId }).exec();
+    // let user = await User.findOne({ userId }).exec();
+    let user = await User.findOne({ username }).exec();
+    const email = `${username}@example.invalid`;
+    const userId = crypto.randomUUID();
 
     if (!user) {
       // No user was found. Create a new user.
-      user = new User({ username, email, userId });
+      user = new User({ username, email, userId, role: "user" });
 
       // We cannot prevent double writes here. So check for the error that the user already exists
       // and if we get that, then we must have done this before. So still create our user.

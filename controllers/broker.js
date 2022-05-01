@@ -114,7 +114,7 @@ module.exports.create = async (req, res) => {
   );
 
   req.flash("success", "Successfully requested broker agreement");
-  res.redirect(`/profile/${otherUsername}`);
+  res.redirect(`${req.app.locals.baseUrl}/profile/${otherUsername}`);
 };
 
 /**
@@ -210,7 +210,7 @@ module.exports.acceptAgreement = async (req, res) => {
   await ne.brokerAcceptAgreement(username, agreementId);
 
   req.flash("success", "Successfully accepted agreement");
-  res.redirect(`/broker`);
+  res.redirect(`${req.app.locals.baseUrl}/broker`);
 };
 
 /**
@@ -249,5 +249,5 @@ module.exports.rejectAgreement = async (req, res) => {
   await ne.brokerRejectAgreement(username, agreementId);
 
   req.flash("success", "Successfully rejected agreement");
-  res.redirect(`/broker`);
+  res.redirect(`${req.app.locals.baseUrl}/broker`);
 };
