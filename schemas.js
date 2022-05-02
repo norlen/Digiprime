@@ -106,6 +106,7 @@ module.exports.auctionSchema = Joi.object({
     .required(),
   brokerId: Joi.string()
     .pattern(/^[0-9a-fA-F]{24}$/)
+    .valid("")
     .required(),
 });
 
@@ -167,6 +168,12 @@ module.exports.messageReplySchema = Joi.object({
 module.exports.brokerAgreementSchema = Joi.object({
   endDate: Joi.date().min(Date.now()).required(),
   contract: Joi.string()
+    .pattern(/^[0-9a-fA-F]{24}$/)
+    .required(),
+});
+
+module.exports.representSchema = Joi.object({
+  brokerId: Joi.string()
     .pattern(/^[0-9a-fA-F]{24}$/)
     .required(),
 });

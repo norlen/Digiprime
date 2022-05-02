@@ -11,6 +11,7 @@ const {
   validateCreateSingleOfferAuction,
   checkParamsAuction,
   validateAuction,
+  validateBrokerRepresent,
 } = require("../middleware");
 
 router.route("/").get(isLoggedIn, catchAsync(auction.index));
@@ -52,5 +53,13 @@ router
   );
 
 router.route("/:id/join").post(isLoggedIn, isValidId, catchAsync(auction.join));
+router
+  .route("/:id/represent")
+  .post(
+    isLoggedIn,
+    isValidId,
+    validateBrokerRepresent,
+    catchAsync(auction.represent)
+  );
 
 module.exports = router;

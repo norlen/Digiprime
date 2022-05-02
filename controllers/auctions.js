@@ -18,15 +18,17 @@ const ExpressError = require("../utils/ExpressError");
  */
 module.exports.show = async (req, res) => {
   const { id: auctionId } = req.params;
-  const { username } = req.user;
+  const { username, role } = req.user;
 
   // Fetch auction information.
-  const auction = await ne.getAuction(username, auctionId);
+  const auction = await ne.getAuction(username, auctionId, role === "broker");
   console.log("auction", auction);
 
   let adminMember;
+  const memberUsernames = [];
   const offerIds = [];
   for (const member of auction.members) {
+    memberUsernames.push(member.username);
     if (member.offer_id) {
       offerIds.push(member.offer_id);
     }
@@ -37,6 +39,36 @@ module.exports.show = async (req, res) => {
 
   const isCreator =
     username == adminMember.username || username == adminMember.represented_by;
+
+  // Broker options.
+  const broker = {
+    canRepresent: [],
+    isRepresenting: undefined,
+  };
+  if (role == "broker") {
+    agreements = await ne.getRepresenting(username);
+    const agreementsWith = {};
+    agreements.forEach(
+      (agreement) => (agreementsWith[agreement.represented] = agreement)
+    );
+
+    for (const member of auction.members) {
+      const agreement = agreementsWith[member.username];
+      if (!agreement) continue;
+
+      if (member.represented_by == username) {
+        broker.isRepresenting = {
+          username: member.username,
+          agreementId: agreement._id,
+        };
+      } else if (member.represented_by == "") {
+        broker.canRepresent.push({
+          username: member.username,
+          agreementId: agreement._id,
+        });
+      }
+    }
+  }
 
   if (auction.privacy == "private") {
     const offers = await Offer.find({ _id: { $in: offerIds } }).exec();
@@ -61,6 +93,7 @@ module.exports.show = async (req, res) => {
       formatDistanceToNow,
       displayDate,
       isCreator,
+      broker,
     });
   } else {
     // Public auction with a single offer.
@@ -81,6 +114,7 @@ module.exports.show = async (req, res) => {
       displayDate,
       userParticipates,
       isCreator,
+      broker,
     });
   }
 };
@@ -274,7 +308,10 @@ module.exports.renderCreateAuction = async (req, res) => {
  * @param {*} res
  */
 module.exports.createAuction = async (req, res) => {
-  const { username } = req.user;
+  const { username, role } = req.user;
+  if (role === "broker" && req.body.offerId.length == 0) {
+    throw new ExpressError("As a broker you must represent someone", 400);
+  }
 
   try {
     const { offers, sector, type, auctionType } =
@@ -295,7 +332,6 @@ module.exports.createAuction = async (req, res) => {
       brokerId,
     } = req.body;
     const coordinates = await getCoordinatesFromLocation(location);
-    console.log("Coordinates", coordinates);
 
     const data = {
       room_name: auctionTitle,
@@ -464,5 +500,20 @@ module.exports.join = async (req, res) => {
     "success",
     `Successfully joined auction ${auction.payload.name.val[0]}`
   );
+  res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
+};
+
+module.exports.represent = async (req, res) => {
+  const { username } = req.user;
+  const { id: auctionId } = req.params;
+  const { brokerId } = req.body;
+
+  try {
+    ne.representInAuction(username, auctionId, brokerId);
+    req.flash("success", `Successfully represented user in auction`);
+  } catch (err) {
+    console.log(err.data);
+    req.flash("error", `Successfully represented user in auction`);
+  }
   res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
 };

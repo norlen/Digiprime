@@ -18,6 +18,7 @@ const {
   singleOfferAuctionSchema,
   auctionSchema,
   brokerAgreementSchema,
+  representSchema,
 } = require("./schemas.js");
 
 module.exports.isLoggedIn = (req, res, next) => {
@@ -190,3 +191,8 @@ module.exports.validateMessageReply = validateBody(messageReplySchema);
  * Validate fields when creating a broker agreement.
  */
 module.exports.validateBrokerAgreement = validateBody(brokerAgreementSchema);
+
+/**
+ * Validate fields when a broker wants to represent a user.
+ */
+module.exports.validateBrokerRepresent = validateBody(representSchema);

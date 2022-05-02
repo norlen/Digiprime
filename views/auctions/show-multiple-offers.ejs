@@ -49,7 +49,36 @@
         </li>
         <% } %>
       </ul>
-      <% if (!isCreator && auction.status == "active") { %>
+      <!-- prettier-ignore -->
+      <% if (!isCreator && auction.status == "active" && !auction.closed) {
+        if (currentUser.role == "broker") {
+          if (broker.isRepresenting) {
+      %>
+      <form
+        class="w-100 input-group mt-2"
+        method="POST"
+        action="<%= baseUrl %>/auctions/<%= auction._id %>"
+      >
+        <span class="input-group-text">$</span>
+        <input
+          id="bid"
+          name="bid"
+          required
+          type="text"
+          class="form-control"
+          aria-label="bid"
+          placeholder="0.00"
+        />
+        <button type="submit" class="input-group-text btn-primary">
+          Place bid
+        </button>
+      </form>
+      <div id="bidHelpBlock" class="form-text px-1">
+        Bid will be placed on behalf of <%= broker.isRepresenting.username %>
+      </div>
+
+      <!-- prettier-ignore -->
+      <% }} else { %>
       <form
         class="w-100 input-group mt-2"
         method="POST"
@@ -70,8 +99,10 @@
           Place bid
         </button>
       </form>
-      <% } else if (isCreator && auction.status == "active" && auction.closed) {
-      %>
+      <!-- prettier-ignore -->
+      <% }} %>
+
+        <% if (isCreator && auction.status == "active" && auction.closed) { %>
       <div class="mt-2">
         <% if (auction.bids.length == 0) { %>
         <button type="button" class="card-link btn btn-danger" disabled>
@@ -91,6 +122,33 @@
         </button>
         <% } %>
       </div>
+      <% } %> <% if (!broker.isRepresenting && broker.canRepresent.length > 0) {
+      %>
+      <form
+        class="w-100 input-group mt-2"
+        method="POST"
+        action="<%= baseUrl %>/auctions/<%= auction._id %>/represent"
+      >
+        <select
+          id="brokerId"
+          class="form-select"
+          aria-label="select with button addon"
+          name="brokerId"
+          value=""
+          required
+        >
+          <% for (const represent of broker.canRepresent) { %>
+          <option value="<%= represent.agreementId %>">
+            <%= represent.username %>
+          </option>
+          <% } %>
+        </select>
+        <button type="submit" class="input-group-text btn-primary">
+          Represent
+        </button>
+      </form>
+
+      <!-- prettier-ignore -->
       <% } %>
     </div>
     <div class="col-4">
