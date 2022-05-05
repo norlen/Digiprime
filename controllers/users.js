@@ -2,7 +2,7 @@ const User = require("../models/user");
 const ne = require("../lib/ne");
 const auth = require("../lib/auth");
 
-const crypto = require("crypto");
+// const crypto = require("crypto");
 
 module.exports.login = (_req, res) => {
   res.render("users/login");
@@ -23,13 +23,13 @@ module.exports.logout = (req, res) => {
 
 module.exports.authenticate = async (username, password) => {
   try {
-    // const token = await auth.login(username, password);
-    // const { email, uuid: userId } = token.user;
+    const token = await auth.login(username, password);
+    const { email, uuid: userId } = token.user;
 
-    // let user = await User.findOne({ userId }).exec();
-    let user = await User.findOne({ username }).exec();
-    const email = `${username}@example.invalid`;
-    const userId = crypto.randomUUID();
+    let user = await User.findOne({ userId }).exec();
+    // let user = await User.findOne({ username }).exec();
+    // const email = `${username}@example.invalid`;
+    // const userId = crypto.randomUUID();
 
     if (!user) {
       // No user was found. Create a new user.
