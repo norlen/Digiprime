@@ -3,6 +3,8 @@ const ne = require("../lib/ne");
 const { paginate } = require("../lib/paginate");
 const ExpressError = require("../utils/ExpressError");
 const formatDistanceToNow = require("date-fns/formatDistanceToNow");
+const { getCoordinatesFromLocation } = require("../lib/location");
+const { paginate2, getPaginationParams } = require("../lib/paginate");
 
 /**
  * Shows the page for creating a negotiation.
@@ -12,11 +14,11 @@ const formatDistanceToNow = require("date-fns/formatDistanceToNow");
  */
 module.exports.showCreate = async (req, res) => {
   const { id: offerId } = req.params;
-  const { username } = req.user;
+  const { username, role } = req.user;
 
   const [offer, contracts] = await Promise.all([
     Offer.findById(offerId).populate("author"),
-    ne.contractList(),
+    ne.contractList("auction"), // TODO
   ]);
 
   if (!offer) {
@@ -28,7 +30,12 @@ module.exports.showCreate = async (req, res) => {
     throw new ExpressError("Cannot create a negotiation with yourself", 400);
   }
 
-  res.render("negotiations/create", { offer, contracts });
+  let agreements = [];
+  if (role == "broker") {
+    agreements = await ne.getRepresenting(username);
+  }
+
+  res.render("negotiations/create", { offer, contracts, agreements });
 };
 
 /**
@@ -41,12 +48,34 @@ module.exports.showCreate = async (req, res) => {
  */
 module.exports.show = async (req, res) => {
   const { id: negotiationId } = req.params;
-  const { username } = req.user;
+  const { username, role } = req.user;
 
   const negotiation = await ne.getNegotiation(username, negotiationId);
   const offer = await Offer.findById(negotiation.articleno).populate("author");
 
-  res.render("negotiations/show", { negotiation, offer });
+  let currentUsername = username;
+  if (role === "broker") {
+    for (const member of negotiation.members) {
+      if (member.represented_by === username) {
+        currentUsername = member.username;
+        break;
+      }
+    }
+  }
+
+  for (const member of negotiation.members) {
+    if (member.is_room_admin) {
+      negotiation.creator = member;
+    } else {
+      negotiation.participant = member;
+    }
+  }
+
+  console.log(negotiation);
+  console.log(offer);
+  console.log(currentUsername);
+
+  res.render("negotiations/show", { negotiation, offer, currentUsername });
 };
 
 /**
@@ -57,11 +86,17 @@ module.exports.show = async (req, res) => {
  */
 module.exports.list = async (req, res) => {
   const { username } = req.user;
+  const [skip, limit] = getPaginationParams(req.query.page, 10);
 
-  const negotiations = await ne.listNegotiations(username);
+  const { negotiations, total } = await ne.listNegotiations(
+    username,
+    skip,
+    limit
+  );
+  console.log(negotiations);
 
   res.render("negotiations/list", {
-    page: paginate(negotiations, req.query.page, 10),
+    page: paginate2(negotiations, total, skip, limit, req.query),
     formatDistanceToNow,
   });
 };
@@ -73,9 +108,11 @@ module.exports.list = async (req, res) => {
  * @param {*} res
  */
 module.exports.create = async (req, res) => {
+  console.log("HELLO");
   const { username } = req.user;
   const { id: offerId } = req.params;
-  const { title, price, quantity, contract } = req.body;
+  console.log(req.body);
+  const { title, price, quantity, contract, brokerId, location } = req.body;
 
   const offer = await Offer.findById(offerId).populate("author");
   if (!offer) {
@@ -87,16 +124,24 @@ module.exports.create = async (req, res) => {
     throw new ExpressError("Cannot create a negotiation with yourself", 400);
   }
 
+  const member = {
+    username: offer.author.username,
+    location: offer.geometry.coordinates,
+    offer_id: offer._id,
+  };
+
+  const locationCoordinates = await getCoordinatesFromLocation(location);
   const id = await ne.createNegotiation(
     username,
     title,
-    price,
-    offer.author.username,
+    locationCoordinates,
+    parseInt(price),
+    parseInt(quantity),
+    member,
+    contract,
     offer.referenceSector,
     offer.referenceType,
-    quantity,
-    offerId,
-    contract
+    brokerId
   );
 
   req.flash("success", `Successfully created negotiation ${title}`);

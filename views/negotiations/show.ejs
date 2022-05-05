@@ -17,7 +17,7 @@
           <a href="<%= baseUrl %>/offers/<%= offer._id %>">
             <% if (offer.images.length) {%>
             <img class="img-fluid" alt="" src="<%=offer.images[0].url%> " />
-            <% }else { %>
+            <% } else { %>
             <img
               class="img-fluid rounded"
               alt=""
@@ -27,7 +27,9 @@
           </a>
           <div class="d-flex flex-row">
             <h2 class="my-3 mx-4">
-              <a href="<%= baseUrl %>/offers/<%= offer._id %>"><%= offer.title %></a>
+              <a href="<%= baseUrl %>/offers/<%= offer._id %>"
+                ><%= offer.title %></a
+              >
             </h2>
             <span class="badge bg-success my-4"> <%= offer.costumer %> </span>
           </div>
@@ -116,7 +118,7 @@
             </li>
           </ul>
 
-          <% if (currentUser.username !== negotiation.offer_user) { %>
+          <% if (currentUsername !== negotiation.offer_user) { %>
           <form
             class="input-group mt-1"
             method="POST"
@@ -185,7 +187,7 @@
         <% } else { %>
         <!-- contract -->
 
-        <div class="row mt-3">
+        <!-- <div class="row mt-3">
           <ul class="list-group" style="padding: 0">
             <li class="list-group-item d-flex justify-content-between">
               <h6><strong><%= negotiation.contract.owner %></strong></h6>
@@ -200,15 +202,13 @@
               <span class="text-muted">Offer</span>
             </li>
           </ul>
-        </div>
+        </div> -->
         <% } %>
       </div>
     </div>
   </div>
 
   <% if (negotiation.contract) { %>
-    <div class="row mx-auto card p-4">
-      <%= negotiation.contract.body %>
-    </div>
+  <div class="row mx-auto card p-4"><%= negotiation.contract %></div>
   <% } %>
 </div>
