@@ -7,6 +7,7 @@ const {
   isValidId,
   validateNegotiation,
   validatePlaceBid,
+  validateBrokerRepresent,
 } = require("../middleware");
 
 router.route("/").get(isLoggedIn, catchAsync(negotiation.list));
@@ -38,5 +39,14 @@ router
 router
   .route("/:id/cancel")
   .post(isLoggedIn, isValidId, catchAsync(negotiation.cancel));
+
+router
+  .route("/:id/represent")
+  .post(
+    isLoggedIn,
+    isValidId,
+    validateBrokerRepresent,
+    catchAsync(negotiation.represent)
+  );
 
 module.exports = router;

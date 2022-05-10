@@ -2,12 +2,18 @@
 
 <div class="container mt-3">
   <div class="row justify-content-between mb-3">
-    <div class="d-flex gap-2 mb-2">
-      <h2><%= negotiation.name %></h2>
-      <% if (negotiation.status === "accepted") { %>
-      <span class="badge bg-success fs-6 my-3">Accepted</span>
-      <% } else if (negotiation.status === "rejected") { %>
-      <span class="badge bg-danger fs-6 my-3">Rejected</span>
+    <div class="mb-2">
+      <div class="d-flex gap-2">
+        <h2><%= negotiation.name %></h2>
+        <% if (negotiation.status === "accepted") { %>
+        <span class="badge bg-success fs-6 my-3">Accepted</span>
+        <% } else if (negotiation.status === "rejected") { %>
+        <span class="badge bg-danger fs-6 my-3">Rejected</span>
+        <% } %>
+      </div>
+
+      <% if (isRepresenting) { %>
+      <p class="text-muted">Representing <%= isRepresenting.username %></p>
       <% } %>
     </div>
 
@@ -118,7 +124,35 @@
             </li>
           </ul>
 
-          <% if (currentUsername !== negotiation.offer_user) { %>
+          <% if (!isRepresenting) { %>
+
+          <form
+            class="input-group mt-1"
+            method="POST"
+            action="<%= baseUrl %>/negotiations/<%= negotiation._id %>/represent"
+            style="padding: 0; height: 24px"
+          >
+            <select
+              id="brokerId"
+              class="form-select"
+              aria-label="select with button addon"
+              name="brokerId"
+              value=""
+              required
+            >
+              <% for (const represent of canRepresent) { %>
+              <option value="<%= represent.agreementId %>">
+                <%= represent.username %>
+              </option>
+              <% } %>
+            </select>
+            <button type="submit" class="input-group-text btn-primary">
+              Represent
+            </button>
+          </form>
+
+          <% } else if (currentUsername !== negotiation.offer_user) { %>
+
           <form
             class="input-group mt-1"
             method="POST"
@@ -164,7 +198,6 @@
               </button>
             </form>
           </div>
-
           <% } else { %>
           <div class="mt-4">
             <p>
@@ -174,7 +207,7 @@
                 <a href="<%= baseUrl %>/profile/<%= negotiation.seller %>">
                   <%= negotiation.seller %></a
                 >
-                <% }else { %>
+                <% } else { %>
                 <a href="<%= baseUrl %>/profile/<%= negotiation.created_by %>"
                   ><%= negotiation.created_by %></a
                 >

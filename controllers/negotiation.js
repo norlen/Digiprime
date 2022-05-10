@@ -38,6 +38,47 @@ module.exports.showCreate = async (req, res) => {
   res.render("negotiations/create", { offer, contracts, agreements });
 };
 
+const getBrokerOptions = async (username, role, members) => {
+  const brokerOptions = {
+    canRepresent: [],
+    isRepresenting: undefined,
+  };
+
+  if (role !== "broker") {
+    return brokerOptions;
+  }
+
+  agreements = await ne.getRepresenting(username);
+
+  // Get usernames of represented users.
+  const agreementsWith = {};
+  agreements.forEach(
+    (agreement) => (agreementsWith[agreement.represented] = agreement)
+  );
+
+  // Check if the members correspond to those users.
+  for (const member of members) {
+    const agreement = agreementsWith[member.username];
+    if (!agreement) continue;
+
+    if (member.represented_by == username) {
+      // If we represent this user.
+      brokerOptions.isRepresenting = {
+        username: member.username,
+        agreementId: agreement._id,
+      };
+    } else if (member.represented_by == "") {
+      // Member is not represented by anyone else.
+      brokerOptions.canRepresent.push({
+        username: member.username,
+        agreementId: agreement._id,
+      });
+    }
+  }
+
+  return brokerOptions;
+};
+
 /**
  * Shows the page for displaying a single negotiation.
  *
@@ -50,8 +91,18 @@ module.exports.show = async (req, res) => {
   const { id: negotiationId } = req.params;
   const { username, role } = req.user;
 
-  const negotiation = await ne.getNegotiation(username, negotiationId);
+  const negotiation = await ne.getNegotiation(
+    username,
+    negotiationId,
+    role === "broker"
+  );
   const offer = await Offer.findById(negotiation.articleno).populate("author");
+
+  const { canRepresent, isRepresenting } = await getBrokerOptions(
+    username,
+    role,
+    negotiation.members
+  );
 
   let currentUsername = username;
   if (role === "broker") {
@@ -71,11 +122,19 @@ module.exports.show = async (req, res) => {
     }
   }
 
+  // Represenation options for a broker
+
   console.log(negotiation);
   console.log(offer);
   console.log(currentUsername);
 
-  res.render("negotiations/show", { negotiation, offer, currentUsername });
+  res.render("negotiations/show", {
+    negotiation,
+    offer,
+    currentUsername,
+    canRepresent,
+    isRepresenting,
+  });
 };
 
 /**
@@ -85,19 +144,46 @@ module.exports.show = async (req, res) => {
  * @param {*} res
  */
 module.exports.list = async (req, res) => {
-  const { username } = req.user;
+  const { username, role } = req.user;
   const [skip, limit] = getPaginationParams(req.query.page, 10);
 
-  const { negotiations, total } = await ne.listNegotiations(
-    username,
-    skip,
-    limit
-  );
-  console.log(negotiations);
+  let agreements = [];
+  if (role == "broker") {
+    agreements = await ne.getRepresenting(username);
+  }
+
+  let negotiations, total;
+  if (role === "broker" && req.query.user) {
+    const user = req.query.user;
+    const representing = agreements.map((agreement) => agreement.represented);
+
+    if (representing.includes(user)) {
+      [negotiations, total] = await ne.listNegotiations(user, skip, limit);
+    } else {
+      throw new ExpressError(
+        "Cannot view a user you are not representing",
+        403
+      );
+    }
+  } else {
+    [negotiations, total] = await ne.listNegotiations(
+      username,
+      skip,
+      limit,
+      role == "broker"
+    );
+  }
+
+  // const { negotiations, total } = await ne.listNegotiations(
+  //   username,
+  //   skip,
+  //   limit
+  // );
 
   res.render("negotiations/list", {
     page: paginate2(negotiations, total, skip, limit, req.query),
     formatDistanceToNow,
+    agreements,
   });
 };
 
@@ -195,4 +281,19 @@ module.exports.cancel = async (req, res) => {
 
   req.flash("success", "Successfully cancelled negotiation");
   res.redirect(`${req.app.locals.baseUrl}/negotiations/${id}`);
+};
+
+module.exports.represent = async (req, res) => {
+  const { username } = req.user;
+  const { id: negotiationId } = req.params;
+  const { brokerId } = req.body;
+
+  try {
+    ne.representInAuction(username, negotiationId, brokerId);
+    req.flash("success", `Successfully represented user in negotiation`);
+  } catch (err) {
+    console.log(err.data);
+    req.flash("error", `Successfully represented user in negotiation`);
+  }
+  res.redirect(`${req.app.locals.baseUrl}/negotiations/${negotiationId}`);
 };
