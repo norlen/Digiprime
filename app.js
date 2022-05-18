@@ -151,14 +151,15 @@ app.use(flash());
 const strategyOpts = {
   usernameField: "username",
   passwordField: "password",
+  passReqToCallback: true,
 };
 
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(
-  new LocalStrategy(strategyOpts, (username, password, done) => {
+  new LocalStrategy(strategyOpts, (req, username, password, done) => {
     userController
-      .authenticate(username, password)
+      .authenticate(req, username, password)
       .then((user) => done(null, user))
       .catch((err) => done(err, false));
   })
