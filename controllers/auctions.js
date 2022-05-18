@@ -44,7 +44,9 @@ module.exports.show = async (req, res) => {
   const broker = {
     canRepresent: [],
     isRepresenting: undefined,
+    joinAs: [{ username, brokerId: "" }],
   };
+  let agreements = [];
   if (role == "broker") {
     agreements = await ne.getRepresenting(username);
     const agreementsWith = {};
@@ -52,6 +54,7 @@ module.exports.show = async (req, res) => {
       (agreement) => (agreementsWith[agreement.represented] = agreement)
     );
 
+    // Check if the user is representing someone, and also which users the broker can represent.
     for (const member of auction.members) {
       const agreement = agreementsWith[member.username];
       if (!agreement) continue;
@@ -99,13 +102,31 @@ module.exports.show = async (req, res) => {
     // Public auction with a single offer.
     const offer = await Offer.findById(auction.articleno);
 
-    let userParticipates = false;
-    for (let member of auction.members) {
-      if (member.username === req.user.username) {
-        userParticipates = true;
-        break;
+    let userParticipates = broker.isRepresenting != undefined;
+    if (!userParticipates) {
+      for (let member of auction.members) {
+        if (member.username === req.user.username) {
+          userParticipates = true;
+          break;
+        }
+      }
+
+      // Check which users the broker can join as.
+      const inAuction = {};
+      auction.members.forEach((member) => (inAuction[member.username] = true));
+
+      for (const agreement of agreements) {
+        const represented = agreement.represented;
+        if (represented && !inAuction[represented]) {
+          broker.joinAs.push({
+            username: represented,
+            brokerId: agreement._id,
+          });
+        }
       }
     }
+    console.log("agreements", agreements);
+    console.log("broker", broker);
 
     res.render("auctions/show-public", {
       auction,
@@ -478,28 +499,30 @@ module.exports.selectWinner = async (req, res) => {
 module.exports.join = async (req, res) => {
   const { id: auctionId } = req.params;
   const { username } = req.user;
+  const { location, brokerId } = req.body;
 
   // Check that we can join the auction.
   const auction = await ne.getAuction(username, auctionId);
-  if (auction.privacy !== "Public") {
+  if (auction.privacy !== "public") {
     throw new ExpressError("Cannot join private auction", 403);
   }
+
   for (let member of auction.members) {
-    if (member._id.username === username) {
+    if (member.username === username) {
       throw new ExpressError(
         `Already a member of auction ${auction.payload.name.val[0]}`,
         400
       );
     }
   }
+  const locationCoordinates = await getCoordinatesFromLocation(location);
+
+  console.log("join auction", { username, location, brokerId });
 
   // Join the auction.
-  await ne.joinAuction(username, auctionId);
+  await ne.joinAuction(username, auctionId, locationCoordinates, brokerId);
 
-  req.flash(
-    "success",
-    `Successfully joined auction ${auction.payload.name.val[0]}`
-  );
+  req.flash("success", `Successfully joined auction ${auction.room_name}`);
   res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
 };
 

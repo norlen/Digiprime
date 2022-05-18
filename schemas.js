@@ -179,3 +179,10 @@ module.exports.representSchema = Joi.object({
     .pattern(/^[0-9a-fA-F]{24}$/)
     .required(),
 });
+
+module.exports.joinSchema = Joi.object({
+  location: Joi.string().required().escapeHTML(),
+  brokerId: Joi.string()
+    .pattern(/^[0-9a-fA-F]{24}$/)
+    .required(),
+});
