@@ -30,7 +30,7 @@ module.exports.index = async (req, res) => {
   const perPage = 18;
 
   const [offers, count] = await Promise.all([
-    Offer.find({})
+    Offer.find({ deleted: false })
       .populate("author")
       .sort({ _id: 1 })
       .skip(perPage * (page - 1))
@@ -55,7 +55,7 @@ module.exports.directory = async (req, res) => {
   });
 
   const [offers, count] = await Promise.all([
-    Offer.find(filter)
+    Offer.find({ ...filter, deleted: false })
       .populate("author")
       .sort({ _id: 1 })
       .skip(perPage * (page - 1))
@@ -90,6 +90,7 @@ module.exports.create = async (req, res, next) => {
   offer.geometry = geoData.body.features[0].geometry;
   offer.images = req.files.map((f) => ({ url: f.path, filename: f.filename }));
   offer.author = req.user._id;
+  offer.deleted = false;
   await offer.save();
   req.flash("success", "Successfully made a new offer!");
   res.redirect(`${req.app.locals.baseUrl}/offers/${offer._id}`);
@@ -128,6 +129,10 @@ module.exports.editForm = async (req, res) => {
     req.flash("error", "Cannot find that offer!");
     return res.redirect(`${req.app.locals.baseUrl}/offers`);
   }
+  if (offer.deleted) {
+    req.flash("error", "Offer has been remoeved");
+    return res.redirect(`${req.app.locals.baseUrl}/offers`);
+  }
   res.render("offers/edit", {
     offer,
     costumers,
@@ -156,7 +161,7 @@ module.exports.updateForm = async (req, res) => {
 
 module.exports.delete = async (req, res) => {
   const { id } = req.params;
-  await Offer.findByIdAndDelete(id);
+  await Offer.findByIdAndUpdate(id, { deleted: true });
   req.flash("success", "Successfully deleted offer!");
   res.redirect(`${req.app.locals.baseUrl}/offers`);
 };

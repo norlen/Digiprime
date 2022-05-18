@@ -150,7 +150,7 @@ module.exports.offers = async (req, res) => {
 
   const user = await User.findOne({ username });
   const [offers, count] = await Promise.all([
-    Offer.find({ author: user._id })
+    Offer.find({ author: user._id, deleted: false })
       .populate("author")
       .sort({ _id: 1 })
       .skip(perPage * (page - 1))

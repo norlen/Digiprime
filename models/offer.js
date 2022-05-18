@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const Review = require("./review");
 const Schema = mongoose.Schema;
 
 const ImageSchema = new Schema({
@@ -56,6 +55,7 @@ const OfferSchema = new Schema(
         ref: "Review",
       },
     ],
+    deleted: Boolean,
   },
   opts
 );
@@ -65,16 +65,6 @@ OfferSchema.virtual("properties.popUpMarkup").get(function () {
     this._id
   }">${this.title}</a></strong>
     <p>${this.description.substring(0, 20)}...</p>`;
-});
-
-OfferSchema.post("findOneAndDelete", async function (doc) {
-  if (doc) {
-    await Review.deleteMany({
-      _id: {
-        $in: doc.reviews,
-      },
-    });
-  }
 });
 
 module.exports = mongoose.model("Offer", OfferSchema);
