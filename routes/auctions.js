@@ -6,7 +6,6 @@ const {
   isLoggedIn,
   isValidId,
   validatePlaceBid,
-  validateSelectWinner,
   checkParamsSingleOfferAuction,
   validateCreateSingleOfferAuction,
   checkParamsAuction,
@@ -43,15 +42,6 @@ router
   .get(isLoggedIn, isValidId, catchAsync(auction.show))
   .post(isLoggedIn, isValidId, validatePlaceBid, catchAsync(auction.placeBid));
 
-router
-  .route("/:id/end")
-  .post(
-    isLoggedIn,
-    isValidId,
-    validateSelectWinner,
-    catchAsync(auction.selectWinner)
-  );
-
 router.route("/:id/join").post(isLoggedIn, isValidId, catchAsync(auction.join));
 router
   .route("/:id/represent")
@@ -61,5 +51,10 @@ router
     validateBrokerRepresent,
     catchAsync(auction.represent)
   );
+
+router
+  .route("/:id/invite")
+  .get(isLoggedIn, isValidId, catchAsync(auction.showInvite))
+  .post(isLoggedIn, isValidId, catchAsync(auction.performInvite));
 
 module.exports = router;

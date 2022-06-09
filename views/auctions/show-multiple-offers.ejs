@@ -38,19 +38,28 @@
           <h6><%= auction.quantity %></h6>
           <span class="text-muted">Quantity</span>
         </li>
-        <% if (auction.highest_bid) { %>
+        <% if (auction.highest_bidder) { %>
         <li class="list-group-item d-flex justify-content-between">
-          <h6><%= auction.highest_bid %></h6>
-          <span class="text-muted">Winning bid</span>
+          <h6>
+            <a href="<%= baseUrl %>/profile/<%= auction.highest_bidder %>">
+              <%= auction.highest_bidder %>
+            </a>
+          </h6>
+          <span class="text-muted">Highest bidder</span>
         </li>
         <li class="list-group-item d-flex justify-content-between">
-          <h6><%= auction.highest_bidder %></h6>
-          <span class="text-muted">Winner</span>
+          <h6><%= auction.highest_bid %></h6>
+          <span class="text-muted">Highest bid</span>
         </li>
         <% } %>
       </ul>
+      <% if (isCreator && !auction.closed) { %>
+        <div class="mt-2">
+          <a class="btn btn-primary" href="<%= baseUrl %>/auctions/<%= auction._id %>/invite">Add members</a>
+        </div>
+      <% } %>
       <!-- prettier-ignore -->
-      <% if (!isCreator && auction.status == "active" && !auction.closed) {
+      <% if (!isCreator && !auction.closed) {
         if (currentUser.role == "broker") {
           if (broker.isRepresenting) {
       %>
@@ -102,28 +111,7 @@
       <!-- prettier-ignore -->
       <% }} %>
 
-        <% if (isCreator && auction.status == "active" && auction.closed) { %>
-      <div class="mt-2">
-        <% if (auction.bids.length == 0) { %>
-        <button type="button" class="card-link btn btn-danger" disabled>
-          Select Winner
-        </button>
-        <small class="text-muted d-block mt-1"
-          >Cannot select winner. No bids have been placed.</small
-        >
-        <% } else { %>
-        <button
-          type="button"
-          class="card-link btn btn-danger"
-          data-bs-toggle="modal"
-          data-bs-target="#pickWinnerModal"
-        >
-          Select Winner
-        </button>
-        <% } %>
-      </div>
-      <% } %> <% if (!broker.isRepresenting && broker.canRepresent.length > 0) {
-      %>
+      <% if (!broker.isRepresenting && broker.canRepresent.length > 0) { %>
       <form
         class="w-100 input-group mt-2"
         method="POST"
@@ -195,9 +183,17 @@
     <div class="col" id="" style="display: block">
       <div class="card mb-1" id="offerCards">
         <div class="position-relative">
-          <span class="position-absolute badge bg-primary m-2" id="itemCostumer"
-            ><%= member.offer.costumer %></span
-          >
+          <div class="position-absolute px-2 py-1">
+            <span class="badge bg-primary" id="itemCostumer">
+              <%= member.offer.costumer %>
+            </span>
+            <% if (auction.highest_bidder == member.username) { %>
+              <span class="badge bg-danger" id="itemCostumer">
+                Best bid
+              </span>
+            <% } %>
+          </div>
+          
           <a href="<%= baseUrl %>/offers/<%= member.offer._id %>">
             <% if (member.offer.images.length) {%>
             <img
@@ -215,33 +211,39 @@
           </a>
         </div>
 
-        <div class="py-2 px-3">
+        <!-- <div class="py-2 px-3">
           <div class="d-flex justify-content-between">
             <div class="d-flex align-items-center gap-2">
-              <a href="<%= baseUrl %>/offers/<%= member.offer._id %>"
-                ><h4 id="searchTitle"><%= member.offer.title %></h4></a
-              >
+              <a href="<%= baseUrl %>/offers/<%= member.offer._id %>">
+                <h4 id="searchTitle"><%= member.offer.title %></h4>
+              </a>
             </div>
           </div>
-        </div>
+        </div> -->
 
         <ul class="list-group list-group-flush text-muted">
           <li class="list-group-item d-flex justify-content-between">
-            <small class=""><a href="#"><%= member.username %></a></small>
+            <h6>
+              <a href="<%= baseUrl %>/profile/<%= member.username %>">
+                <%= member.username %>
+              </a>
+            </h6>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
             <small class="text-muted"><%= member.offer.location %></small>
           </li>
           <% if (member.bid !== undefined) { %>
-          <li class="list-group-item">
-            <small>Best bid: <%= member.bid.text %></small>
+          <li class="list-group-item d-flex justify-content-between">
+            <small>Bid: <%= member.bid.text %></small>
+            <small class="text-muted">
+              <%= formatDistanceToNow(new Date(member.bid.created_at)) %> ago
+            </small>
           </li>
-          <li class="list-group-item">
-            <small
-              ><%= formatDistanceToNow(new Date(member.bid.created_at)) %>
-              ago</small
-            >
+          <li class="list-group-item d-flex justify-content-between">
+            <small>Distance: <%= Math.round(parseInt(member.bid.distance)) %> km</small>
           </li>
           <% } else { %>
-          <li class="list-group-item"><small>No bids placed yet</small></li>
+          <li class="list-group-item"><small>No bid placed</small></li>
           <% } %>
         </ul>
       </div>
@@ -268,86 +270,9 @@
     </a>
   </div>
 
-  <div
-    class="modal fade"
-    id="pickWinnerModal"
-    tabindex="-1"
-    aria-labelledby="exampleModalLabel"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog modal-lg">
-      <form
-        class=""
-        method="POST"
-        action="<%= baseUrl %>/auctions/<%= auction._id %>/end"
-      >
-        <!-- <input type="hidden" name="_csrf" value="" /> -->
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">
-              Select Winning Bid
-            </h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <div class="table-responsive-sm">
-              <table class="table table-hover">
-                <thead>
-                  <tr>
-                    <th scope="col">Sender</th>
-                    <th scope="col">Distance</th>
-                    <th scope="col">Bid</th>
-                    <th scope="col">Placed</th>
-                    <th scope="col">Select as winner</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% for (let bid of auction.bids) { %>
-                  <tr>
-                    <th scope="row"><%= bid.sender %></th>
-                    <td><%= Math.round(bid.distance) %></td>
-                    <td><%= bid.text %></td>
-                    <td><%= displayDate(bid.created_at) %></td>
-                    <td class="d-flex justify-content-center">
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="winner"
-                        id="<%= bid.sender %>"
-                        autocomplete="off"
-                        value="<%= bid.sender %>"
-                      />
-                      <label
-                        class="btn btn-outline-primary"
-                        for="<%= bid.sender %>"
-                        >Select</label
-                      >
-                    </td>
-                  </tr>
-                  <% } %>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Close
-            </button>
-            <button type="submit" class="btn btn-primary">End auction</button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
+  <% if (auction.contract) { %>
+  <div class="px-3 pt-2 pb-5"><%- auction.contract %></div>
+  <% } %>
 </div>
 
 <script>

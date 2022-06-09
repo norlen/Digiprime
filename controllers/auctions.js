@@ -456,41 +456,6 @@ module.exports.placeBid = async (req, res) => {
 };
 
 /**
- * Takes a winner and marks that user as the winner of the auction.
- *
- * @param {*} req
- * @param {*} res
- */
-module.exports.selectWinner = async (req, res) => {
-  const { id: auctionId } = req.params;
-  const { winner } = req.body;
-  const { username } = req.user;
-
-  try {
-    await ne.selectWinner(username, auctionId, winner);
-
-    req.flash("success", `${winner} has been selected as the winner`);
-    res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
-  } catch (error) {
-    console.log(error);
-    // Failure cases:
-    // 1. Selected winner does not participate in auction.
-    // 2. Not room admin.
-    // 3. Winner has already been selected.
-    if (
-      error.isAxiosError &&
-      (error.response.status === 400 || error.response.status === 403)
-    ) {
-      req.flash("error", error.response.data.message);
-    } else {
-      req.flash("error", error.message);
-    }
-
-    res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
-  }
-};
-
-/**
  * Join a public auction.
  *
  * @param {*} req
@@ -538,5 +503,60 @@ module.exports.represent = async (req, res) => {
     console.log(err.data);
     req.flash("error", `Successfully represented user in auction`);
   }
+  res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
+};
+
+/**
+ * Show page to invite new members to an ongoing auction.
+ *
+ * TODO: Should probably support multiple pages.
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+module.exports.showInvite = async (req, res) => {
+  const { username } = req.user;
+  const { id: auctionId } = req.params;
+
+  const auction = await ne.getAuction(username, auctionId);
+  const usernameExistsInAuction = {};
+  for (const member of auction.members) {
+    usernameExistsInAuction[member.username] = true;
+  }
+
+  let offers = await Offer.find({
+    referenceSector: auction.reference_sector,
+    referenceType: auction.reference_type,
+  }).populate("author");
+
+  // Filter out all offers by people already in the auction.
+  offers = offers.filter(
+    (offer) => usernameExistsInAuction[offer.author.username]
+  );
+
+  res.render("auctions/invite", { auction, offers });
+};
+
+/**
+ * Invite members to an ongoing auction.
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+module.exports.performInvite = async (req, res) => {
+  const { username } = req.user;
+  const { id: auctionId } = req.params;
+  const { offerId } = req.body;
+
+  const offer = await Offer.findById(offerId).populate("author");
+
+  await ne.auctionInvite(
+    auctionId,
+    username,
+    offer.author.username,
+    offer.geometry.coordinates,
+    offer._id
+  );
+
   res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
 };

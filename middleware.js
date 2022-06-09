@@ -158,11 +158,6 @@ module.exports.checkParamsAuction = validateQuery(createAuctionSchema);
 module.exports.validateAuction = validateBody(auctionSchema);
 
 /**
- * Validate fields when selecting a winner in an auction.
- */
-module.exports.validateSelectWinner = validateBody(selectWinnerSchema);
-
-/**
  * Validate the the parameter contains a valid username.
  */
 module.exports.validateUsername = validateParams(usernameSchema, 404);

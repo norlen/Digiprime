@@ -86,9 +86,23 @@
           <h6><%= auction.quantity %></h6>
           <span class="text-muted">Quantity</span>
         </li>
+        <% if (auction.highest_bidder) { %>
+        <li class="list-group-item d-flex justify-content-between">
+          <h6>
+            <a href="<%= baseUrl %>/profile/<%= auction.highest_bidder %>"
+              ><%= auction.highest_bidder %></a
+            >
+          </h6>
+          <span class="text-muted">Highest bidder</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <h6><%= auction.highest_bid %></h6>
+          <span class="text-muted">Highest bid</span>
+        </li>
+        <% } %>
       </ul>
 
-      <div class="mt-1">
+      <div class="mt-3">
         <ul class="list-group">
           <li class="list-group-item d-flex justify-content-between">
             <h6><%= displayDate(auction.closing_time) %></h6>
@@ -234,29 +248,9 @@
       </div>
       <!-- prettier-ignore -->
       <% } %>
-      <% } else if (isCreator && auction.closed) { %>
-      <div class="mt-2">
-        <% if (auction.bids.length == 0) { %>
-        <button type="button" class="card-link btn btn-danger" disabled>
-          Select Winner
-        </button>
-        <small class="text-muted d-block mt-1"
-          >Cannot select winner. No bids have been placed.</small
-        >
-        <% } else { %>
-        <button
-          type="button"
-          class="card-link btn btn-primary w-100"
-          data-bs-toggle="modal"
-          data-bs-target="#pickWinnerModal"
-        >
-          Select Winner
-        </button>
-        <% } %>
-      </div>
-      <% } %>
+      <% }
 
-      <h4 class="mt-4">Bid History</h4>
+      <h4 class="mt-4">Bids by all members</h4>
 
       <div class="card">
         <% if (auction.bids.length == 0) { %>
@@ -264,10 +258,17 @@
         <% } else { %>
 
         <table class="table">
+          <thead>
+            <td>User</td>
+            <td>Date</td>
+            <td>Distance</td>
+            <td>Bid</td>
+          </thead>
           <% for (let bid of auction.bids) { %>
           <tbody>
             <td><%= bid.sender %></td>
             <td><%= displayDate(bid.created_at) %></td>
+            <td><%= Math.round(parseInt(bid.distance)) %> km</td>
             <td>$<%= bid.text %></td>
           </tbody>
 
@@ -277,87 +278,10 @@
       </div>
     </div>
   </div>
-
-  <div
-    class="modal fade"
-    id="pickWinnerModal"
-    tabindex="-1"
-    aria-labelledby="exampleModalLabel"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog modal-lg">
-      <form
-        class=""
-        method="POST"
-        action="<%= baseUrl %>/auctions/<%= auction._id %>/end"
-      >
-        <!-- <input type="hidden" name="_csrf" value="" /> -->
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">
-              Select Winning Bid
-            </h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <div class="table-responsive-sm">
-              <table class="table table-hover">
-                <thead>
-                  <tr>
-                    <th scope="col">Sender</th>
-                    <th scope="col">Distance</th>
-                    <th scope="col">Bid</th>
-                    <th scope="col">Placed</th>
-                    <th scope="col">Select as winner</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% for (let bid of auction.bids) { %>
-                  <tr>
-                    <th scope="row"><%= bid.sender %></th>
-                    <td><%= Math.round(bid.distance) %></td>
-                    <td><%= bid.text %></td>
-                    <td><%= displayDate(bid.created_at) %></td>
-                    <td class="d-flex justify-content-center">
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="winner"
-                        id="<%= bid.sender %>"
-                        autocomplete="off"
-                        value="<%= bid.sender %>"
-                      />
-                      <label
-                        class="btn btn-outline-primary"
-                        for="<%= bid.sender %>"
-                        >Select</label
-                      >
-                    </td>
-                  </tr>
-                  <% } %>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Close
-            </button>
-            <button type="submit" class="btn btn-primary">End auction</button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
+  
+  <% if (auction.contract) { %>
+    <div><%= auction.contract %></div>
+  <% } %>
 </div>
 
 <script>

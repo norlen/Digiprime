@@ -115,11 +115,6 @@ module.exports.placeBidSchema = Joi.object({
   bid: Joi.number().min(1).required(),
 });
 
-// Validate inputs to `selectWinner`.
-module.exports.selectWinnerSchema = Joi.object({
-  winner: Joi.string().required().escapeHTML(),
-});
-
 // Check for a valid mongo id.
 module.exports.IdSchema = Joi.object({
   id: Joi.string()
