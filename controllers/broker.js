@@ -20,13 +20,9 @@ const { displayDate } = require("../lib/auction");
 module.exports.createPage = async (req, res) => {
   const { username: currentUsername } = req.user;
   const { username: otherUsername } = req.params;
-  console.log("currentUsername:", currentUsername);
-  console.log("otherUsername:", otherUsername);
 
   const currentUser = await User.findOne({ username: currentUsername }).exec();
   const otherUser = await User.findOne({ username: otherUsername }).exec();
-  console.log("currentUser:", currentUser);
-  console.log("otherUser:", otherUser);
 
   // Determine which user is the broker and which one is the user.
   //
@@ -50,7 +46,6 @@ module.exports.createPage = async (req, res) => {
   }
 
   contracts = await ne.contractList("broker");
-  console.log("contracts", contracts);
 
   res.render("broker/create", { broker, user, contracts, otherUsername });
 };
@@ -79,7 +74,6 @@ module.exports.create = async (req, res) => {
   const { username: currentUsername } = req.user;
   const { username: otherUsername } = req.params;
   const { endDate, contract } = req.body;
-  console.log(req.body);
 
   const currentUser = await User.findOne({ username: currentUsername }).exec();
   const otherUser = await User.findOne({ username: otherUsername }).exec();
@@ -162,10 +156,8 @@ module.exports.list = async (req, res) => {
   const [skip, limit] = getPaginationParams(req.query.page, 20);
 
   const d = await ne.brokerGetAgreements(username, skip, limit);
-  console.log(d);
 
   const page = paginate2(d.agreements, d.total, skip, limit, req.query.page);
-  console.log("page", page);
   res.render("broker/list", {
     activePage: "pending",
     page,
@@ -192,7 +184,6 @@ module.exports.list = async (req, res) => {
  * @param {*} res
  */
 module.exports.acceptAgreement = async (req, res) => {
-  console.log("HELLO", req.user);
   const { agreementId } = req.params;
   const { username } = req.user;
 
@@ -233,7 +224,6 @@ module.exports.acceptAgreement = async (req, res) => {
 module.exports.rejectAgreement = async (req, res) => {
   const { username } = req.user;
   const { agreementId } = req.params;
-  console.log(agreementId);
 
   const agreement = await ne.brokerGetAgreement(username, agreementId);
   if (!agreement) {

@@ -3,7 +3,7 @@ const ne = require("../lib/ne");
 const auth = require("../lib/auth");
 
 const crypto = require("crypto");
-const DEV_MODE = false;
+const DEV_MODE = true;
 
 module.exports.login = (_req, res) => {
   res.render("users/login");
@@ -37,7 +37,6 @@ module.exports.authenticate = async (req, username, password) => {
       userId = token.user.uuid;
     } catch (err) {
       if (err.isAxiosError && err.response.data.error == "unauthorized") {
-        console.log(err);
         req.flash("error", "Wrong username or password");
         return null;
       }

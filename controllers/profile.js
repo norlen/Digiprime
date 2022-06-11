@@ -16,10 +16,8 @@ const ne = require("../lib/ne");
 module.exports.show = async (req, res) => {
   const { role, username } = req.user;
   const { username: otherUsername } = req.params;
-  console.log("otherUsername", otherUsername);
 
   const user = await User.findOne({ username: otherUsername });
-  console.log("user", user);
   if (!user) {
     throw new ExpressError("User not found", 404);
   }
@@ -56,10 +54,8 @@ module.exports.show = async (req, res) => {
       username,
       otherUsername
     );
-    console.log(agreements);
     broker.agreementCount = agreements.length;
   }
-  console.log(broker);
 
   res.render("profile/show", {
     user,

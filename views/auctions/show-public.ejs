@@ -8,7 +8,7 @@
         <%= auction.auction_type %>
       </span>
       <% if (auction.closed) { %>
-      <span class="badge bg-danger fs-6 my-3">CLOSED</span>
+        <span class="badge bg-danger fs-6 my-3">CLOSED</span>
       <% } %>
     </div>
 
@@ -20,20 +20,20 @@
       <div class="card mb-3">
         <a href="<%= baseUrl %>/offers/<%= offer._id %>">
           <% if (offer.images.length) {%>
-          <img class="img-fluid" alt="" src="<%= offer.images[0].url %> " />
+            <img class="img-fluid" alt="" src="<%= offer.images[0].url %> " />
           <% } else { %>
-          <img
-            class="img-fluid"
-            alt=""
-            src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg"
-          />
+            <img
+              class="img-fluid"
+              alt=""
+              src="https://res.cloudinary.com/diq0t2bqj/image/upload/v1622925764/YelpCamp/kjhxxshjrdudgkoehoyl.jpg"
+            />
           <% } %>
         </a>
         <div class="d-flex flex-row">
           <h2 class="my-3 mx-4">
-            <a href="<%= baseUrl %>/offers/<%= offer._id %>"
-              ><%= offer.title %></a
-            >
+            <a href="<%= baseUrl %>/offers/<%= offer._id %>">
+              <%= offer.title %>
+            </a>
           </h2>
           <span class="badge bg-success my-4"> <%= offer.costumer %> </span>
         </div>
@@ -68,9 +68,9 @@
       <ul class="list-group">
         <li class="list-group-item d-flex justify-content-between">
           <h6>
-            <a href="<%= baseUrl %>/profile/<%= auction.created_by %>"
-              ><%= auction.created_by %></a
-            >
+            <a href="<%= baseUrl %>/profile/<%= auction.created_by %>">
+              <%= auction.created_by %>
+            </a>
           </h6>
           <span class="text-muted">Created by</span>
         </li>
@@ -87,18 +87,18 @@
           <span class="text-muted">Quantity</span>
         </li>
         <% if (auction.highest_bidder) { %>
-        <li class="list-group-item d-flex justify-content-between">
-          <h6>
-            <a href="<%= baseUrl %>/profile/<%= auction.highest_bidder %>"
-              ><%= auction.highest_bidder %></a
-            >
-          </h6>
-          <span class="text-muted">Highest bidder</span>
-        </li>
-        <li class="list-group-item d-flex justify-content-between">
-          <h6><%= auction.highest_bid %></h6>
-          <span class="text-muted">Highest bid</span>
-        </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <h6>
+              <a href="<%= baseUrl %>/profile/<%= auction.highest_bidder %>">
+                <%= auction.highest_bidder %>
+              </a>
+            </h6>
+            <span class="text-muted">Highest bidder</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <h6><%= auction.highest_bid %></h6>
+            <span class="text-muted">Highest bid</span>
+          </li>
         <% } %>
       </ul>
 
@@ -131,55 +131,106 @@
         </ul>
       </div>
 
-      <!-- prettier-ignore -->
       <% if (!isCreator && !auction.closed) { %>
-      <% if (userParticipates) { %>
-      <form
-        class="w-100 input-group mt-2"
-        method="POST"
-        action="<%= baseUrl %>/auctions/<%= auction._id %>"
-      >
-        <!-- <input type="hidden" name="_csrf" value="" /> -->
-        <span class="input-group-text">$</span>
-        <input
-          id="bid"
-          name="bid"
-          required
-          type="text"
-          class="form-control"
-          aria-label="bid"
-          placeholder="0.00"
-        />
-        <button type="submit" class="input-group-text btn-primary">
-          Place bid
-        </button>
-      </form>
-      <% } else { %>
-      <h4 class="mt-4">Join or represent</h4>
-      <div class="col-sm-6 mt-2 w-100">
-        <% if (currentUser.role == "broker") { %>
-        <div class="mb-3">
+        <% if (userParticipates) { %>
           <form
-            class="w-100"
+            class="w-100 input-group mt-2"
             method="POST"
-            action="<%= baseUrl %>/auctions/<%= auction._id %>/join"
+            action="<%= baseUrl %>/auctions/<%= auction._id %>"
           >
-            <!-- <input type="hidden" name="_csrf" value="" /> -->
-            <select
-              id="brokerId"
-              class="form-select"
-              aria-label="select with button addon"
-              name="brokerId"
-              value=""
+            <span class="input-group-text">$</span>
+            <input
+              id="bid"
+              name="bid"
               required
+              type="text"
+              class="form-control"
+              aria-label="bid"
+              placeholder="0.00"
+            />
+            <button type="submit" class="input-group-text btn-primary">
+              Place bid
+            </button>
+          </form>
+        <% } else { %>
+          <h4 class="mt-4">Join or represent</h4>
+          <div class="col-sm-6 mt-2 w-100">
+          <% if (currentUser.role == "broker") { %>
+            <div class="mb-3">
+              <form
+                class="w-100"
+                method="POST"
+                action="<%= baseUrl %>/auctions/<%= auction._id %>/join"
+              >
+                <!-- <input type="hidden" name="_csrf" value="" /> -->
+                <select
+                  id="brokerId"
+                  class="form-select"
+                  aria-label="select with button addon"
+                  name="brokerId"
+                  value=""
+                  required
+                >
+                  <% for (const represent of broker.joinAs) { %>
+                    <option value="<%= represent.brokerId %>">
+                      <%= represent.username %>
+                    </option>
+                  <% } %>
+                </select>
+                <div class="input-group mt-2">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="location"
+                    name="location"
+                    placeholder="Location"
+                    required
+                  />
+                  <button type="submit" class="input-group-text btn-primary">
+                    Join Auction
+                  </button>
+                </div>
+              </form>
+              <div id="closingTimeHelpBlock" class="form-text px-1">
+                Join as a new user in the auction
+              </div>
+            </div>
+            <% if (broker.canRepresent.length > 0) { %>
+              <form
+                class="w-100 input-group mt-2"
+                method="POST"
+                action="<%= baseUrl %>/auctions/<%= auction._id %>/represent"
+              >
+                <select
+                  id="brokerId"
+                  class="form-select"
+                  aria-label="select with button addon"
+                  name="brokerId"
+                  value=""
+                  required
+                >
+                  <% for (const represent of broker.canRepresent) { %>
+                  <option value="<%= represent.agreementId %>">
+                    <%= represent.username %>
+                  </option>
+                  <% } %>
+                </select>
+                <button type="submit" class="input-group-text btn-primary">
+                  Represent
+                </button>
+              </form>
+              <div id="closingTimeHelpBlock" class="form-text px-1">
+                Represent an existing user in the auction
+              </div>
+            <% } %>
+          <% } else { %>
+            <form
+              class="w-100 input-group"
+              method="POST"
+              action="<%= baseUrl %>/auctions/<%= auction._id %>/join"
             >
-              <% for (const represent of broker.joinAs) { %>
-              <option value="<%= represent.brokerId %>">
-                <%= represent.username %>
-              </option>
-              <% } %>
-            </select>
-            <div class="input-group mt-2">
+              <!-- <input type="hidden" name="_csrf" value="" /> -->
+              <input type="hidden" id="brokerId" name="brokerId" value="" />
               <input
                 type="text"
                 class="form-control"
@@ -191,88 +242,33 @@
               <button type="submit" class="input-group-text btn-primary">
                 Join Auction
               </button>
-            </div>
-          </form>
-          <div id="closingTimeHelpBlock" class="form-text px-1">
-            Join as a new user in the auction
+            </form>
+          <% } %>
           </div>
-        </div>
-        <% if (broker.canRepresent.length > 0) { %>
-        <form
-          class="w-100 input-group mt-2"
-          method="POST"
-          action="<%= baseUrl %>/auctions/<%= auction._id %>/represent"
-        >
-          <select
-            id="brokerId"
-            class="form-select"
-            aria-label="select with button addon"
-            name="brokerId"
-            value=""
-            required
-          >
-            <% for (const represent of broker.canRepresent) { %>
-            <option value="<%= represent.agreementId %>">
-              <%= represent.username %>
-            </option>
-            <% } %>
-          </select>
-          <button type="submit" class="input-group-text btn-primary">
-            Represent
-          </button>
-        </form>
-        <div id="closingTimeHelpBlock" class="form-text px-1">
-          Represent an existing user in the auction
-        </div>
-        <% } %> <% } else { %>
-        <form
-          class="w-100 input-group"
-          method="POST"
-          action="<%= baseUrl %>/auctions/<%= auction._id %>/join"
-        >
-          <!-- <input type="hidden" name="_csrf" value="" /> -->
-          <input type="hidden" id="brokerId" name="brokerId" value="" />
-          <input
-            type="text"
-            class="form-control"
-            id="location"
-            name="location"
-            placeholder="Location"
-            required
-          />
-          <button type="submit" class="input-group-text btn-primary">
-            Join Auction
-          </button>
-        </form>
         <% } %>
-      </div>
-      <!-- prettier-ignore -->
       <% } %>
-      <% }
 
       <h4 class="mt-4">Bids by all members</h4>
 
       <div class="card">
         <% if (auction.bids.length == 0) { %>
-        <p class="pt-3 px-3">No bids have been placed yet</p>
+          <p class="pt-3 px-3">No bids have been placed yet</p>
         <% } else { %>
-
-        <table class="table">
-          <thead>
-            <td>User</td>
-            <td>Date</td>
-            <td>Distance</td>
-            <td>Bid</td>
-          </thead>
-          <% for (let bid of auction.bids) { %>
-          <tbody>
-            <td><%= bid.sender %></td>
-            <td><%= displayDate(bid.created_at) %></td>
-            <td><%= Math.round(parseInt(bid.distance)) %> km</td>
-            <td>$<%= bid.text %></td>
-          </tbody>
-
-          <% } %>
+          <table class="table">
+            <thead>
+              <td>User</td>
+              <td>Date</td>
+              <td>Distance</td>
+              <td>Bid</td>
+            </thead>
+            <% for (let bid of auction.bids) { %>
+              <tbody>
+                <td><%= bid.sender %></td>
+                <td><%= displayDate(bid.created_at) %></td>
+                <td><%= Math.round(parseInt(bid.distance)) %> km</td>
+                <td>$<%= bid.text %></td>
+              </tbody>
+            <% } %>
         </table>
         <% } %>
       </div>
@@ -280,7 +276,7 @@
   </div>
   
   <% if (auction.contract) { %>
-    <div><%= auction.contract %></div>
+    <div class="mt-5 mb-5 p-3"><%- auction.contract %></div>
   <% } %>
 </div>
 

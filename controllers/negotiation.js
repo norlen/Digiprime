@@ -122,12 +122,6 @@ module.exports.show = async (req, res) => {
     }
   }
 
-  // Represenation options for a broker
-
-  console.log(negotiation);
-  console.log(offer);
-  console.log(currentUsername);
-
   res.render("negotiations/show", {
     negotiation,
     offer,
@@ -194,10 +188,8 @@ module.exports.list = async (req, res) => {
  * @param {*} res
  */
 module.exports.create = async (req, res) => {
-  console.log("HELLO");
   const { username } = req.user;
   const { id: offerId } = req.params;
-  console.log(req.body);
   const { title, price, quantity, contract, brokerId, location } = req.body;
 
   const offer = await Offer.findById(offerId).populate("author");
@@ -292,8 +284,7 @@ module.exports.represent = async (req, res) => {
     ne.representInAuction(username, negotiationId, brokerId);
     req.flash("success", `Successfully represented user in negotiation`);
   } catch (err) {
-    console.log(err.data);
-    req.flash("error", `Successfully represented user in negotiation`);
+    req.flash("error", `Could not represent user in negotiation`);
   }
   res.redirect(`${req.app.locals.baseUrl}/negotiations/${negotiationId}`);
 };

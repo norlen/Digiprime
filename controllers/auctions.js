@@ -1,4 +1,5 @@
 const Offer = require("../models/offer");
+const Notification = require("../models/notification");
 const formatDistanceToNow = require("date-fns/formatDistanceToNow");
 const ne = require("../lib/ne");
 const {
@@ -22,7 +23,6 @@ module.exports.show = async (req, res) => {
 
   // Fetch auction information.
   const auction = await ne.getAuction(username, auctionId, role === "broker");
-  console.log("auction", auction);
 
   let adminMember;
   const memberUsernames = [];
@@ -87,7 +87,6 @@ module.exports.show = async (req, res) => {
       offer: offerById[member.offer_id],
       bid: bidByUsername[member.username],
     }));
-    //console.log(membersWithOffers);
 
     res.render("auctions/show-multiple-offers", {
       auction,
@@ -125,8 +124,6 @@ module.exports.show = async (req, res) => {
         }
       }
     }
-    console.log("agreements", agreements);
-    console.log("broker", broker);
 
     res.render("auctions/show-public", {
       auction,
@@ -370,6 +367,19 @@ module.exports.createAuction = async (req, res) => {
     };
     const auctionId = await ne.createAuction(username, data);
 
+    // Create notifications for members.
+    const notifications = [];
+    for (const offer of offers) {
+      notifications.push({
+        user: offer.author,
+        category: "Auction",
+        message: `You have been invited to auction ${auctionTitle}`,
+        links_to: `auctions/${auctionId}`,
+        seen: false,
+      });
+    }
+    await Notification.insertMany(notifications);
+
     req.flash("success", "Successfully created auction");
     res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
   } catch (error) {
@@ -482,8 +492,6 @@ module.exports.join = async (req, res) => {
   }
   const locationCoordinates = await getCoordinatesFromLocation(location);
 
-  console.log("join auction", { username, location, brokerId });
-
   // Join the auction.
   await ne.joinAuction(username, auctionId, locationCoordinates, brokerId);
 
@@ -500,8 +508,7 @@ module.exports.represent = async (req, res) => {
     ne.representInAuction(username, auctionId, brokerId);
     req.flash("success", `Successfully represented user in auction`);
   } catch (err) {
-    console.log(err.data);
-    req.flash("error", `Successfully represented user in auction`);
+    req.flash("error", `Could not represent user in auction`);
   }
   res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
 };
@@ -531,7 +538,7 @@ module.exports.showInvite = async (req, res) => {
 
   // Filter out all offers by people already in the auction.
   offers = offers.filter(
-    (offer) => usernameExistsInAuction[offer.author.username]
+    (offer) => !usernameExistsInAuction[offer.author.username]
   );
 
   res.render("auctions/invite", { auction, offers });

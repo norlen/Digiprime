@@ -25,6 +25,9 @@ const auctionRoutes = require("./routes/auctions");
 const negotiationRoutes = require("./routes/negotiation");
 const messageRoutes = require("./routes/messages");
 const brokerRoutes = require("./routes/broker");
+const notificationRoutes = require("./routes/notification");
+const { notificationMiddleware } = require("./controllers/notification");
+const formatDistanceToNow = require("date-fns/formatDistanceToNow");
 
 // const { csrfProtection } = require("./utils/csrf");
 
@@ -141,6 +144,7 @@ app.use(
   })
 );
 
+app.locals.formatDistanceToNow = formatDistanceToNow;
 // Set the base URL so application can redirect and show links properly.
 app.locals.baseUrl = BASE_URL;
 app.use(BASE_URL, express.static(path.join(__dirname, "public")));
@@ -179,6 +183,7 @@ app.use((req, res, next) => {
   res.locals.currentUser = req.user;
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
+  res.locals.originalUrl = req.originalUrl;
   next();
 });
 
@@ -204,6 +209,7 @@ const setUnreadCount = (req, res, next) => {
     .catch(next);
 };
 app.use(setUnreadCount);
+app.use(notificationMiddleware);
 
 // app.use(csrfProtection);
 // app.use((req, res, next) => {
@@ -219,6 +225,7 @@ app.use(`${BASE_URL}/auctions`, auctionRoutes);
 app.use(`${BASE_URL}/negotiations`, negotiationRoutes);
 app.use(`${BASE_URL}/messages`, messageRoutes);
 app.use(`${BASE_URL}/broker`, brokerRoutes);
+app.use(`${BASE_URL}/notifications`, notificationRoutes);
 
 app.get(`${BASE_URL}/`, (req, res) => {
   res.render("home");
