@@ -6,7 +6,9 @@ const getRecent = async (userId) => {
   const notifications = await Notification.find({
     user: userId,
     seen: false,
+    createdAt: { $lte: Date.now() },
   })
+    .sort("createdAt")
     .limit(8)
     .exec();
 
@@ -17,6 +19,7 @@ const getUnhandled = async (userId) => {
   const numUnhandled = await Notification.countDocuments({
     user: userId,
     seen: false,
+    createdAt: { $lte: Date.now() },
   });
   return numUnhandled;
 };
@@ -54,7 +57,11 @@ module.exports.list = async (req, res) => {
   const [skip, limit] = getPaginationParams(req.query.page, 20);
 
   const [notifications, total] = await Promise.all([
-    Notification.find({ user: _id }).skip(skip).limit(limit).exec(),
+    Notification.find({ user: _id, createdAt: { $lte: Date.now() } })
+      .sort("createdAt")
+      .skip(skip)
+      .limit(limit)
+      .exec(),
     Notification.countDocuments({ user: _id }),
   ]);
 

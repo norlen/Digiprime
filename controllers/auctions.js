@@ -522,10 +522,10 @@ module.exports.represent = async (req, res) => {
  * @param {*} res
  */
 module.exports.showInvite = async (req, res) => {
-  const { username } = req.user;
+  const { username, role } = req.user;
   const { id: auctionId } = req.params;
 
-  const auction = await ne.getAuction(username, auctionId);
+  const auction = await ne.getAuction(username, auctionId, role === "broker");
   const usernameExistsInAuction = {};
   for (const member of auction.members) {
     usernameExistsInAuction[member.username] = true;
@@ -551,12 +551,11 @@ module.exports.showInvite = async (req, res) => {
  * @param {*} res
  */
 module.exports.performInvite = async (req, res) => {
-  const { username } = req.user;
+  const { username, role } = req.user;
   const { id: auctionId } = req.params;
   const { offerId } = req.body;
 
   const offer = await Offer.findById(offerId).populate("author");
-
   await ne.auctionInvite(
     auctionId,
     username,
@@ -564,6 +563,17 @@ module.exports.performInvite = async (req, res) => {
     offer.geometry.coordinates,
     offer._id
   );
+
+  const auction = ne.getAuction(username, auctionId, role === "broker");
+  // Create notification for new member.
+  const notification = new Notification({
+    user: offer.author,
+    category: "Auction",
+    message: `You have been invited to auction ${auction.room_name}`,
+    links_to: `auctions/${auctionId}`,
+    seen: false,
+  });
+  await notification.save();
 
   res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
 };

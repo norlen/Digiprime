@@ -6,79 +6,27 @@
     <p
       class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none"
     >
-      <span class="fs-4">Digibox</span>
+      <span class="fs-4">Messages</span>
     </p>
     <hr />
     <ul class="nav nav-pills flex-column mb-auto">
-      <li class="nav-item">
-        <% if (!filter) { %>
-        <a
-          href="<%= baseUrl %>/messages"
-          class="nav-link active"
-          aria-current="page"
-        >
-          All messages
-        </a>
-        <% } else { %>
-        <a href="<%= baseUrl %>/messages" class="nav-link link-dark"
-          >All messages</a
-        >
-        <% } %>
-      </li>
-      <li>
-        <% if (filter === "unread") { %>
-        <a
-          href="<%= baseUrl %>/messages?filter=unread"
-          class="nav-link active"
-          aria-current="page"
-        >
-          Unread messages
-        </a>
-        <% } else { %>
-        <a
-          href="<%= baseUrl %>/messages?filter=unread"
-          class="nav-link link-dark"
-        >
-          Unread messages
-        </a>
-        <% } %>
-      </li>
-      <li>
-        <% if (filter === "read") { %>
-        <a
-          href="<%= baseUrl %>/messages?filter=read"
-          class="nav-link active"
-          aria-current="page"
-        >
-          Read messages
-        </a>
-        <% } else { %>
-        <a
-          href="<%= baseUrl %>/messages?filter=read"
-          class="nav-link link-dark"
-        >
-          Read messages
-        </a>
-        <% } %>
-      </li>
-      <li>
-        <% if (filter === "marked") { %>
-        <a
-          href="<%= baseUrl %>/messages?filter=marked"
-          class="nav-link active"
-          aria-current="page"
-        >
-          Marked messages
-        </a>
-        <% } else { %>
-        <a
-          href="<%= baseUrl %>/messages?filter=marked"
-          class="nav-link link-dark"
-        >
-          Marked messages
-        </a>
-        <% } %>
-      </li>
+      <% for (const f of filters) { %>
+        <li class="nav-item">
+          <% if (f.filter == filter) { %>
+            <a
+              href="<%= baseUrl %>/messages<%= f.query %>"
+              class="nav-link active"
+              aria-current="page"
+            >
+              <%= f.name %>
+            </a>
+          <% } else { %>
+            <a href="<%= baseUrl %>/messages<%= f.query %>" class="nav-link link-dark">
+              <%= f.name %>
+            </a>
+          <% } %>
+        </li>
+      <% } %>
     </ul>
   </div>
 
@@ -92,31 +40,31 @@
       <span class="fs-5 fw-semibold">Messages</span>
     </p>
     <div class="list-group list-group-flush border-bottom scrollarea">
-      <!-- prettier-ignore -->
       <%
-        for (let message of page.data) {
-          const [d,t] = displayDate(message.messages[message.messages.length-1].createdAt).split(" ")
-
-          let marked = false;
-          if (currentUser.username === message.from.username) {
-            marked = message.from_marked;
-          } else {
-            marked = message.to_marked;
+        for (const message of page.data) {
+          const [d,t] = displayDate(message.createdAt).split(" ")
+          let body = message.body.trim();
+          if (body.length > 80) {
+            body = body.substring(0, 77).trim() + "...";
           }
-          const participant = currentUser.username === message.from.username ? message.to.username : message.from.username;
+          let seen_class = "";
+          if ((message.to._id == currentUser._id && message.seen) || message.from._id == currentUser._id) {
+            seen_class = "bg-light";
+          }
         %>
       <a
         href="<%= baseUrl %>/messages/<%= message._id%>"
-        class="list-group-item list-group-item-action py-3 lh-tight"
+        class="list-group-item list-group-item-action py-3 lh-tight <%= seen_class %>"
       >
         <div class="d-flex w-100 align-items-center justify-content-between">
           <div class="d-flex flex-row align-items-center">
-            <strong class=""><%= message.title %></strong>
+            <strong class=""><%= message.title %></strong> <small class="text-muted mx-2"><%= message.from.username %></small>
+            <% if (message.to._id == currentUser._id) { %>
             <form
               method="POST"
               action="<%= baseUrl %>/messages/<%= message._id %>/mark"
             >
-              <% if (marked) { %>
+              <% if (message.marked) { %>
               <button
                 type="submit"
                 class="btn btn-outline-danger"
@@ -172,12 +120,12 @@
               </button>
               <% } %>
             </form>
+            <% } %>
           </div>
           <small><%= d %> <%= t %></small>
         </div>
-        <div class="col-10 mb-1 small"><%= participant %></div>
+        <div class="col-10 mb-1 small"><%= body %></div>
       </a>
-
       <% } %>
     </div>
   </div>

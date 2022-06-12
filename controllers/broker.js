@@ -1,4 +1,6 @@
 const User = require("../models/user");
+const Notification = require("../models/notification");
+
 const ExpressError = require("../utils/ExpressError");
 const ne = require("../lib/ne");
 const { getPaginationParams, paginate2 } = require("../lib/paginate");
@@ -106,6 +108,15 @@ module.exports.create = async (req, res) => {
     endDate,
     contract
   );
+
+  const notification = new Notification({
+    user: otherUser._id,
+    category: "Broker",
+    message: `New broker agreement recevied from ${currentUsername}`,
+    links_to: `broker`,
+    seen: false,
+  });
+  await notification.save();
 
   req.flash("success", "Successfully requested broker agreement");
   res.redirect(`${req.app.locals.baseUrl}/profile/${otherUsername}`);

@@ -1,8 +1,10 @@
 const Message = require("../models/messages");
 const User = require("../models/user");
+const Notification = require("../models/notification");
+
 const ExpressError = require("../utils/ExpressError");
 const { displayDate } = require("../lib/auction");
-const { getPage, createPagination } = require("../lib/paginate");
+const { paginate2, getPaginationParams } = require("../lib/paginate");
 
 /**
  * Create and send a message to a recipient.
@@ -20,7 +22,7 @@ const { getPage, createPagination } = require("../lib/paginate");
  * @param {*} res
  */
 module.exports.create = async (req, res) => {
-  const { _id: from } = req.user;
+  const { _id: from, username: fromUsername } = req.user;
   const { username: toUsername, title, body } = req.body;
 
   const toUser = await User.findOne({ username: toUsername });
@@ -33,23 +35,71 @@ module.exports.create = async (req, res) => {
 
   const message = new Message({
     from,
-    from_read: false,
-    from_marked: false,
     to: toUser._id,
-    to_read: false,
-    to_marked: false,
+    replyingTo: undefined,
     title,
-    messages: [
-      {
-        body,
-      },
-    ],
+    body,
+    read: false,
+    marked: false,
   });
   await message.save();
+
+  const notification = new Notification({
+    user: toUser._id,
+    category: "Message",
+    message: `New messsage from ${fromUsername}`,
+    links_to: `messages/${message._id}`,
+    seen: false,
+  });
+  await notification.save();
 
   req.flash("success", `Successfully sen message to ${toUsername}`);
   res.redirect(`${req.app.locals.baseUrl}/messages/${message.id}`);
 };
+
+const getSearchFilter = (id, filter) => {
+  if (filter == "unread") {
+    return { to: id, read: false };
+  }
+  if (filter == "read") {
+    return { to: id, read: true };
+  }
+  if (filter == "marked") {
+    return { to: id, marked: true };
+  }
+  if (filter == "sent") {
+    return { from: id };
+  }
+  return { to: id };
+};
+
+const filters = [
+  {
+    query: "",
+    filter: undefined,
+    name: "All messages",
+  },
+  {
+    query: "?filter=unread",
+    filter: "unread",
+    name: "Unread messages",
+  },
+  {
+    query: "?filter=read",
+    filter: "read",
+    name: "Read messages",
+  },
+  {
+    query: "?filter=mark",
+    filter: "mark",
+    name: "Marked messages",
+  },
+  {
+    query: "?filter=sent",
+    filter: "sent",
+    name: "Sent messages",
+  },
+];
 
 /**
  * List all messages.
@@ -60,51 +110,24 @@ module.exports.create = async (req, res) => {
 module.exports.list = async (req, res) => {
   const { _id } = req.user;
   const { filter } = req.query;
-  const page = getPage(req.query.page);
-  const perPage = 10;
+  const [skip, limit] = getPaginationParams(req.query.page, 10);
 
-  let search = undefined;
-  if (filter === "unread") {
-    search = {
-      $or: [
-        { $and: [{ to: _id, to_read: false }] },
-        { $and: [{ from: _id, from_read: false }] },
-      ],
-    };
-  } else if (filter === "read") {
-    search = {
-      $or: [
-        { $and: [{ to: _id, to_read: true }] },
-        { $and: [{ from: _id, from_read: true }] },
-      ],
-    };
-  } else if (filter === "marked") {
-    search = {
-      $or: [
-        { $and: [{ to: _id, to_marked: true }] },
-        { $and: [{ from: _id, from_marked: true }] },
-      ],
-    };
-  } else {
-    search = {
-      $or: [{ to: _id }, { from: _id }],
-    };
-  }
-
-  const [messages, count] = await Promise.all([
-    Message.find(search)
+  let filterBy = getSearchFilter(_id, filter);
+  const [messages, total] = await Promise.all([
+    Message.find(filterBy)
       .populate("from")
       .populate("to")
-      .sort({ updatedAt: -1 })
-      .skip(perPage * (page - 1))
-      .limit(perPage),
-    Message.countDocuments(search),
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Message.countDocuments(filterBy),
   ]);
 
   res.render("messages/list", {
-    page: createPagination(messages, count, page, perPage),
+    page: paginate2(messages, total, skip, limit, req.query),
     displayDate,
     filter,
+    filters,
   });
 };
 
@@ -122,13 +145,18 @@ module.exports.show = async (req, res) => {
     .populate("to")
     .exec();
 
-  if (message.to.username === req.user.username) {
-    await Message.updateOne({ _id: id }, { to_read: true });
-  } else {
-    await Message.updateOne({ _id: id }, { from_read: true });
+  if (message.replyingTo) {
+    message.replyingTo = await Message.findById(message.replyingTo)
+      .populate("from")
+      .populate("to")
+      .exec();
   }
 
-  res.render("messages/show", { message });
+  if (message.read == false && message.to.username === req.user.username) {
+    await Message.updateOne({ _id: id }, { read: true });
+  }
+
+  res.render("messages/show", { message, displayDate });
 };
 
 /**
@@ -139,23 +167,36 @@ module.exports.show = async (req, res) => {
  */
 module.exports.reply = async (req, res) => {
   const { id } = req.params;
-  const { body } = req.body;
-  const { _id: userId } = req.user;
+  const { title, body } = req.body;
+  const { _id: userId, username } = req.user;
 
   const message = await Message.findById(id).exec();
-  if (!(message.to == userId || message.from == userId)) {
+  if (!message.to == userId) {
     throw new ExpressError("Cannot reply to other people's messages", 403);
   }
 
-  const update = { $push: { messages: { body } } };
-  if (message.to == userId) {
-    update.from_read = false;
-  } else {
-    update.to_read = false;
-  }
-  await Message.updateOne({ _id: id }, update);
+  const reply = new Message({
+    from: userId,
+    to: message.from,
+    replyingTo: message._id,
+    title: title,
+    body,
+    read: false,
+    marked: false,
+  });
+  await reply.save();
 
-  res.redirect(`${req.app.locals.baseUrl}/messages/${id}`);
+  const notification = new Notification({
+    user: message.from,
+    category: "Message",
+    message: `New messsage from ${username}`,
+    links_to: `messages/${reply._id}`,
+    seen: false,
+  });
+  await notification.save();
+
+  req.flash("Success", "Message sent!");
+  res.redirect(`${req.app.locals.baseUrl}/messages`);
 };
 
 /**
@@ -169,16 +210,12 @@ module.exports.mark = async (req, res) => {
   const { _id: userId } = req.user;
 
   const message = await Message.findById(id).exec();
-  if (!(message.to == userId || message.from == userId)) {
+  if (message.to != userId) {
     throw new ExpressError("Cannot modify other people's messages", 403);
   }
-
-  if (message.to == userId) {
-    message.to_marked = !message.to_marked;
-  } else {
-    message.from_marked = !message.from_marked;
-  }
+  message.marked = !message.marked;
   await message.save();
 
+  req.flash("Success", `Marked message ${message.title}`);
   res.redirect(`${req.app.locals.baseUrl}/messages`);
 };

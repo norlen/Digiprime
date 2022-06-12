@@ -159,6 +159,7 @@ module.exports.newMessageSchema = Joi.object({
 });
 
 module.exports.messageReplySchema = Joi.object({
+  title: Joi.string().required().escapeHTML(),
   body: Joi.string().required().escapeHTML(),
 });
 

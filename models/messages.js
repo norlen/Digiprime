@@ -1,49 +1,52 @@
-/**
- * Model for the messages.
- *
- * They are currently designed to act more as a chat conversation, where the
- * participants can select a topic and discuss briefly about it. We
- * intentioally chose not to support long running conversations, and instead
- * focused on having a coherent threaded conversation.
- */
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-/**
- * Schema for a single message.
- */
-const MessagesSchema = new Schema(
+const MsgSchema = new Schema(
   {
-    body: String,
-  },
-  {
-    timestamps: true,
-  }
-);
-
-/**
- * Schema for a conversation, contains multiple messages.
- */
-const ConversationSchema = new Schema(
-  {
+    // User that sent the message.
     from: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
-    from_read: Boolean,
-    from_marked: Boolean,
+
+    // Recipient of the message.
     to: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
-    to_read: Boolean,
-    to_marked: Boolean,
-    title: String,
-    messages: [MessagesSchema],
+
+    replyingTo: {
+      type: Schema.Types.ObjectId,
+      ref: "Messages",
+    },
+
+    // Message title
+    title: {
+      type: String,
+      required: true,
+    },
+
+    // Message body.
+    body: {
+      type: String,
+      required: true,
+    },
+
+    // If the recipient has read the message.
+    read: {
+      type: Boolean,
+      required: true,
+    },
+
+    // If the recipient marked the message.
+    marked: {
+      type: Boolean,
+      required: true,
+    },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-module.exports = mongoose.model("Messages", ConversationSchema);
+module.exports = mongoose.model("Messages", MsgSchema);
