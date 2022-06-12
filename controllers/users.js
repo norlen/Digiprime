@@ -3,7 +3,7 @@ const ne = require("../lib/ne");
 const auth = require("../lib/auth");
 
 const crypto = require("crypto");
-const DEV_MODE = true;
+const DEV_MODE = false;
 
 module.exports.login = (_req, res) => {
   res.render("users/login");
