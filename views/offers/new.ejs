@@ -47,6 +47,26 @@
                     </div>
                 </div> -->
 
+      <% if (currentUser.role == "broker") { %>
+      <div class="mb-3">
+        <label class="form-label" for="costumer">Create offer as</label>
+        <select
+          id="brokerId"
+          class="form-select"
+          aria-label="select with button addon"
+          name="actAs"
+          value=""
+          required
+        >
+          <% for (const agreement of agreements) { %>
+          <option value="<%= agreement.represented %>">
+            <%= agreement.represented %>
+          </option>
+          <% } %>
+        </select>
+      </div>
+      <% } %>
+
       <div class="mb-3">
         <label class="form-label" for="costumer">Offer interest</label>
         <select

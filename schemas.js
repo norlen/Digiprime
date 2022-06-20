@@ -41,6 +41,7 @@ module.exports.offerSchema = Joi.object({
     location: Joi.string().required().escapeHTML(),
   }).required(),
   deleteImages: Joi.array(),
+  actAs: Joi.string().escapeHTML(),
 });
 
 module.exports.reviewSchema = Joi.object({
@@ -104,10 +105,7 @@ module.exports.auctionSchema = Joi.object({
   contract: Joi.string()
     .pattern(/^[0-9a-fA-F]{24}$/)
     .required(),
-  brokerId: Joi.string()
-    .pattern(/^[0-9a-fA-F]{24}$/)
-    .valid("")
-    .required(),
+  brokerId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/),
 });
 
 // Schema to validate inputs when placing a bid at an auction.

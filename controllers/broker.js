@@ -167,6 +167,12 @@ module.exports.list = async (req, res) => {
   const [skip, limit] = getPaginationParams(req.query.page, 20);
 
   const d = await ne.brokerGetAgreements(username, skip, limit);
+  d.agreements = d.agreements.map((agreement) => {
+    if (new Date(agreement.end_date) < new Date()) {
+      return { ...agreement, status: "expired" };
+    }
+    return agreement;
+  });
 
   const page = paginate2(d.agreements, d.total, skip, limit, req.query.page);
   res.render("broker/list", {

@@ -54,9 +54,13 @@
         <% } %>
       </ul>
       <% if (isCreator && !auction.closed) { %>
-        <div class="mt-2">
-          <a class="btn btn-primary" href="<%= baseUrl %>/auctions/<%= auction._id %>/invite">Add members</a>
-        </div>
+      <div class="mt-2">
+        <a
+          class="btn btn-primary"
+          href="<%= baseUrl %>/auctions/<%= auction._id %>/invite"
+          >Add members</a
+        >
+      </div>
       <% } %>
       <!-- prettier-ignore -->
       <% if (!isCreator && !auction.closed) {
@@ -174,7 +178,7 @@
   <div class="row row-cols-md-5 g-1 mb-3">
     <!-- prettier-ignore -->
     <%
-      for (let member of members) {
+      for (const member of members) {
         if (member.is_room_admin) continue;
 
         const pillStyle = member.offer.costumer === "Supply" ? "bg-primary" : "bg-secondary";
@@ -188,12 +192,10 @@
               <%= member.offer.costumer %>
             </span>
             <% if (auction.highest_bidder == member.username) { %>
-              <span class="badge bg-danger" id="itemCostumer">
-                Best bid
-              </span>
+            <span class="badge bg-danger" id="itemCostumer"> Best bid </span>
             <% } %>
           </div>
-          
+
           <a href="<%= baseUrl %>/offers/<%= member.offer._id %>">
             <% if (member.offer.images.length) {%>
             <img
@@ -233,14 +235,17 @@
             <small class="text-muted"><%= member.offer.location %></small>
           </li>
           <% if (member.bid !== undefined) { %>
-          <li class="list-group-item d-flex justify-content-between">
+          <li class="list-group-item d-flex flex-column">
             <small>Bid: <%= member.bid.text %></small>
             <small class="text-muted">
               <%= formatDistanceToNow(new Date(member.bid.created_at)) %> ago
             </small>
           </li>
           <li class="list-group-item d-flex justify-content-between">
-            <small>Distance: <%= Math.round(parseInt(member.bid.distance)) %> km</small>
+            <small
+              >Distance: <%= Math.round(parseInt(member.bid.distance)) %>
+              km</small
+            >
           </li>
           <% } else { %>
           <li class="list-group-item"><small>No bid placed</small></li>

@@ -50,10 +50,13 @@ module.exports.show = async (req, res) => {
   };
   if (username != otherUsername && role != user.role) {
     broker.canHaveAgreement = true;
-    const agreements = await ne.brokerGetAgreementsBetween(
+    let agreements = await ne.brokerGetAgreementsBetween(
       username,
       otherUsername
     );
+    agreements = agreements.filter((agreement) => {
+      return new Date(agreement.end_date) >= new Date();
+    });
     broker.agreementCount = agreements.length;
   }
 

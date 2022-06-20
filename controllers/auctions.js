@@ -23,6 +23,7 @@ module.exports.show = async (req, res) => {
 
   // Fetch auction information.
   const auction = await ne.getAuction(username, auctionId, role === "broker");
+  console.log(auction);
 
   let adminMember;
   const memberUsernames = [];
@@ -327,7 +328,8 @@ module.exports.renderCreateAuction = async (req, res) => {
  */
 module.exports.createAuction = async (req, res) => {
   const { username, role } = req.user;
-  if (role === "broker" && req.body.offerId.length == 0) {
+
+  if (role === "broker" && req.body.offerId && req.body.offerId.length == 0) {
     throw new ExpressError("As a broker you must represent someone", 400);
   }
 
@@ -451,10 +453,15 @@ module.exports.placeBid = async (req, res) => {
   const { username } = req.user;
 
   try {
-    await ne.placeBid(username, auctionId, bid);
-
-    req.flash("success", `Successfully placed bid: ${bid}`);
-    res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
+    if (bid <= 0) {
+      req.flash("error", "Invalid bid.");
+      res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
+    } else {
+      console.log("place bid", username, bid);
+      await ne.placeBid(username, auctionId, bid);
+      req.flash("success", `Successfully placed bid: ${bid}`);
+      res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
+    }
   } catch (error) {
     if (error.isAxiosError) {
       req.flash("error", error.response.data.message);

@@ -10,7 +10,7 @@
         <h5 class="card-title"><%= agreement.title %></h5>
         <% if (agreement.status == "accepted") { %>
           <span class="badge bg-success p-2"><%= agreement.status %></span>
-        <% } else if (agreement.status == "rejected") { %>
+        <% } else if (agreement.status == "rejected" || agreement.status == "expired") { %>
           <span class="badge bg-danger p-2"><%= agreement.status %></span>
         <% } else { %>
           <span class="badge bg-primary p-2"><%= agreement.status %></span>

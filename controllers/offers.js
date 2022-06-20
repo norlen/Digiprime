@@ -1,9 +1,12 @@
 const Offer = require("../models/offer");
+const User = require("../models/user");
+
 const mapboxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
 const mapboxToken = process.env.MAPBOX_TOKEN;
 const geocoder = mapboxGeocoding({ accessToken: mapboxToken });
 const { cloudinary } = require("../cloudinary");
 const formatDistanceToNow = require("date-fns/formatDistanceToNow");
+
 const { getPage, createPagination } = require("../lib/paginate");
 const {
   interests: costumers,
@@ -11,6 +14,8 @@ const {
   referenceTypes,
 } = require("../utils/constants");
 const { getBrokerAgreement } = require("../lib/broker");
+const ne = require("../lib/ne");
+const ExpressError = require("../utils/ExpressError");
 
 const removeFalsyValues = (object) => {
   Object.keys(object).forEach((key) => {
@@ -71,29 +76,62 @@ module.exports.directory = async (req, res) => {
   });
 };
 
-module.exports.newForm = (req, res) => {
+module.exports.newForm = async (req, res) => {
+  const { username, role } = req.user;
+
+  let agreements = [];
+  if (role === "broker") {
+    agreements = await ne.getRepresenting(username);
+  }
+
   res.render("offers/new", {
     costumers,
     referenceSectors,
     referenceTypes,
+    agreements,
   });
 };
 
-module.exports.create = async (req, res, next) => {
+module.exports.create = async (req, res) => {
+  const { username, role } = req.user;
+  const { actAs, offer } = req.body;
+
   const geoData = await geocoder
     .forwardGeocode({
       query: req.body.offer.location,
       limit: 1,
     })
     .send();
-  const offer = new Offer(req.body.offer);
-  offer.geometry = geoData.body.features[0].geometry;
-  offer.images = req.files.map((f) => ({ url: f.path, filename: f.filename }));
-  offer.author = req.user._id;
-  offer.deleted = false;
-  await offer.save();
+
+  let author = req.user._id;
+  if (role == "broker") {
+    const agreements = await ne.getRepresenting(username);
+    let found = false;
+    for (const agreement of agreements) {
+      if (agreement.represented == actAs) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      throw ExpressError("Invalid agreement with user", 400);
+    }
+    const user = await User.findOne({ username: actAs });
+    author = user._id;
+  }
+
+  const newOffer = new Offer(offer);
+  newOffer.geometry = geoData.body.features[0].geometry;
+  newOffer.images = req.files.map((f) => ({
+    url: f.path,
+    filename: f.filename,
+  }));
+  newOffer.author = author;
+  newOffer.deleted = false;
+  await newOffer.save();
+
   req.flash("success", "Successfully made a new offer!");
-  res.redirect(`${req.app.locals.baseUrl}/offers/${offer._id}`);
+  res.redirect(`${req.app.locals.baseUrl}/offers/${newOffer._id}`);
 };
 
 module.exports.show = async (req, res) => {
