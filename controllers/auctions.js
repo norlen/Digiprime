@@ -23,7 +23,6 @@ module.exports.show = async (req, res) => {
 
   // Fetch auction information.
   const auction = await ne.getAuction(username, auctionId, role === "broker");
-  console.log(auction);
 
   let adminMember;
   const memberUsernames = [];
@@ -457,7 +456,6 @@ module.exports.placeBid = async (req, res) => {
       req.flash("error", "Invalid bid.");
       res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);
     } else {
-      console.log("place bid", username, bid);
       await ne.placeBid(username, auctionId, bid);
       req.flash("success", `Successfully placed bid: ${bid}`);
       res.redirect(`${req.app.locals.baseUrl}/auctions/${auctionId}`);

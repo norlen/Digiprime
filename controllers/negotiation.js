@@ -121,13 +121,6 @@ module.exports.show = async (req, res) => {
       negotiation.participant = member;
     }
   }
-  console.log({
-    negotiation,
-    offer,
-    currentUsername,
-    canRepresent,
-    isRepresenting,
-  });
 
   res.render("negotiations/show", {
     negotiation,

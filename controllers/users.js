@@ -2,9 +2,6 @@ const User = require("../models/user");
 const ne = require("../lib/ne");
 const auth = require("../lib/auth");
 
-const crypto = require("crypto");
-const DEV_MODE = true;
-
 module.exports.login = (_req, res) => {
   res.render("users/login");
 };
@@ -25,25 +22,18 @@ module.exports.logout = (req, res) => {
 module.exports.authenticate = async (req, username, password) => {
   let email, userId;
 
-  let user;
-  if (DEV_MODE) {
-    user = await User.findOne({ username }).exec();
-    email = `${username}@example.invalid`;
-    userId = crypto.randomUUID();
-  } else {
-    try {
-      const token = await auth.login(username, password);
-      email = token.user.email;
-      userId = token.user.uuid;
-    } catch (err) {
-      if (err.isAxiosError && err.response.data.error == "unauthorized") {
-        req.flash("error", "Wrong username or password");
-        return null;
-      }
-      throw err;
+  try {
+    const token = await auth.login(username, password);
+    email = token.user.email;
+    userId = token.user.uuid;
+  } catch (err) {
+    if (err.isAxiosError && err.response.data.error == "unauthorized") {
+      req.flash("error", "Wrong username or password");
+      return null;
     }
-    user = await User.findOne({ userId }).exec();
+    throw err;
   }
+  const user = await User.findOne({ userId }).exec();
 
   if (!user) {
     // No user was found. Create a new user.

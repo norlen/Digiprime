@@ -20,8 +20,10 @@
         <a class="nav-link" href="<%= baseUrl %>/offers/directory"
           >Offers Directory</a
         >
+        <% if (currentUser) { %>
         <a class="nav-link" href="<%= baseUrl %>/auctions">Auctions</a>
         <a class="nav-link" href="<%= baseUrl %>/negotiations">Negotiations</a>
+        <% } %>
       </div>
 
       <% if (currentUser) { %>

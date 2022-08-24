@@ -69,7 +69,6 @@ module.exports.sanitizeDirectoryQuery = (req, res, next) => {
  */
 // prettier-ignore
 const validateBody = (schema, statusCode = 400) => (req, res, next) => {
- console.log(req.body);
   const { error } = schema.validate(req.body);
   if (error) {
     const msg = error.details.map((el) => el.message).join(",");
