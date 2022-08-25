@@ -1,6 +1,7 @@
 const User = require("../models/user");
 const ne = require("../lib/ne");
 const auth = require("../lib/auth");
+const ExpressError = require("../utils/ExpressError");
 
 module.exports.login = (_req, res) => {
   res.render("users/login");
@@ -8,7 +9,8 @@ module.exports.login = (_req, res) => {
 
 module.exports.onLogin = (req, res) => {
   req.flash("success", "Welcome back!");
-  const redirectUrl = req.session.returnTo || "/offers";
+  const redirectUrl =
+    req.session.returnTo || `${req.app.locals.baseUrl}/offers`;
   delete req.session.returnTo;
   res.redirect(redirectUrl);
 };
@@ -33,8 +35,8 @@ module.exports.authenticate = async (req, username, password) => {
     }
     throw err;
   }
-  const user = await User.findOne({ userId }).exec();
 
+  let user = await User.findOne({ userId }).exec();
   if (!user) {
     // No user was found. Create a new user.
     user = new User({ username, email, userId, role: "user" });
@@ -44,10 +46,10 @@ module.exports.authenticate = async (req, username, password) => {
     try {
       await ne.signup(username, email, password);
     } catch (err) {
-      if (err.isAxiosError && err.response.status === 400) {
+      if (err.isAxiosError && err.response && err.response.status === 400) {
         // User already exists. Allow this error to occur.
       } else {
-        throw err;
+        throw new ExpressError("Failed to create user (NE)", 500);
       }
     }
 
