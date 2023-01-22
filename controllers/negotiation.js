@@ -190,7 +190,8 @@ module.exports.list = async (req, res) => {
 module.exports.create = async (req, res) => {
   const { username } = req.user;
   const { id: offerId } = req.params;
-  const { title, price, quantity, contract, brokerId, location } = req.body;
+  const { title, price, quantity, unit, contract, brokerId, location } =
+    req.body;
 
   const offer = await Offer.findById(offerId).populate("author");
   if (!offer) {
@@ -215,6 +216,7 @@ module.exports.create = async (req, res) => {
     locationCoordinates,
     parseInt(price),
     parseInt(quantity),
+    unit,
     member,
     contract,
     offer.referenceSector,

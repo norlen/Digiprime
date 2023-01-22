@@ -148,6 +148,7 @@ module.exports.validateCreateNegotiation = Joi.object({
   title: Joi.string().required().escapeHTML(),
   contract: Joi.string().required().escapeHTML(),
   quantity: Joi.number().required(),
+  unit: Joi.string().required().escapeHTML(),
   price: Joi.number().required(),
   location: Joi.string().required().escapeHTML(),
   brokerId: Joi.string().valid("").required().escapeHTML(),

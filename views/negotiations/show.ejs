@@ -105,7 +105,11 @@
               <span class="text-muted">Reference Type</span>
             </li>
             <li class="list-group-item d-flex justify-content-between">
-              <h6><strong><%= negotiation.quantity %></strong></h6>
+              <h6>
+                <strong
+                  ><%= negotiation.quantity %> <%= negotiation.unit %></strong
+                >
+              </h6>
               <span class="text-muted">Quantity</span>
             </li>
           </ul>

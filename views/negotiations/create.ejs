@@ -57,19 +57,30 @@
           <label for="title">Title</label>
         </div>
 
-        <div class="form-floating mb-3">
-          <input
-            type="number"
-            class="form-control"
-            id="quantity"
-            name="quantity"
-            value=""
-            placeholder="Amount"
-            required
-          />
-          <label for="quantity" class="form-label">Amount</label>
-          <div id="priceHelpBlock" class="form-text px-1">
-            Units to negotiate about
+        <div class="">
+          <div class="d-flex">
+            <div class="col-9 form-floating mb-3">
+              <input
+                type="number"
+                class="form-control"
+                id="quantity"
+                name="quantity"
+                value=""
+                placeholder="Quantity"
+                required
+              />
+              <label for="quantity">Quantity</label>
+            </div>
+
+            <div class="col-3 form-floating">
+              <select class="form-select" name="unit" id="unit" required>
+                <option value="ton">ton</option>
+                <option value="kg">kg</option>
+                <option value="pieces">pieces</option>
+                <option value="boxes">boxes</option>
+              </select>
+              <label for="unit">Unit</label>
+            </div>
           </div>
         </div>
 
