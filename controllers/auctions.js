@@ -266,6 +266,7 @@ module.exports.createPublicAuction = async (req, res) => {
       reference_sector: offer.referenceSector,
       reference_type: offer.referenceType,
       quantity: parseInt(req.body.quantity),
+      unit: req.body.unit,
       offer_id: offerId,
       templatetype: req.body.contract,
       location: offer.geometry.coordinates,
@@ -346,6 +347,7 @@ module.exports.createAuction = async (req, res) => {
       auctionTitle,
       closingTime,
       quantity,
+      unit,
       location,
       contract,
       brokerId,
@@ -360,11 +362,12 @@ module.exports.createAuction = async (req, res) => {
       reference_sector: sector,
       reference_type: type,
       quantity: parseInt(quantity),
+      unit,
       offer_id: "",
       templatetype: contract,
       location: coordinates,
       members: members,
-      broker_id: brokerId,
+      broker_id: brokerId ? brokerId : "",
     };
     const auctionId = await ne.createAuction(username, data);
 

@@ -42,7 +42,7 @@
 
           <ul class="list-group list-group-flush">
             <li class="list-group-item text-muted"><%= offer.location %></li>
-            <li class="list-group-item">$<%= offer.price %> / Piece</li>
+            <li class="list-group-item">€<%= offer.price %> / Piece</li>
             <li class="list-group-item">
               Submitted by
               <a href="<%= baseUrl %>/profile/<%= offer.author.username %>"
@@ -119,7 +119,7 @@
               <span class="text-muted">Bid by</span>
             </li>
             <li class="list-group-item d-flex justify-content-between">
-              <h6><strong>$<%= negotiation.current_offer %></strong></h6>
+              <h6><strong>€<%= negotiation.current_offer %></strong></h6>
               <span class="text-muted">Current bid</span>
             </li>
           </ul>
@@ -160,7 +160,7 @@
             style="padding: 0"
           >
             <!-- <input type="hidden" name="_csrf" value="" /> -->
-            <span class="input-group-text">$</span>
+            <span class="input-group-text">€</span>
             <input
               id="bid"
               name="bid"

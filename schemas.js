@@ -85,6 +85,7 @@ module.exports.singleOfferAuctionSchema = Joi.object({
   auctionTitle: Joi.string().required().escapeHTML(),
   closingTime: Joi.date().min(Date.now()).required(),
   quantity: Joi.number().required(),
+  unit: Joi.string().required().escapeHTML(),
   offerId: Joi.string()
     .pattern(/^[0-9a-fA-F]{24}$/, "offerId")
     .required(),
@@ -98,6 +99,7 @@ module.exports.auctionSchema = Joi.object({
   auctionTitle: Joi.string().required().escapeHTML(),
   closingTime: Joi.date().min(Date.now()).required(),
   quantity: Joi.number().required(),
+  unit: Joi.string().required().escapeHTML(),
   location: Joi.string().required().escapeHTML(),
   offerIds: Joi.array()
     .min(2)

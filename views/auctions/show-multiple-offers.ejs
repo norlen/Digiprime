@@ -35,7 +35,10 @@
           <span class="text-muted">Reference type</span>
         </li>
         <li class="list-group-item d-flex justify-content-between">
-          <h6><%= auction.quantity %></h6>
+          <h6>
+            <%= auction.quantity %> <%= auction.quantity > 1 ?
+            `${auction.unit}s` : auction.unit %>
+          </h6>
           <span class="text-muted">Quantity</span>
         </li>
         <% if (auction.highest_bidder) { %>
@@ -72,7 +75,7 @@
         method="POST"
         action="<%= baseUrl %>/auctions/<%= auction._id %>"
       >
-        <span class="input-group-text">$</span>
+        <span class="input-group-text">€</span>
         <input
           id="bid"
           name="bid"
@@ -98,7 +101,7 @@
         action="<%= baseUrl %>/auctions/<%= auction._id %>"
       >
         <!-- <input type="hidden" name="_csrf" value="" /> -->
-        <span class="input-group-text">$</span>
+        <span class="input-group-text">€</span>
         <input
           id="bid"
           name="bid"

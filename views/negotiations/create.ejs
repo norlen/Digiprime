@@ -27,7 +27,7 @@
         <ul class="list-group list-group-flush">
           <li class="list-group-item"><%= offer.description %></li>
           <li class="list-group-item text-muted"><%= offer.location %></li>
-          <li class="list-group-item">$<%= offer.price %> / Piece</li>
+          <li class="list-group-item">€<%= offer.price %> / Piece</li>
           <li class="list-group-item">
             Submitted by
             <a href="<%= baseUrl %>/profile/<%= offer.author.username %>"
@@ -79,13 +79,13 @@
               type="number"
               class="form-control"
               id="price"
-              aria-label="Dollar amount (with dot and two decimal places)"
+              aria-label="Euro amount (with dot and two decimal places)"
               name="price"
               value=""
               placeholder=""
               required
             />
-            <span class="input-group-text">$</span>
+            <span class="input-group-text">€</span>
           </div>
           <div id="priceHelpBlock" class="form-text px-1">
             Initial price to start negotiation with

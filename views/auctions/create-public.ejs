@@ -55,18 +55,30 @@
       </div>
     </div>
     <div class="col">
-      <div class="form-floating mb-3">
-        <input
-          type="text"
-          class="form-control"
-          id="quantity"
-          name="quantity"
-          placeholder="Quantity"
-          required
-        />
-        <label for="quantity">Quantity</label>
-        <div id="quantityHelpBlock" class="form-text px-1"></div>
+      <div class="d-flex">
+        <div class="col-9 form-floating mb-3">
+          <input
+            type="text"
+            class="form-control"
+            id="quantity"
+            name="quantity"
+            placeholder="Quantity"
+            required
+          />
+          <label for="quantity">Quantity</label>
+        </div>
+
+        <div class="col-3 form-floating">
+          <select class="form-select" name="unit" id="unit" required>
+            <option value="ton">ton</option>
+            <option value="kg">kg</option>
+            <option value="pieces">pieces</option>
+            <option value="boxes">boxes</option>
+          </select>
+          <label for="unit">Unit</label>
+        </div>
       </div>
+      <div id="quantityHelpBlock" class="form-text px-1"></div>
     </div>
   </div>
 
