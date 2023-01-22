@@ -128,7 +128,13 @@
             </li>
           </ul>
 
-          <% if (!isRepresenting) { %>
+          <% if (negotiation.status === "rejected") { %>
+          <div class="mt-4">
+            <p>
+              <strong>This negotiation has been rejected.</strong>
+            </p>
+          </div>
+          <% } else if (currentUser.role === "broker" && !isRepresenting) { %>
 
           <form
             class="input-group mt-1"
@@ -218,6 +224,17 @@
                 <% } %>
               </strong>
             </p>
+
+            <form
+              class="input-group mt-2"
+              method="POST"
+              action="<%= baseUrl %>/negotiations/<%= negotiation._id %>/cancel"
+              style="display: inline; width: auto; padding: 0"
+            >
+              <button type="submit" class="input-group-text btn-danger">
+                Cancel negotiation
+              </button>
+            </form>
           </div>
           <% } %>
         </div>
