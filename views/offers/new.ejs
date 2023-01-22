@@ -112,7 +112,6 @@
       <div class="mb-3">
         <label class="form-label" for="price">Offer Price</label>
         <div class="input-group mb-3">
-          <span class="input-group-text" id="price-label">$</span>
           <input
             type="text"
             class="form-control"
@@ -123,6 +122,15 @@
             name="offer[price]"
             required
           />
+          <select
+            class="input-group-text"
+            name="offer[unit]"
+            id="unit"
+            required
+          >
+            <option value="€/kg">€/kg</option>
+            <option value="€/piece">€/piece</option>
+          </select>
           <div class="valid-feedback">Looks good!</div>
         </div>
       </div>

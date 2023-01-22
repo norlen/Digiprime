@@ -28,6 +28,7 @@ const OfferSchema = new Schema(
       },
     },
     price: Number,
+    unit: String,
     description: String,
     costumer: {
       type: String,

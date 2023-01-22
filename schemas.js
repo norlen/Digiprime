@@ -33,6 +33,7 @@ module.exports.offerSchema = Joi.object({
   offer: Joi.object({
     title: Joi.string().required().escapeHTML(),
     price: Joi.number().required().min(0),
+    unit: Joi.string().required().escapeHTML(),
     // image: Joi.string().required(),
     costumer: Joi.string().required().escapeHTML(),
     referenceSector: Joi.string().required().escapeHTML(),
